@@ -40,8 +40,15 @@ docker run -d --name code_review_training -p 3000:3000 -p 4001:4001 code-review-
 git clone https://github.com/imusabkhan/code_review_training.git
 cd code_review_training
 
-# Install dependencies and set up database
-npm run setup
+# Install dependencies
+npm install
+
+# Create environment file
+echo 'DATABASE_URL="file:./prisma/dev.db"' > .env.local
+
+# Set up database
+npx prisma generate
+npx prisma db push
 
 # Start development server
 npm run dev
