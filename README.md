@@ -69,14 +69,12 @@ npm run dev
 
 ## Environment Variables
 
-Create a `.env.local` file with:
-```env
-DATABASE_URL="file:./prisma/dev.db"
-ADMIN_SESSION_SECRET="your-super-secret-admin-session-key-at-least-32-chars"
-NEXT_PUBLIC_SOCKET_URL="http://localhost:4001"
-```
+**No environment variables needed!** The application works out of the box with default values:
 
-**Note**: Challenge flags can be set directly in the admin panel, so no environment variables are needed for flags.
+- **DATABASE_URL**: Automatically set to `file:./prisma/dev.db`
+- **NEXT_PUBLIC_SOCKET_URL**: Defaults to `http://localhost:4001`
+- **ADMIN_SESSION_SECRET**: Has a secure default value
+- **Challenge flags**: Can be set directly in the admin panel
 
 ## Available Scripts
 

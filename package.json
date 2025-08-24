@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "npm-run-all --parallel dev:next dev:socket",
     "dev:next": "next dev --turbopack",
-    "build:socket": "tsc --project tsconfig.socket.json",
-    "build": "next build && npm run build:socket",
+
+    "build": "next build",
     "build:next": "next build",
     "start": "next start",
     "lint": "next lint",
