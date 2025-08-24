@@ -15,8 +15,7 @@
     "next:start": "next start",
     "start:prod": "npm-run-all --parallel next:start next:socket",
     "kill-port": "npx kill-port 4001",
-    "clean": "rm -rf .next dist node_modules/.cache",
-    "setup": "npm install && npx prisma generate && node setup.js && npx prisma db push"
+    "clean": "rm -rf .next dist node_modules/.cache"
   },
   "dependencies": {
     "@prisma/client": "^6.11.1",

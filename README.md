@@ -43,9 +43,6 @@ cd code_review_training
 # Install dependencies
 npm install
 
-# Create environment file
-echo 'DATABASE_URL="file:./prisma/dev.db"' > .env.local
-
 # Set up database
 npx prisma generate
 npx prisma db push
