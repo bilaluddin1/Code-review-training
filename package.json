@@ -6,12 +6,13 @@
   "scripts": {
     "dev": "npm-run-all --parallel dev:next dev:socket",
     "dev:next": "next dev --turbopack",
-    "build:socket": "tsc src/lib/socket-server.ts --outDir dist --module ES2020 --target ES2020",
+    "build:socket": "tsc --project tsconfig.socket.json",
     "build": "next build && npm run build:socket",
+    "build:next": "next build",
     "start": "next start",
     "lint": "next lint",
     "dev:socket": "ts-node --esm src/lib/socket-server.ts",
-    "next:socket": "node dist/socket-server.js",
+    "next:socket": "node src/lib/socket-server.js",
     "next:start": "next start",
     "start:prod": "npm-run-all --parallel next:start next:socket",
     "kill-port": "npx kill-port 4001",
@@ -33,7 +34,8 @@
     "react-syntax-highlighter": "^15.6.1",
     "socket.io": "^4.8.1",
     "socket.io-client": "^4.8.1",
-    "tailwind-merge": "^3.3.1"
+    "tailwind-merge": "^3.3.1",
+    "undici-types": "^7.15.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
