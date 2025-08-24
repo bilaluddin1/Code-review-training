@@ -40,12 +40,8 @@ docker run -d --name code_review_training -p 3000:3000 -p 4001:4001 code-review-
 git clone https://github.com/imusabkhan/code_review_training.git
 cd code_review_training
 
-# Install dependencies
-npm install
-
-# Set up database
-npx prisma generate
-npx prisma db push
+# Install dependencies and set up database
+npm run setup
 
 # Start development server
 npm run dev
@@ -69,12 +65,7 @@ npm run dev
 
 
 
-## Available Scripts
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run start` - Start production server
-- `npm run start:prod` - Start with socket server
 
 ## Docker Commands
 
