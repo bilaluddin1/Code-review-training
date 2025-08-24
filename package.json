@@ -6,7 +6,6 @@
   "scripts": {
     "dev": "npm-run-all --parallel dev:next dev:socket",
     "dev:next": "next dev --turbopack",
-
     "build": "next build",
     "build:next": "next build",
     "start": "next start",
@@ -17,7 +16,7 @@
     "start:prod": "npm-run-all --parallel next:start next:socket",
     "kill-port": "npx kill-port 4001",
     "clean": "rm -rf .next dist node_modules/.cache",
-    "setup": "npm install && npx prisma generate && npx prisma db push"
+    "setup": "npm install && npx prisma generate && echo 'DATABASE_URL=\"file:./prisma/dev.db\"' > .env.local && npx prisma db push"
   },
   "dependencies": {
     "@prisma/client": "^6.11.1",
