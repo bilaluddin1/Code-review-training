@@ -6,6 +6,9 @@ yarn-error.log*
 
 # Next.js
 .next/
+.next/server/chunks/
+.next/static/chunks/
+.next/build/chunks/
 out/
 build/
 dist/

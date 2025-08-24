@@ -675,18 +675,24 @@ export default function CodeReviewChallenge() {
   useEffect(() => {
     const stored = localStorage.getItem("crc_user");
     if (stored) {
-      const parsed = JSON.parse(stored);
-      // Fetch actual score from backend
-      fetch('/api/leaderboard')
-        .then(res => res.json())
-        .then(users => {
-          const found = users.find((u: any) => u.name === parsed.name);
-          setUser({
-            name: parsed.name,
-            avatar: parsed.avatar,
-            score: found ? found.score : 0,
+      try {
+        const parsed = JSON.parse(stored);
+        // Fetch actual score from backend
+        fetch('/api/leaderboard')
+          .then(res => res.json())
+          .then(users => {
+            const found = users.find((u: any) => u.name === parsed.name);
+            setUser({
+              name: parsed.name,
+              avatar: parsed.avatar,
+              score: found ? found.score : 0,
+            });
           });
-        });
+      } catch (error) {
+        console.error('Error parsing stored user data:', error);
+        localStorage.removeItem("crc_user"); // Clear corrupted data
+        setShowNameModal(true);
+      }
     } else setShowNameModal(true);
     const admin = localStorage.getItem("crc_admin");
     setIsAdmin(admin === "true");
