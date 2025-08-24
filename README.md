@@ -9,6 +9,7 @@ A web-based platform for code review training challenges with real-time user tra
 ## Screenshots
 
 ![Main Interface](docs/main-interface.png)
+
 ![Admin Panel](docs/admin-panel.png)
 
 ## Demo Video
