@@ -9,7 +9,7 @@ pkill -f "next dev" || true
 pkill -f "ts-node.*socket-server" || true
 
 # Wait a moment for processes to stop
-sleep 2
+sleep 3
 
 # Clear any port conflicts
 echo "🧹 Clearing port conflicts..."
