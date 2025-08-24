@@ -45,7 +45,12 @@ npm install
 
 # Set up database
 npx prisma generate
-npx prisma db push
+
+# Windows
+$env:DATABASE_URL="file:./prisma/dev.db"; npx prisma db push
+
+# Linux/macOS:
+DATABASE_URL="file:./prisma/dev.db" npx prisma db push
 
 # Start development server
 npm run dev
