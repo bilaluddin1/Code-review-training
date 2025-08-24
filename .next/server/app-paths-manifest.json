@@ -1,1 +1,4 @@
-{}
+{
+  "/api/check-username/route": "app/api/check-username/route.js",
+  "/api/leaderboard/route": "app/api/leaderboard/route.js"
+}

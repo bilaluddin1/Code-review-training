@@ -6,6 +6,15 @@
 
 A web-based platform for code review training challenges with real-time user tracking and leaderboard functionality.
 
+## Screenshots
+
+![Main Interface](docs/main-interface.png)
+![Admin Panel](docs/admin-panel.png)
+
+## Demo Video
+
+https://github.com/imusabkhan/code_review_training/assets/123456789/demo.mp4
+
 ## Quick Start with Docker
 
 ### Option 1: Pull from Docker Hub
