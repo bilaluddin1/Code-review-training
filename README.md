@@ -17,10 +17,10 @@ docker run -d --name code_review_training -p 3000:3000 -p 4001:4001 imusabkhan/c
 ### Option 2: Build and Run Locally
 ```bash
 # Build the image
-docker build -t code-review-challenge .
+docker build -t code-review-training .
 
 # Run the container
-docker run -d --name code_review_training -p 3000:3000 -p 4001:4001 code-review-challenge
+docker run -d --name code_review_training -p 3000:3000 -p 4001:4001 code-review-training
 ```
 
 ### Access the Application
@@ -80,10 +80,10 @@ npm run dev
 
 ```bash
 # Build image
-docker build -t code-review-challenge .
+docker build -t code-review-training .
 
 # Run container
-docker run -d --name code_review_training -p 3000:3000 -p 4001:4001 code-review-challenge
+docker run -d --name code_review_training -p 3000:3000 -p 4001:4001 code-review-training
 
 # View logs
 docker logs code_review_training
