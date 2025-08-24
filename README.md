@@ -1,5 +1,9 @@
 # Code Review Challenge Platform
 
+> **Developed by:** Musab Khan & Shaz Syed  
+> **Purpose:** Internal security training and code review practice  
+> **⚠️  Note:** This application is designed for educational purposes and is not intended for production environments.
+
 A web-based platform for code review training challenges with real-time user tracking and leaderboard functionality.
 
 ## Quick Start with Docker
@@ -38,10 +42,6 @@ cd code_review_training
 
 # Install dependencies
 npm install
-
-# Set up environment variables
-cp .env.example .env.local
-# Edit .env.local with your configuration
 
 # Set up database
 npx prisma generate
