@@ -232,7 +232,7 @@ var _s = __turbopack_context__.k.signature(), _s1 = __turbopack_context__.k.sign
 ;
 ;
 ;
-const SOCKET_URL = ("TURBOPACK compile-time value", "http://localhost:4001") || 'http://localhost:4001';
+const SOCKET_URL = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$polyfills$2f$process$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:4001';
 // Simple avatar generator: pick a random emoji
 const AVATARS = [
     "🦊",
@@ -2990,7 +2990,7 @@ var _s = __turbopack_context__.k.signature();
 ;
 ;
 ;
-const SOCKET_URL = ("TURBOPACK compile-time value", "http://localhost:4001") || 'http://localhost:4001';
+const SOCKET_URL = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$polyfills$2f$process$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:4001';
 const USER_ID_KEY = 'ssrf-lab-user-id';
 const CHANNEL_NAME = 'ssrf-lab-user-channel';
 const UserCount = ({ isAdmin = false })=>{
