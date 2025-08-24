@@ -143,7 +143,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/Users/musabkhan/Desktop/Musab/Github/musabkhan/codereview.musabkhan.me/src/generated/prisma",
+      "value": "/Users/musabkhan/Desktop/Musab/Github/musabkhan/code_review_training/src/generated/prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -161,7 +161,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/Users/musabkhan/Desktop/Musab/Github/musabkhan/codereview.musabkhan.me/prisma/schema.prisma",
+    "sourceFilePath": "/Users/musabkhan/Desktop/Musab/Github/musabkhan/code_review_training/prisma/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
@@ -174,7 +174,6 @@ const config = {
     "db"
   ],
   "activeProvider": "sqlite",
-  "postinstall": false,
   "inlineDatasources": {
     "db": {
       "url": {
