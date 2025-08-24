@@ -6,8 +6,8 @@ A web-based platform for code review training challenges with real-time user tra
 
 ### Option 1: Pull from Docker Hub
 ```bash
-docker pull yourusername/code-review-challenge:latest
-docker run -d --name code_review_training -p 3000:3000 -p 4001:4001 yourusername/code-review-challenge:latest
+docker pull imusabkhan/code-review-training:latest
+docker run -d --name code_review_training -p 3000:3000 -p 4001:4001 imusabkhan/code-review-training:latest
 ```
 
 ### Option 2: Build and Run Locally
@@ -74,12 +74,9 @@ Create a `.env.local` file with:
 DATABASE_URL="file:./prisma/dev.db"
 ADMIN_SESSION_SECRET="your-super-secret-admin-session-key-at-least-32-chars"
 NEXT_PUBLIC_SOCKET_URL="http://localhost:4001"
-FLAG_CHALLENGE1="flag{your-flag-here}"
-FLAG_CHALLENGE2="flag{another-flag}"
-FLAG_CHALLENGE3="flag{your-flag-here}"
-FLAG_CHALLENGE4="flag{your-flag-here}"
-FLAG_CHALLENGE5="flag{your-flag-here}"
 ```
+
+**Note**: Challenge flags can be set directly in the admin panel, so no environment variables are needed for flags.
 
 ## Available Scripts
 
