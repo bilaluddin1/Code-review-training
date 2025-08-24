@@ -67,14 +67,7 @@ npm run dev
 - **Authentication**: Iron Session (admin)
 - **Styling**: Radix UI components
 
-## Environment Variables
 
-**No environment variables needed!** The application works out of the box with default values:
-
-- **DATABASE_URL**: Automatically set to `file:./prisma/dev.db`
-- **NEXT_PUBLIC_SOCKET_URL**: Defaults to `http://localhost:4001`
-- **ADMIN_SESSION_SECRET**: Has a secure default value
-- **Challenge flags**: Can be set directly in the admin panel
 
 ## Available Scripts
 
