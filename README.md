@@ -1,6 +1,6 @@
 # Code Review Challenge Platform
 
-> **Developed by:** Musab Khan & Shaz Syed  
+> **Developed by:** Musab Khan ([imusabkhan](https://github.com/imusabkhan)) & Shaz Syed ([shazsyed](https://github.com/shazsyed)) 
 > **Purpose:** Internal security training and code review practice  
 > **⚠️  Note:** This application is designed for educational purposes and is not intended for production environments.
 
