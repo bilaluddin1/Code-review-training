@@ -15,6 +15,13 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Secure Code Review Training",
   description: "Interactive platform for security vulnerability training and code review practice",
+  icons: {
+    icon: [
+      { url: '/icon.jpeg', type: 'image/jpeg' },
+    ],
+    shortcut: '/icon.jpeg',
+    apple: '/icon.jpeg',
+  },
 };
 
 export default function RootLayout({
