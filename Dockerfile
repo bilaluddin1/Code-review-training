@@ -26,9 +26,9 @@ RUN npm run build:next
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
-# Set proper permissions for database directory
-RUN mkdir -p prisma && \
-    chown -R nextjs:nodejs prisma
+# Set proper permissions for database and data directories
+RUN mkdir -p prisma data && \
+    chown -R nextjs:nodejs prisma data
 
 # Set environment variables
 ENV NODE_ENV=production
@@ -50,3 +50,4 @@ ENTRYPOINT ["dumb-init", "--"]
 
 # Create startup script to initialize database and start the application
 CMD ["sh", "-c", "npx prisma db push && npm run start:prod"]
+

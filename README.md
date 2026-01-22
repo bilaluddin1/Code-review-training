@@ -21,20 +21,43 @@ A web-based platform for code review training challenges with real-time user tra
 
 ## Quick Start with Docker
 
-### Option 1: Pull from Docker Hub
+### Option 1: Using Docker Compose (Recommended - Data Persists)
 ```bash
-docker pull imusabkhan/code-review-training:latest
-docker run -d --name code_review_training -p 3000:3000 -p 4001:4001 imusabkhan/code-review-training:latest
+# Build and run with docker-compose (data will persist)
+docker-compose up -d --build
+
+# View logs
+docker-compose logs -f
+
+# Stop container
+docker-compose down
+
+# Restart container (data persists)
+docker-compose restart
 ```
 
-### Option 2: Build and Run Locally
+### Option 2: Pull from Docker Hub
+```bash
+docker pull imusabkhan/code-review-training:latest
+docker run -d --name code_review_training -p 3000:3000 -p 4001:4001 \
+  -v $(pwd)/prisma:/app/prisma \
+  -v $(pwd)/src/data:/app/src/data \
+  imusabkhan/code-review-training:latest
+```
+
+### Option 3: Build and Run Locally
 ```bash
 # Build the image
 docker build -t code-review-training .
 
-# Run the container
-docker run -d --name code_review_training -p 3000:3000 -p 4001:4001 code-review-training
+# Run the container with volume mounts for data persistence
+docker run -d --name code_review_training -p 3000:3000 -p 4001:4001 \
+  -v $(pwd)/prisma:/app/prisma \
+  -v $(pwd)/src/data:/app/src/data \
+  code-review-training
 ```
+
+**Note:** Without volume mounts, your database and challenge changes will be lost when the container restarts. Use docker-compose or add volume mounts to persist data.
 
 ### Access the Application
 - **Main App**: http://localhost:3000
@@ -94,12 +117,34 @@ npm run dev
 
 ## Docker Commands
 
+### Using Docker Compose (Recommended)
+```bash
+# Build and start
+docker-compose up -d --build
+
+# View logs
+docker-compose logs -f
+
+# Stop container
+docker-compose down
+
+# Restart container
+docker-compose restart
+
+# Rebuild after code changes
+docker-compose up -d --build
+```
+
+### Using Docker directly
 ```bash
 # Build image
 docker build -t code-review-training .
 
-# Run container
-docker run -d --name code_review_training -p 3000:3000 -p 4001:4001 code-review-training
+# Run container with volume mounts (data persists)
+docker run -d --name code_review_training -p 3000:3000 -p 4001:4001 \
+  -v $(pwd)/prisma:/app/prisma \
+  -v $(pwd)/src/data:/app/src/data \
+  code-review-training
 
 # View logs
 docker logs code_review_training

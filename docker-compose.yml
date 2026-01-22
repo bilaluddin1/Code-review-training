@@ -1,0 +1,24 @@
+services:
+  code-review-training:
+    build: .
+    container_name: code_review_training
+    image: code-review-training:latest
+    volumes:
+      # Mount prisma directory to persist database
+      - ./prisma:/app/prisma
+      # Mount data directory to persist challenge changes (outside src to avoid build conflicts)
+      - ./data:/app/data
+      # Also mount src/data for backward compatibility
+      - ./src/data:/app/src/data
+    ports:
+      - "3000:3000"
+      - "4001:4001"
+    environment:
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+      - PORT=3000
+      - DATABASE_URL=file:./prisma/dev.db
+      - ADMIN_SESSION_SECRET=your-super-secret-admin-session-key-at-least-32-chars
+      - NEXT_PUBLIC_SOCKET_URL=http://localhost:4001
+    restart: unless-stopped
+
