@@ -1,6 +1,8 @@
 # Code Review Challenge Platform
 
-> **Developed by:** Musab Khan ([imusabkhan](https://github.com/imusabkhan)) & Shaz Syed ([shazsyed](https://github.com/shazsyed))  
+> **Original Developers:** 🎯 **Musab Khan** ([imusabkhan](https://github.com/imusabkhan)) & **Shaz Syed** ([shazsyed](https://github.com/shazsyed))  
+>  
+> **Contributions by:** **Bilal Uddin** - Added Docker data persistence for challenges and database  
 >  
 > **Purpose:** Internal security training and code review practice  
 >  
