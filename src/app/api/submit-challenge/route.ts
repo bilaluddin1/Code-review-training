@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { challenges } from '@/data/challenges';
+import { loadChallenges } from '@/lib/loadChallenges';
 
 import { PrismaClient } from '@/generated/prisma'
 
@@ -17,7 +17,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
   }
 
-  // Find the challenge
+  // Load challenges and find the challenge
+  const challenges = await loadChallenges();
   const challenge = challenges.find((c) => c.id === challengeId);
   if (!challenge) {
     return NextResponse.json({ error: 'Challenge not found' }, { status: 404 });
