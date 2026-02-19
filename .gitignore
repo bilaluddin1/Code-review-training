@@ -90,3 +90,5 @@ cookies.txt
 
 # Stores VSCode versions used for testing VSCode extensions
 .vscode-test/
+prisma/prisma/dev.db
+*.db
