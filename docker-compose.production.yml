@@ -1,0 +1,64 @@
+services:
+  app:
+    # Use your custom image or build from local Dockerfile
+    # Option 1: Use pre-built image (if you've pushed it)
+    # image: code-review-training:latest
+    # Option 2: Build from local Dockerfile
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: code_review_training
+    networks:
+      - code-review-net
+    volumes:
+      # Persist database
+      - ./prisma:/app/prisma
+      # Persist challenge data
+      - ./data:/app/data
+      # Backward compatibility
+      - ./src/data:/app/src/data
+    environment:
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+      - PORT=3000
+      - DATABASE_URL=file:./prisma/dev.db
+      - ADMIN_SESSION_SECRET=${ADMIN_SESSION_SECRET:-your-super-secret-admin-session-key-at-least-32-chars}
+      # Socket URL should point to the nginx proxy
+      # For IP access: Replace YOUR_SERVER_IP with your actual server IP (e.g., https://192.168.1.100:3000)
+      # For domain access: Use your domain (e.g., https://training.spurams.com:3000)
+      - NEXT_PUBLIC_SOCKET_URL=${NEXT_PUBLIC_SOCKET_URL:-https://YOUR_SERVER_IP:3000}
+    env_file:
+      - .env.local
+    # Don't expose ports directly - nginx will handle all traffic
+    expose:
+      - "3000"
+      - "4001"
+    command: sh -c "if [ ! -f /app/prisma/dev.db ]; then echo 'Initializing database...'; npx prisma db push; else echo 'Database exists, skipping init...'; fi && npm run start:prod"
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx-proxy
+    ports:
+      # Expose HTTPS on port 3000
+      - "0.0.0.0:3000:3000"
+
+    networks:
+      - code-review-net
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - /home/jamesbond/defectdojo/django-DefectDojo/ssl/nginx.crt:/etc/nginx/ssl/nginx.crt:ro
+      - /home/jamesbond/defectdojo/django-DefectDojo/ssl/nginx.key:/etc/nginx/ssl/nginx.key:ro
+    depends_on:
+      - app
+    restart: unless-stopped
+
+networks:
+  code-review-net:
+    driver: bridge
+
+# Note: Using bind mounts instead of named volumes for easier access
+# If you prefer named volumes, uncomment below:
+# volumes:
+#   code_review_data:
+#     external: true

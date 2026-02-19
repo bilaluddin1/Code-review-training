@@ -10,7 +10,8 @@ export const sessionOptions: SessionOptions = {
   cookieOptions: {
     maxAge: 60 * 60 * 24, // 1 day
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    // Set secure to false because we are often running on HTTP (localhost)
+    secure: false,
     sameSite: 'lax' as const,
   },
 };
@@ -21,31 +22,12 @@ type AdminSession = {
 
 export async function isAdminSession(request: NextRequest) {
   try {
-    // Get the admin session cookie directly
-    const adminSessionCookie = request.cookies.get(SESSION_COOKIE);
-    
-    if (!adminSessionCookie?.value) {
-      console.log('[ADMIN-LOGIN] No admin session cookie found');
-      return false;
-    }
-
-    // Create a simple cookie handler for iron-session
-    const cookies = {
-      get: (name: string) => {
-        if (name === SESSION_COOKIE) {
-          return adminSessionCookie.value;
-        }
-        return undefined;
-      },
-      set: () => {}, // No-op for read-only
-      delete: () => {}, // No-op for read-only
-    };
-
-    const session = await getIronSession<AdminSession>(cookies as any, sessionOptions);
-    console.log('[ADMIN-LOGIN] isAdminSession result:', session);
+    // Check if session exists using the same logic as admin-login
+    const session = await getIronSession<AdminSession>(request.cookies as any, sessionOptions);
+    console.log('[ADMIN-SESSION] Check result:', session);
     return !!session.isAdmin;
   } catch (error) {
-    console.error('[ADMIN-LOGIN] Error checking admin session:', error);
+    console.error('[ADMIN-SESSION] Error checking session:', error);
     return false;
   }
 } 

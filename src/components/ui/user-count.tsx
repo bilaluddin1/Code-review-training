@@ -81,7 +81,11 @@ export const UserCount: React.FC<{ isAdmin?: boolean }> = ({ isAdmin = false }) 
   // Socket connection and user count updates
   useEffect(() => {
     if (!userId) return;
-    const socket = io(SOCKET_URL, { transports: ['websocket'] });
+    const socket = io(SOCKET_URL, { 
+      transports: ['websocket', 'polling'],
+      path: '/socket.io/',
+      reconnection: true
+    });
     socketRef.current = socket;
     if (isAdmin) {
       // Admin: only listen for userCount, do not register as a player

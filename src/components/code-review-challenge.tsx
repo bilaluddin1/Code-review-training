@@ -148,7 +148,13 @@ function useChallengeTimer(selectedChallenge: Challenge | null) {
   useEffect(() => {
     if (!selectedChallenge) return;
     if (!socketRef.current) {
-      socketRef.current = io(SOCKET_URL, { transports: ['websocket'] });
+      socketRef.current = io(SOCKET_URL, { 
+        transports: ['websocket', 'polling'],
+        path: '/socket.io/',
+        reconnection: true,
+        reconnectionDelay: 1000,
+        reconnectionAttempts: 5
+      });
     }
     const socket = socketRef.current;
     const handleTimerUpdate = (data: { challengeId: string; startTime: number; duration: number; isRunning: boolean; isPaused: boolean; remaining?: number }) => {
@@ -219,11 +225,42 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
   console.log('AdminPanel challenges length:', challenges?.length);
 
   useEffect(() => {
+    console.log('AdminPanel: Setting up Socket.IO connection to', SOCKET_URL);
+    
     if (!socketRef.current) {
-      socketRef.current = io(SOCKET_URL, { transports: ['websocket'] });
+      socketRef.current = io(SOCKET_URL, { 
+        transports: ['websocket', 'polling'],
+        path: '/socket.io/',
+        reconnection: true,
+        reconnectionDelay: 1000,
+        reconnectionAttempts: 5
+      });
     }
+    
     const socket = socketRef.current;
+    
+    // Connection event handlers
+    socket.on('connect', () => {
+      console.log('AdminPanel: Socket.IO connected, registering as admin');
+      // Register as admin with a unique admin ID
+      const adminId = 'admin-' + Date.now();
+      socket.emit('register', adminId, true);
+    });
+    
+    socket.on('disconnect', () => {
+      console.log('AdminPanel: Socket.IO disconnected');
+    });
+    
+    socket.on('connect_error', (error) => {
+      console.error('AdminPanel: Socket.IO connection error:', error);
+    });
+    
+    socket.on('error', (error) => {
+      console.error('AdminPanel: Socket.IO error:', error);
+    });
+    
     const handleTimerUpdate = (data: { challengeId: string; startTime: number; duration: number; isRunning: boolean; isPaused: boolean; remaining?: number }) => {
+      console.log('AdminPanel: Received timer update:', data);
       setTimers(prev => ({
         ...prev,
         [data.challengeId]: {
@@ -235,8 +272,15 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
         }
       }));
     };
+    
     socket.on('timer:update', handleTimerUpdate);
+    
     return () => {
+      console.log('AdminPanel: Cleaning up Socket.IO listeners');
+      socket.off('connect');
+      socket.off('disconnect');
+      socket.off('connect_error');
+      socket.off('error');
       socket.off('timer:update', handleTimerUpdate);
     };
   }, []);
@@ -265,7 +309,17 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
 
   const handleStartTimer = (challengeId: string) => {
     const durationMinutes = timerDurations[challengeId] || 5; // default 5 min
-    socketRef.current?.emit('admin:startTimer', { challengeId, duration: durationMinutes * 60 * 1000 });
+    const durationMs = durationMinutes * 60 * 1000;
+    console.log('AdminPanel: Starting timer for', challengeId, 'duration:', durationMs, 'ms');
+    
+    if (!socketRef.current || !socketRef.current.connected) {
+      console.error('AdminPanel: Socket not connected, cannot start timer');
+      alert('Socket.IO not connected. Please refresh the page.');
+      return;
+    }
+    
+    socketRef.current.emit('admin:startTimer', { challengeId, duration: durationMs });
+    console.log('AdminPanel: Timer start command sent');
   };
 
   const handleDurationChange = (challengeId: string, value: string) => {
@@ -287,13 +341,30 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
   };
 
   const handlePauseTimer = (challengeId: string) => {
-    socketRef.current?.emit('admin:pauseTimer', { challengeId });
+    console.log('AdminPanel: Pausing timer for', challengeId);
+    if (!socketRef.current || !socketRef.current.connected) {
+      console.error('AdminPanel: Socket not connected');
+      return;
+    }
+    socketRef.current.emit('admin:pauseTimer', { challengeId });
   };
+  
   const handleResumeTimer = (challengeId: string) => {
-    socketRef.current?.emit('admin:resumeTimer', { challengeId });
+    console.log('AdminPanel: Resuming timer for', challengeId);
+    if (!socketRef.current || !socketRef.current.connected) {
+      console.error('AdminPanel: Socket not connected');
+      return;
+    }
+    socketRef.current.emit('admin:resumeTimer', { challengeId });
   };
+  
   const handleResetTimer = (challengeId: string) => {
-    socketRef.current?.emit('admin:resetTimer', { challengeId });
+    console.log('AdminPanel: Resetting timer for', challengeId);
+    if (!socketRef.current || !socketRef.current.connected) {
+      console.error('AdminPanel: Socket not connected');
+      return;
+    }
+    socketRef.current.emit('admin:resetTimer', { challengeId });
     // Clear local timer state for this challenge so Start Timer is shown again
     setTimers(prev => {
       const copy = { ...prev };
@@ -567,7 +638,13 @@ function useAllChallengeTimers() {
 
   useEffect(() => {
     if (!socketRef.current) {
-      socketRef.current = io(SOCKET_URL, { transports: ['websocket'] });
+      socketRef.current = io(SOCKET_URL, { 
+        transports: ['websocket', 'polling'],
+        path: '/socket.io/',
+        reconnection: true,
+        reconnectionDelay: 1000,
+        reconnectionAttempts: 5
+      });
     }
     const socket = socketRef.current;
     const handleTimerUpdate = (data: { challengeId: string; startTime: number; duration: number; isRunning: boolean; isPaused: boolean; remaining?: number }) => {
@@ -779,7 +856,11 @@ export default function CodeReviewChallenge() {
     });
     // Reset timer if locking the challenge
     if (newLocked && isAdmin) {
-      const socket = io(SOCKET_URL, { transports: ['websocket'] });
+      const socket = io(SOCKET_URL, { 
+        transports: ['websocket', 'polling'],
+        path: '/socket.io/',
+        reconnection: true
+      });
       socket.emit('admin:resetTimer', { challengeId: id });
       socket.disconnect();
     }

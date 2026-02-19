@@ -5,7 +5,17 @@ const httpServer = createServer();
 const io = new Server(httpServer, {
   cors: {
     origin: '*',
+    methods: ['GET', 'POST'],
+    credentials: true,
   },
+  // Support for reverse proxy (nginx)
+  path: '/socket.io/',
+  transports: ['websocket', 'polling'],
+  allowEIO3: true,
+  // Allow connections from reverse proxy
+  allowUpgrades: true,
+  pingTimeout: 60000,
+  pingInterval: 25000,
 });
 
 // Set to track unique user IDs
@@ -18,11 +28,15 @@ const challengeTimers: Record<string, { startTime: number; duration: number; isR
 function broadcastTimerUpdate(challengeId: string) {
   const timer = challengeTimers[challengeId];
   if (timer) {
+    console.log('Socket.IO: Broadcasting timer update', { challengeId, timer, connectedClients: io.sockets.sockets.size });
     io.emit('timer:update', { challengeId, ...timer });
+  } else {
+    console.warn('Socket.IO: No timer found for challengeId:', challengeId);
   }
 }
 
 io.on('connection', (socket) => {
+  console.log('Socket.IO: New client connected', socket.id);
   let userId: string | null = null;
   let isAdmin: boolean = false;
 
@@ -37,6 +51,7 @@ io.on('connection', (socket) => {
     isAdmin = !!adminFlag;
     socket.data.userId = id;
     socket.data.isAdmin = isAdmin;
+    console.log('Socket.IO: Client registered', { socketId: socket.id, userId: id, isAdmin });
     if (!isAdmin) {
       if (!activeUsers.has(id)) {
         activeUsers.add(id);
@@ -62,6 +77,7 @@ io.on('connection', (socket) => {
 
   // Admin starts timer for a challenge
   socket.on('admin:startTimer', ({ challengeId, duration }) => {
+    console.log('Socket.IO: admin:startTimer received', { socketId: socket.id, challengeId, duration, isAdmin: socket.data.isAdmin });
     const now = Date.now();
     challengeTimers[challengeId] = {
       startTime: now,
@@ -71,6 +87,7 @@ io.on('connection', (socket) => {
       pausedAt: undefined,
       remaining: undefined,
     };
+    console.log('Socket.IO: Timer started, broadcasting update', challengeTimers[challengeId]);
     broadcastTimerUpdate(challengeId);
   });
 
