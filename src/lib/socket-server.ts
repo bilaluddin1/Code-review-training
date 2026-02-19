@@ -6,7 +6,6 @@ const io = new Server(httpServer, {
   cors: {
     origin: '*',
     methods: ['GET', 'POST'],
-    credentials: true,
   },
   // Support for reverse proxy (nginx)
   path: '/socket.io/',
