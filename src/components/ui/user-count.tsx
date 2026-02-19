@@ -3,13 +3,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { Users } from 'lucide-react';
-
-const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:4001';
+import { getSocketUrl } from '@/lib/get-socket-url';
 const USER_ID_KEY = 'ssrf-lab-user-id';
 const CHANNEL_NAME = 'ssrf-lab-user-channel';
 
 export const UserCount: React.FC<{ isAdmin?: boolean }> = ({ isAdmin = false }) => {
-  console.log("User Count Socket", SOCKET_URL)
+  console.log("User Count Socket", getSocketUrl())
   const [userCount, setUserCount] = useState<number>(1);
   const [isLeader, setIsLeader] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
@@ -81,7 +80,7 @@ export const UserCount: React.FC<{ isAdmin?: boolean }> = ({ isAdmin = false }) 
   // Socket connection and user count updates
   useEffect(() => {
     if (!userId) return;
-    const socket = io(SOCKET_URL, { 
+    const socket = io(getSocketUrl(), {
       transports: ['websocket', 'polling'],
       path: '/socket.io/',
       reconnection: true

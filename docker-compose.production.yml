@@ -23,10 +23,6 @@ services:
       - PORT=3000
       - DATABASE_URL=file:./prisma/dev.db
       - ADMIN_SESSION_SECRET=${ADMIN_SESSION_SECRET:-your-super-secret-admin-session-key-at-least-32-chars}
-      # Socket URL should point to the nginx proxy
-      # For IP access: Replace YOUR_SERVER_IP with your actual server IP (e.g., https://192.168.1.100:3000)
-      # For domain access: Use your domain (e.g., https://training.spurams.com:3000)
-      - NEXT_PUBLIC_SOCKET_URL=${NEXT_PUBLIC_SOCKET_URL:-https://YOUR_SERVER_IP:3000}
     env_file:
       - .env.local
     # Don't expose ports directly - nginx will handle all traffic

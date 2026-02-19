@@ -20,11 +20,10 @@ import {
 } from "lucide-react"
 import { io } from 'socket.io-client'
 import type { Challenge } from "@/types/challenge"
-
-const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:4001';
+import { getSocketUrl } from '@/lib/get-socket-url'
 
 export default function AdminDashboard() {
-  console.log("Admin Socket: ", SOCKET_URL)
+  console.log("Admin Socket: ", getSocketUrl())
   const [locks, setLocks] = useState<Record<string, boolean>>({});
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [loading, setLoading] = useState(true);
@@ -110,7 +109,7 @@ export default function AdminDashboard() {
       // Reset timer if locking the challenge
       if (newLocked) {
         try {
-          const socket = io(SOCKET_URL, {
+          const socket = io(getSocketUrl(), {
             transports: ['websocket', 'polling'],
             path: '/socket.io/',
             reconnection: true
@@ -318,8 +317,8 @@ export default function AdminDashboard() {
                 {resetMessage && (
                   <div
                     className={`p-4 rounded-lg border flex items-start gap-3 ${resetMessage.type === 'success'
-                        ? 'bg-green-50 border-green-200 text-green-800'
-                        : 'bg-red-50 border-red-200 text-red-800'
+                      ? 'bg-green-50 border-green-200 text-green-800'
+                      : 'bg-red-50 border-red-200 text-red-800'
                       }`}
                   >
                     <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
