@@ -46,9 +46,7 @@ services:
     networks:
       - code-review-net
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - /home/jamesbond/defectdojo/django-DefectDojo/ssl/nginx.crt:/etc/nginx/ssl/nginx.crt:ro
-      - /home/jamesbond/defectdojo/django-DefectDojo/ssl/nginx.key:/etc/nginx/ssl/nginx.key:ro
+      - 
     depends_on:
       - app
     restart: unless-stopped
