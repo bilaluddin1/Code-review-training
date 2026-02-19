@@ -23,11 +23,10 @@ export const challenges: Challenge[] = [
   },
   {
     "id": "CHALLENGE1",
-    "title": "Open Door",
-    "description": "Find the obvious SSRF vulnerability in this API",
+    "title": "New challenge",
+    "description": "this is for sql injection",
     "code": "@GetMapping(\"/open-door\")\n    public ResponseEntity<String> fetchUrl(@RequestParam String url) {\n        try {\n            HttpClient client = HttpClient.newHttpClient();\n            HttpRequest request = HttpRequest.newBuilder()\n                    .uri(URI.create(url))\n                    .GET()\n                    .build();\n            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());\n            return ResponseEntity.status(response.statusCode()).body(response.body());\n        } catch (Exception e) {\n            return ResponseEntity.badRequest().body(\"Error: \" + e.getMessage());\n        }\n    }",
     "vulnerableLines": [
-      6,
       9
     ],
     "difficulty": "beginner",
@@ -35,7 +34,6 @@ export const challenges: Challenge[] = [
       "Look for places where user input is passed directly without sanitization"
     ],
     "explanations": {
-      "6": "Uses unvalidated user input to build the request URL, allowing SSRF.",
       "9": "Sends server-side request to attacker-controlled URL."
     },
     "labUrl": "https://musabkhan.me/lab/1",
@@ -153,5 +151,20 @@ export const challenges: Challenge[] = [
     "labUrl": "https://musabkhan.me/xss/lab/1",
     "maxSelectableLines": 1,
     "flag": "flat{xss_demo_1}"
+  },
+  {
+    "id": "9",
+    "title": "data should be persist",
+    "description": "",
+    "code": "testing",
+    "vulnerableLines": [
+      1
+    ],
+    "difficulty": "beginner",
+    "hints": [],
+    "explanations": {
+      "1": "sdsd"
+    },
+    "maxSelectableLines": 1
   }
 ]
