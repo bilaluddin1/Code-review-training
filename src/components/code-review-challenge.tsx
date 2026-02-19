@@ -7,8 +7,7 @@ import type { Challenge } from "@/types/challenge"
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import { io, Socket } from 'socket.io-client'
-
-const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:4001';
+import { getSocketUrl } from '@/lib/get-socket-url'
 
 // Simple avatar generator: pick a random emoji
 const AVATARS = ["🦊", "🐻", "🐼", "🐸", "🐵", "🐶", "🐱", "🦁", "🐯", "🐨", "🐰", "🦄", "🐙", "🐧", "🐢", "🐦", "🐝", "🐬", "🦋", "🐞"];
@@ -148,7 +147,7 @@ function useChallengeTimer(selectedChallenge: Challenge | null) {
   useEffect(() => {
     if (!selectedChallenge) return;
     if (!socketRef.current) {
-      socketRef.current = io(SOCKET_URL, { 
+      socketRef.current = io(getSocketUrl(), {
         transports: ['websocket', 'polling'],
         path: '/socket.io/',
         reconnection: true,
@@ -225,10 +224,10 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
   console.log('AdminPanel challenges length:', challenges?.length);
 
   useEffect(() => {
-    console.log('AdminPanel: Setting up Socket.IO connection to', SOCKET_URL);
-    
+    console.log('AdminPanel: Setting up Socket.IO connection to', getSocketUrl());
+
     if (!socketRef.current) {
-      socketRef.current = io(SOCKET_URL, { 
+      socketRef.current = io(getSocketUrl(), {
         transports: ['websocket', 'polling'],
         path: '/socket.io/',
         reconnection: true,
@@ -236,9 +235,9 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
         reconnectionAttempts: 5
       });
     }
-    
+
     const socket = socketRef.current;
-    
+
     // Connection event handlers
     socket.on('connect', () => {
       console.log('AdminPanel: Socket.IO connected, registering as admin');
@@ -246,19 +245,19 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
       const adminId = 'admin-' + Date.now();
       socket.emit('register', adminId, true);
     });
-    
+
     socket.on('disconnect', () => {
       console.log('AdminPanel: Socket.IO disconnected');
     });
-    
+
     socket.on('connect_error', (error) => {
       console.error('AdminPanel: Socket.IO connection error:', error);
     });
-    
+
     socket.on('error', (error) => {
       console.error('AdminPanel: Socket.IO error:', error);
     });
-    
+
     const handleTimerUpdate = (data: { challengeId: string; startTime: number; duration: number; isRunning: boolean; isPaused: boolean; remaining?: number }) => {
       console.log('AdminPanel: Received timer update:', data);
       setTimers(prev => ({
@@ -272,9 +271,9 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
         }
       }));
     };
-    
+
     socket.on('timer:update', handleTimerUpdate);
-    
+
     return () => {
       console.log('AdminPanel: Cleaning up Socket.IO listeners');
       socket.off('connect');
@@ -311,13 +310,13 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
     const durationMinutes = timerDurations[challengeId] || 5; // default 5 min
     const durationMs = durationMinutes * 60 * 1000;
     console.log('AdminPanel: Starting timer for', challengeId, 'duration:', durationMs, 'ms');
-    
+
     if (!socketRef.current || !socketRef.current.connected) {
       console.error('AdminPanel: Socket not connected, cannot start timer');
       alert('Socket.IO not connected. Please refresh the page.');
       return;
     }
-    
+
     socketRef.current.emit('admin:startTimer', { challengeId, duration: durationMs });
     console.log('AdminPanel: Timer start command sent');
   };
@@ -348,7 +347,7 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
     }
     socketRef.current.emit('admin:pauseTimer', { challengeId });
   };
-  
+
   const handleResumeTimer = (challengeId: string) => {
     console.log('AdminPanel: Resuming timer for', challengeId);
     if (!socketRef.current || !socketRef.current.connected) {
@@ -357,7 +356,7 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
     }
     socketRef.current.emit('admin:resumeTimer', { challengeId });
   };
-  
+
   const handleResetTimer = (challengeId: string) => {
     console.log('AdminPanel: Resetting timer for', challengeId);
     if (!socketRef.current || !socketRef.current.connected) {
@@ -638,7 +637,7 @@ function useAllChallengeTimers() {
 
   useEffect(() => {
     if (!socketRef.current) {
-      socketRef.current = io(SOCKET_URL, { 
+      socketRef.current = io(getSocketUrl(), {
         transports: ['websocket', 'polling'],
         path: '/socket.io/',
         reconnection: true,
@@ -856,7 +855,7 @@ export default function CodeReviewChallenge() {
     });
     // Reset timer if locking the challenge
     if (newLocked && isAdmin) {
-      const socket = io(SOCKET_URL, { 
+      const socket = io(getSocketUrl(), {
         transports: ['websocket', 'polling'],
         path: '/socket.io/',
         reconnection: true

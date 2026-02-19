@@ -40,7 +40,6 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV DATABASE_URL="file:./prisma/dev.db"
 ENV ADMIN_SESSION_SECRET="your-super-secret-admin-session-key-at-least-32-chars"
-ENV NEXT_PUBLIC_SOCKET_URL="http://localhost:4001"
 
 # Note: We stay as root here, entrypoint script will switch to nextjs user after fixing permissions
 
