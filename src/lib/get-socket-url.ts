@@ -14,13 +14,9 @@ export function getSocketUrl(): string {
         return 'http://localhost:4001';
     }
 
-    const { hostname } = window.location;
+    const { protocol, hostname } = window.location;
 
-    // If accessing from localhost/dev mode, assume direct access to ports
-    if (hostname === 'localhost' || hostname === '127.0.0.1') {
-        return 'http://localhost:4001';
-    }
-
-    // For remote access (VM), use the same origin (Nginx will proxy)
-    return window.location.origin;
+    // Always connect to port 4001 — the socket server's port
+    // This works for both localhost (dev) and remote access (VM IP)
+    return `${protocol}//${hostname}:4001`;
 }
