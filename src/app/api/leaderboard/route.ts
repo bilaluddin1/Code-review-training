@@ -6,7 +6,10 @@ const prisma = new PrismaClient();
 // GET: Return leaderboard (top users by score)
 export async function GET() {
   const users = await prisma.leaderboardUser.findMany({
-    orderBy: { score: 'desc' },
+    orderBy: [
+      { score: 'desc' },
+      { updatedAt: 'asc' }
+    ],
     take: 10,
   });
   return NextResponse.json(users);

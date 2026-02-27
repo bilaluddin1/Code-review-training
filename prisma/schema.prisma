@@ -22,6 +22,7 @@ model LeaderboardUser {
   name      String @unique
   avatar    String
   score     Int
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 model ChallengeSubmission {

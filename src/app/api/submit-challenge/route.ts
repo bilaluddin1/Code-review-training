@@ -1,4 +1,4 @@
-cd import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { loadChallenges } from '@/lib/loadChallenges';
 
 import { PrismaClient } from '@/generated/prisma'
