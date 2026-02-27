@@ -979,11 +979,15 @@ export default function CodeReviewChallenge() {
       // Update attempts from backend response
       if (typeof data.attemptsUsed === 'number') setAttemptsUsed(data.attemptsUsed);
       if (typeof data.attemptsRemaining === 'number') setAttemptsRemaining(data.attemptsRemaining);
-      // Optionally, use data.feedback for per-line feedback if needed
-      // Optionally, update score or attempts from backend response
-      // setUser(u => ({ ...u, score: data.score }));
-      // setAttemptsUsed(data.attemptsUsed);
-      // setAttemptsRemaining(data.attemptsRemaining);
+      // Update personal score in the top-right corner from the backend response
+      if (typeof data.score === 'number') {
+        setUser(u => {
+          const updated = { ...u, score: data.score };
+          // Keep localStorage in sync so score survives a page refresh
+          localStorage.setItem("crc_user", JSON.stringify(updated));
+          return updated;
+        });
+      }
     }
   }
 
