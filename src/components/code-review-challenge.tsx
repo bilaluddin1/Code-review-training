@@ -65,7 +65,13 @@ function NameModal({ open, onSubmit }: { open: boolean; onSubmit: (name: string)
       });
       const data = await res.json();
       setAvailable(data.available);
-      if (!data.available) setError("Username is already taken");
+      if (!data.available) {
+        if (data.reserved) {
+          setError(`"${name}" is a reserved name — please choose a different username`);
+        } else {
+          setError("Username is already taken");
+        }
+      }
     } catch {
       setError("Could not check username availability");
       setAvailable(null);
@@ -733,7 +739,7 @@ export default function CodeReviewChallenge() {
 
   // Attempts state
   const [attemptsUsed, setAttemptsUsed] = useState(0);
-  const [attemptsRemaining, setAttemptsRemaining] = useState(4);
+  const [attemptsRemaining, setAttemptsRemaining] = useState(3);
 
   // Open Lab state
   const [openLabChallenge, setOpenLabChallenge] = useState<string | null>(null);
@@ -938,7 +944,7 @@ export default function CodeReviewChallenge() {
         setAttemptsRemaining(data.attemptsRemaining);
       } else {
         setAttemptsUsed(0);
-        setAttemptsRemaining(4);
+        setAttemptsRemaining(3);
       }
     };
     fetchAttempts();

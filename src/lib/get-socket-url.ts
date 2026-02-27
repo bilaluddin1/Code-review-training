@@ -1,13 +1,26 @@
 /**
  * Dynamically determine the Socket.IO server URL based on how the page is accessed.
- * 
- * The socket server always runs on port 4001. This function uses the same
- * hostname/IP that the user typed in their browser, but points to port 4001.
- * 
- * - localhost:3000 → localhost:4001
- * - 172.190.116.41:3000 → 172.190.116.41:4001
- * - any-domain.com:3000 → any-domain.com:4001
+ *
+ * Two deployment modes are supported:
+ *
+ * 1. DIRECT mode (docker-compose.yml — no Nginx):
+ *    - Port 4001 is exposed directly to the host
+ *    - Browser connects to hostname:4001
+ *
+ * 2. PROXY mode (docker-compose.production.yml — with Nginx):
+ *    - Only port 3000 is exposed (via Nginx)
+ *    - Nginx proxies /socket.io/ requests to internal port 4001
+ *    - Browser connects to hostname:3000 (same origin)
+ *
+ * Toggle the USE_NGINX_PROXY flag below based on which docker-compose file you use.
  */
+
+// ========================================================
+// SET THIS TO true  WHEN USING docker-compose.production.yml (with Nginx)
+// SET THIS TO false WHEN USING docker-compose.yml (without Nginx)
+// ========================================================
+const USE_NGINX_PROXY = false;
+
 export function getSocketUrl(): string {
     // Server-side rendering - return a default
     if (typeof window === 'undefined') {
@@ -16,7 +29,16 @@ export function getSocketUrl(): string {
 
     const { protocol, hostname } = window.location;
 
-    // Always connect to port 4001 — the socket server's port
-    // This works for both localhost (dev) and remote access (VM IP)
-    return `${protocol}//${hostname}:4001`;
+    // Localhost always connects directly to port 4001
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        return `${protocol}//${hostname}:4001`;
+    }
+
+    if (USE_NGINX_PROXY) {
+        // Nginx mode: connect to same origin, Nginx will proxy /socket.io/ → port 4001
+        return window.location.origin;
+    } else {
+        // Direct mode: connect to port 4001 directly
+        return `${protocol}//${hostname}:4001`;
+    }
 }

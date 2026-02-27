@@ -343,23 +343,23 @@ export default function AdminDashboard() {
                         Reset Leaderboard
                       </h3>
                       <p className="mt-2 text-sm text-gray-600">
-                        Delete all leaderboard scores and rankings. This action cannot be undone.
+                        Full reset — clears all scores, attempts, and flag submissions. Users can participate again from scratch. This action cannot be undone.
                       </p>
                       <div className="mt-3 space-y-1 text-sm">
                         <p className="text-green-600 flex items-center gap-1.5">
-                          <span className="font-mono">✓</span> Challenges will be preserved
-                        </p>
-                        <p className="text-green-600 flex items-center gap-1.5">
-                          <span className="font-mono">✓</span> Challenge submissions will be preserved
-                        </p>
-                        <p className="text-green-600 flex items-center gap-1.5">
-                          <span className="font-mono">✓</span> Flag submissions will be preserved
+                          <span className="font-mono">✓</span> Challenge definitions will be preserved
                         </p>
                         <p className="text-green-600 flex items-center gap-1.5">
                           <span className="font-mono">✓</span> Challenge locks will be preserved
                         </p>
                         <p className="text-red-600 flex items-center gap-1.5 font-medium">
                           <span className="font-mono">✗</span> Leaderboard scores will be deleted
+                        </p>
+                        <p className="text-red-600 flex items-center gap-1.5 font-medium">
+                          <span className="font-mono">✗</span> All challenge attempts will be deleted
+                        </p>
+                        <p className="text-red-600 flex items-center gap-1.5 font-medium">
+                          <span className="font-mono">✗</span> All flag submissions will be deleted
                         </p>
                       </div>
                     </div>

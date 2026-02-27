@@ -9,7 +9,7 @@ export async function POST(request: Request) {
     if (!name || !challengeId) {
       return NextResponse.json({ error: 'Missing parameters' }, { status: 400 });
     }
-    const maxAttempts = 2;
+    const maxAttempts = 3;
     const attemptsUsed = await prisma.challengeSubmission.count({
       where: { userName: name, challengeId },
     });

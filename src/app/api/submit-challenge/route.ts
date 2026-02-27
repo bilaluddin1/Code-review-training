@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+cd import { NextRequest, NextResponse } from 'next/server';
 import { loadChallenges } from '@/lib/loadChallenges';
 
 import { PrismaClient } from '@/generated/prisma'
@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
     if (vulnerableSet.has(line)) return { line, status: 'correct' };
     return { line, status: 'incorrect' };
   });
-// (No missed lines in feedback)
+  // (No missed lines in feedback)
 
   // Check if user already solved this challenge correctly
   if (allCorrect) {
@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
   const attempts = await prisma.challengeSubmission.count({
     where: { userName: name, challengeId },
   });
-  const maxAttempts = 4;
+  const maxAttempts = 3;
   const attemptsRemaining = Math.max(0, maxAttempts - attempts);
 
   if (attempts >= maxAttempts) {

@@ -6,8 +6,10 @@ const prisma = new PrismaClient();
 
 /**
  * POST /api/admin/reset-leaderboard
- * Resets ONLY the leaderboard data while preserving all challenges and submissions
- * Requires admin authentication
+ * Resets leaderboard scores AND all challenge/flag submissions.
+ * This gives every user a clean slate — attempt counters reset,
+ * solved states reset, scores zeroed out.
+ * Requires admin authentication.
  */
 export async function POST(request: NextRequest) {
     // Verify admin session
@@ -16,13 +18,21 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-        // Delete only leaderboard users, preserve all other data
-        const result = await prisma.leaderboardUser.deleteMany();
+        // Delete all data in order (submissions first, then users)
+        const [submissionsResult, flagSubmissionsResult, leaderboardResult] = await Promise.all([
+            prisma.challengeSubmission.deleteMany(),
+            prisma.flagSubmission.deleteMany(),
+            prisma.leaderboardUser.deleteMany(),
+        ]);
 
         return NextResponse.json({
             success: true,
-            message: 'Leaderboard reset successfully',
-            deletedCount: result.count
+            message: 'Leaderboard and all submissions reset successfully',
+            deleted: {
+                leaderboardUsers: leaderboardResult.count,
+                challengeSubmissions: submissionsResult.count,
+                flagSubmissions: flagSubmissionsResult.count,
+            }
         });
     } catch (error) {
         console.error('Error resetting leaderboard:', error);
