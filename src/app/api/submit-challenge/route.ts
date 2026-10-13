@@ -112,11 +112,19 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // Reveal the answer key only once the attempt is resolved: the player
+  // either solved it, or has no attempts left. Otherwise the answers stay
+  // server-side so they can't be read ahead of time.
+  const resolved = allCorrect || attemptsAfter >= maxAttempts;
+
   return NextResponse.json({
     correct: allCorrect,
     score: user.score,
     attemptsUsed: attemptsAfter,
     attemptsRemaining: Math.max(0, maxAttempts - attemptsAfter),
     feedback,
+    ...(resolved
+      ? { vulnerableLines: challenge.vulnerableLines, explanations: challenge.explanations }
+      : {}),
   });
 } 

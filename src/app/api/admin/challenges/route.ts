@@ -10,9 +10,7 @@ export async function GET(req: NextRequest) {
   try {
     console.log('GET /api/admin/challenges called');
 
-    // Temporarily bypass session check for development
-    // const isAdmin = await isAdminSession(req);
-    const isAdmin = true; // Temporary bypass
+    const isAdmin = await isAdminSession(req);
     console.log('Admin session check result:', isAdmin);
 
     if (!isAdmin) {
@@ -33,9 +31,7 @@ export async function GET(req: NextRequest) {
 // POST: Create a new challenge
 export async function POST(req: NextRequest) {
   try {
-    // Temporarily bypass session check for development
-    // const isAdmin = await isAdminSession(req);
-    const isAdmin = true; // Temporary bypass
+    const isAdmin = await isAdminSession(req);
 
     if (!isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -71,9 +67,7 @@ export async function POST(req: NextRequest) {
 // PUT: Update an existing challenge
 export async function PUT(req: NextRequest) {
   try {
-    // Temporarily bypass session check for development
-    // const isAdmin = await isAdminSession(req);
-    const isAdmin = true; // Temporary bypass
+    const isAdmin = await isAdminSession(req);
 
     if (!isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -108,9 +102,7 @@ export async function PUT(req: NextRequest) {
 // DELETE: Delete a challenge
 export async function DELETE(req: NextRequest) {
   try {
-    // Temporarily bypass session check for development
-    // const isAdmin = await isAdminSession(req);
-    const isAdmin = true; // Temporary bypass
+    const isAdmin = await isAdminSession(req);
 
     if (!isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

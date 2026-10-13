@@ -694,9 +694,9 @@ function getDynamicLabUrl(labPath: string) {
     return labPath;
   }
 
-  // If it's a relative path, construct the full URL with current hostname and port 8888
-  const { protocol, hostname } = window.location;
-  return `${protocol}//${hostname}:8888${labPath}`;
+  // Relative path: resolve against the app's own origin. (Previously this appended
+  // ":8888", a port nothing listens on, which made every "Open Lab" link dead.)
+  return `${window.location.origin}${labPath.startsWith("/") ? "" : "/"}${labPath}`;
 }
 
 export default function CodeReviewChallenge() {
@@ -736,6 +736,11 @@ export default function CodeReviewChallenge() {
 
   // Track if the last submission was correct
   const [lastSubmissionCorrect, setLastSubmissionCorrect] = useState<boolean | null>(null);
+  // Answers are not shipped to the client up front. The server returns them in
+  // the submit response once a lab is resolved; we keep them here per challenge.
+  const [revealed, setRevealed] = useState<Record<string, { vulnerableLines: number[]; explanations: { [line: number]: string } }>>({});
+  // Per-line correct/incorrect feedback for the current submission (selected lines only).
+  const [lastFeedback, setLastFeedback] = useState<{ line: number; status: string }[]>([]);
 
   // Attempts state
   const [attemptsUsed, setAttemptsUsed] = useState(0);
@@ -789,12 +794,8 @@ export default function CodeReviewChallenge() {
         setChallengesLoading(true);
         console.log('Fetching challenges...');
 
-        // Test the API directly
-        const testResponse = await fetch('/api/admin/challenges');
-        console.log('Test response status:', testResponse.status);
-        console.log('Test response ok:', testResponse.ok);
-
-        const res = await fetch('/api/admin/challenges');
+        // Public endpoint: labs without the answer key.
+        const res = await fetch('/api/challenges');
         console.log('Challenges response status:', res.status);
         console.log('Challenges response headers:', Object.fromEntries(res.headers.entries()));
         if (res.ok) {
@@ -966,16 +967,22 @@ export default function CodeReviewChallenge() {
         }),
       });
       const data = await res.json();
-      // Determine correctness: all vulnerable lines must be selected, and no extra lines
-      const vulnerableLines = selectedChallenge.vulnerableLines;
-      const selectedSet = new Set(selectedLines);
-      const vulnerableSet = new Set(vulnerableLines);
-      const allCorrect =
-        selectedLines.length === vulnerableLines.length &&
-        selectedLines.every((line) => vulnerableSet.has(line));
+      // Correctness is decided by the server, not the client.
+      const allCorrect = !!data.correct;
       setLastSubmissionCorrect(allCorrect);
-      if (allCorrect) setAlreadySolved(true);
-      else setAlreadySolved(false);
+      setAlreadySolved(allCorrect);
+      // Per-line feedback from the server drives the line highlighting.
+      setLastFeedback(Array.isArray(data.feedback) ? data.feedback : []);
+      // The server reveals the answer key only once the lab is resolved.
+      if (Array.isArray(data.vulnerableLines)) {
+        setRevealed(prev => ({
+          ...prev,
+          [selectedChallenge.id]: {
+            vulnerableLines: data.vulnerableLines,
+            explanations: data.explanations || {},
+          },
+        }));
+      }
       // Update attempts from backend response
       if (typeof data.attemptsUsed === 'number') setAttemptsUsed(data.attemptsUsed);
       if (typeof data.attemptsRemaining === 'number') setAttemptsRemaining(data.attemptsRemaining);
@@ -1023,10 +1030,9 @@ export default function CodeReviewChallenge() {
 
   const getLineStatus = (lineNumber: number) => {
     if (!showResults || !selectedChallenge) return null;
-    const isSelected = selectedLines.includes(lineNumber);
-    const isVulnerable = selectedChallenge.vulnerableLines.includes(lineNumber);
-    if (isSelected && isVulnerable) return "correct";
-    if (isSelected && !isVulnerable) return "incorrect";
+    // Highlight selected lines using the server's per-line feedback.
+    const fb = lastFeedback.find((f) => f.line === lineNumber);
+    if (fb) return fb.status === "correct" ? "correct" : "incorrect";
     return null;
   }
 
@@ -1173,9 +1179,13 @@ export default function CodeReviewChallenge() {
 
   // Challenge view
   const codeLines = selectedChallenge.code.split("\n")
-  const correctAnswers = selectedLines.filter((line) => selectedChallenge.vulnerableLines.includes(line)).length
-  const totalVulnerabilities = selectedChallenge.vulnerableLines.length
-  const incorrectSelections = selectedLines.filter((line) => !selectedChallenge.vulnerableLines.includes(line)).length
+  // Answers are only known after the server reveals them (solved / out of attempts).
+  const revealedAnswer = revealed[selectedChallenge.id];
+  const revealedVuln = revealedAnswer?.vulnerableLines ?? [];
+  const revealedExpl = revealedAnswer?.explanations ?? {};
+  const correctAnswers = selectedLines.filter((line) => revealedVuln.includes(line)).length
+  const totalVulnerabilities = revealedVuln.length
+  const incorrectSelections = selectedLines.filter((line) => !revealedVuln.includes(line)).length
 
   // In the challenge view, add a check for locked
   const isLocked = locks[selectedChallenge.id] !== false;
@@ -1440,10 +1450,10 @@ export default function CodeReviewChallenge() {
 
                     <div className="space-y-3">
                       <div className="space-y-2">
-                        {selectedChallenge.vulnerableLines.map((lineNumber) => (
+                        {revealedVuln.map((lineNumber) => (
                           <div key={lineNumber} className="p-3 bg-red-50 border-l-4 border-red-400 rounded">
                             <p className="font-medium text-red-800">Line {lineNumber}: Vulnerability Found</p>
-                            <p className="text-sm text-red-700">{selectedChallenge.explanations[lineNumber]}</p>
+                            <p className="text-sm text-red-700">{revealedExpl[lineNumber]}</p>
                           </div>
                         ))}
                       </div>

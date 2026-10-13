@@ -10,7 +10,7 @@ export const challenges: Challenge[] = [
       3
     ],
     "hints": [
-      "There is no security bug here—just a Hello World!",
+      "There is no security bug here\u2014just a Hello World!",
       "Use this challenge to learn how the interface works.",
       "Try submitting any answer to see how submissions are handled."
     ],
@@ -76,7 +76,7 @@ export const challenges: Challenge[] = [
     "hints": [
       "Can loopback still be accessed if formatted in a certain way?",
       "Why is ::1 explicitly allowed?",
-      "Notice what addresses are being blocked—and what isn't."
+      "Notice what addresses are being blocked\u2014and what isn't."
     ],
     "explanations": {
       "4": "Blocks IPv4 and localhost but ignores IPv6 attacks (e.g., ::1), letting SSRF to local services through.",
@@ -106,7 +106,7 @@ export const challenges: Challenge[] = [
     ],
     "explanations": {
       "3": "Blacklist approach vulnerable to bypasses",
-      "15": "Replaces hostname with IP but doesn't block internal IPs—enables SSRF after DNS resolution.",
+      "15": "Replaces hostname with IP but doesn't block internal IPs\u2014enables SSRF after DNS resolution.",
       "18": "This lets user input control the final destination after DNS resolution.",
       "21": "Sends server-side request to attacker-controlled URL."
     },
@@ -166,5 +166,115 @@ export const challenges: Challenge[] = [
       "1": "sdsd"
     },
     "maxSelectableLines": 1
+  },
+  {
+    "id": "LAB-BAC-01",
+    "title": "LAB: Order Document Access (Broken Access Control)",
+    "description": "A document is loaded by its own id after the parent order's tenant was already checked. Select the vulnerable line(s), then try the live exploit.",
+    "code": "[Authorization]\n[HttpGet]\n[Route(\"clients/{clientId}/orders/{orderId}/documents/{docId}\")]\npublic IActionResult GetDocument(int clientId, int orderId, int docId)\n{\n    var order = _orderService.GetById(orderId);\n    if (order == null || order.ClientId != clientId)\n        return NotFound();\n\n    var doc = _documentService.GetById(docId);\n    if (doc == null)\n        return NotFound();\n\n    return Ok(doc);\n}",
+    "vulnerableLines": [
+      10
+    ],
+    "difficulty": "intermediate",
+    "hints": [
+      "The order's tenant was checked on line 7. Is docId ever tied back to that order?"
+    ],
+    "explanations": {
+      "10": "The document is loaded by its own id with no check that it belongs to orderId (or that order belongs to clientId). Any authenticated user can read any tenant's document by guessing/incrementing docId. Fix: load with GetByIdForOrder(docId, orderId) so the WHERE clause itself enforces the link, and return 404 (not 403) either way."
+    },
+    "labUrl": "/labs/bac-01",
+    "maxSelectableLines": 1
+  },
+  {
+    "id": "LAB-INJ-01",
+    "title": "LAB: Order Search (SQL Injection)",
+    "description": "The search term is concatenated straight into a WHERE clause, and the tenant filter is appended after it. Select the vulnerable line, then try the live exploit.",
+    "code": "public IEnumerable<Order> SearchOrders(string type, int clientId)\n{\n    string sql = \"SELECT * FROM Orders WHERE Type = '\" + type + \"'\";\n    sql += \" AND ClientId = \" + clientId;\n\n    return _db.CustomQuery<Order>(sql);\n}",
+    "vulnerableLines": [
+      3
+    ],
+    "difficulty": "intermediate",
+    "hints": [
+      "What happens if 'type' contains a single quote and a SQL comment marker?"
+    ],
+    "explanations": {
+      "3": "User input is concatenated directly into the query. A payload like Appraisal' OR '1'='1' -- comments out the rest of the clause, including the ClientId filter on line 4, returning every tenant's orders. Fix: use a parameterized query (SqlParameter / Dapper named params), never string concatenation."
+    },
+    "labUrl": "/labs/inj-01",
+    "maxSelectableLines": 1
+  },
+  {
+    "id": "LAB-INJ-02",
+    "title": "LAB: Engagement Instructions (Stored XSS)",
+    "description": "Instructions written by another party are trusted as HTML with no sanitizer. Select the vulnerable line, then try the live exploit.",
+    "code": "ngOnInit(): void {\n  this.orderService.orderDetails$.subscribe((data) => {\n    this.engagementInstructions = this.sanitizer.bypassSecurityTrustHtml(\n      data.engagementInstructions\n    );\n  });\n}\n// template: <div [innerHTML]=\"engagementInstructions\"></div>",
+    "vulnerableLines": [
+      3
+    ],
+    "difficulty": "intermediate",
+    "hints": [
+      "bypassSecurityTrustHtml does exactly what its name says - bypasses Angular's own XSS protection."
+    ],
+    "explanations": {
+      "3": "bypassSecurityTrustHtml() is called on content written by another party with no sanitizing step first. Anything they write, including <script>/onerror handlers, executes in the viewer's session. Fix: sanitize with DOMPurify before the bypass call (or better, don't bypass at all and let Angular's default [innerHTML] sanitizer handle it)."
+    },
+    "labUrl": "/labs/inj-02",
+    "maxSelectableLines": 1
+  },
+  {
+    "id": "LAB-CRYPTO-01",
+    "title": "LAB: Remember-Me Cookie (Hardcoded Crypto Key)",
+    "description": "A 'remember me' cookie is built from a hardcoded key. Select the vulnerable line, then try forging an admin cookie in the live exploit.",
+    "code": "public static class CookieProtector\n{\n    private static string StaticKey = \"vl-training-demo-key-2026\";\n\n    public static string Encrypt(string username)\n    {\n        string raw = username + \"::\" + StaticKey;\n        return Convert.ToBase64String(Encoding.UTF8.GetBytes(raw));\n    }\n}",
+    "vulnerableLines": [
+      3
+    ],
+    "difficulty": "intermediate",
+    "hints": [
+      "If you can read this source file, you can read StaticKey too. What stops you building your own cookie?"
+    ],
+    "explanations": {
+      "3": "The key used to build every user's cookie is a string literal committed to source. Anyone with read access to the repo can reproduce Encrypt() and forge a cookie for any username, including 'admin'. Fix: never derive an auth token from a value only the source code holds - use a server-issued, random, single-use session token stored server-side, with the key itself in Key Vault, not source."
+    },
+    "labUrl": "/labs/crypto-01",
+    "maxSelectableLines": 1
+  },
+  {
+    "id": "LAB-AUTH-01",
+    "title": "LAB: Token Validity Check (Fails Open)",
+    "description": "A helper decides whether a token is still valid. Select the vulnerable line, then try the live exploit with a malformed token.",
+    "code": "public static bool IsTokenExpired(string token)\n{\n    try\n    {\n        var principal = handler.ValidateToken(token, validationParams, out _);\n        return false;\n    }\n    catch (Exception)\n    {\n        return false;\n    }\n}",
+    "vulnerableLines": [
+      10
+    ],
+    "difficulty": "intermediate",
+    "hints": [
+      "What does this function return if the token is garbage and ValidateToken throws?"
+    ],
+    "explanations": {
+      "10": "If validation throws for any reason (malformed token, bad signature, wrong algorithm), the catch block returns false - meaning 'not expired' - instead of denying the request. A caller sending a broken token gets treated as if they had a valid one. Fix: an exception during validation must deny access (return true from IsTokenExpired, or better, make the caller fail closed on any exception)."
+    },
+    "labUrl": "/labs/auth-01",
+    "maxSelectableLines": 1
+  },
+  {
+    "id": "LAB-CONFIG-01",
+    "title": "LAB: Order Lookup (Error Leak + Open CORS)",
+    "description": "Two misconfigurations in one small handler. Select both vulnerable lines, then try the live exploit.",
+    "code": "app.UseCors(builder => builder\n    .SetIsOriginAllowed(origin => true)\n    .AllowCredentials());\n\n[HttpGet(\"orders/{id}\")]\npublic IActionResult GetOrder(string id)\n{\n    try\n    {\n        int orderId = int.Parse(id);\n        return Ok(_orderService.GetById(orderId));\n    }\n    catch (Exception ex)\n    {\n        return StatusCode(500, ex.Message);\n    }\n}",
+    "vulnerableLines": [
+      2,
+      15
+    ],
+    "difficulty": "intermediate",
+    "hints": [
+      "One line is about who is allowed to call this. The other is about what gets sent back when something goes wrong."
+    ],
+    "explanations": {
+      "2": "SetIsOriginAllowed(origin => true) combined with AllowCredentials() lets ANY website make authenticated requests to this API on a victim's behalf. Fix: use WithOrigins(...) with an explicit allow-list, never reflect-any-origin with credentials.",
+      "15": "The raw exception message is returned to the client. Sending id=abc reveals internal type/parsing details an attacker can use to fingerprint the stack. Fix: log ex internally, return a generic error to the client."
+    },
+    "labUrl": "/labs/config-01",
+    "maxSelectableLines": 2
   }
 ]
