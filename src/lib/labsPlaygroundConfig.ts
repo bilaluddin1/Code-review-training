@@ -37,7 +37,7 @@ export const PLAYGROUNDS: Record<string, PlaygroundConfig> = {
     method: "GET",
     endpoint: "/api/labs/bac-01",
     fields: [{ name: "id", label: "Note ID", type: "number", defaultValue: "101" }],
-    startingHint: "Try changing the Note ID to 102.",
+    startingHint: "Try changing the Note ID.",
   },
   "inj-01": {
     title: "Order Search (SQL Injection)",
@@ -46,7 +46,7 @@ export const PLAYGROUNDS: Record<string, PlaygroundConfig> = {
     method: "GET",
     endpoint: "/api/labs/inj-01",
     fields: [{ name: "type", label: "Order type", type: "text", defaultValue: "Appraisal" }],
-    startingHint: "Try: Appraisal' OR '1'='1' --",
+    startingHint: "Try breaking out of the search value with a SQL comment.",
   },
   "inj-02": {
     title: "Engagement Instructions (Stored XSS)",
@@ -55,7 +55,7 @@ export const PLAYGROUNDS: Record<string, PlaygroundConfig> = {
     method: "POST",
     endpoint: "/api/labs/inj-02",
     fields: [{ name: "html", label: "Instructions (HTML allowed)", type: "textarea", defaultValue: "Please inspect before 5pm." }],
-    startingHint: "Try: <img src=x onerror=\"document.body.innerHTML='<h1 style=color:red>XSS ran</h1>'\">",
+    startingHint: "Try submitting an HTML tag that runs script when the page renders it.",
     preview: true,
   },
   "crypto-01": {
@@ -74,7 +74,7 @@ export const PLAYGROUNDS: Record<string, PlaygroundConfig> = {
     method: "POST",
     endpoint: "/api/labs/auth-01",
     fields: [{ name: "token", label: "Token", type: "textarea", placeholder: "paste a token, or just type garbage" }],
-    startingHint: "First GET this page to fetch a real sample token, then try submitting something malformed instead, like the word 'garbage'.",
+    startingHint: "First GET this page to fetch a real sample token, then try submitting something that isn't a valid token at all.",
   },
   "config-01": {
     title: "Order Lookup (Error Leak + Open CORS)",
@@ -84,6 +84,6 @@ export const PLAYGROUNDS: Record<string, PlaygroundConfig> = {
     endpoint: "/api/labs/config-01",
     fields: [{ name: "id", label: "Order ID", type: "text", defaultValue: "1" }],
     headerFields: [{ name: "x-demo-origin", label: "Pretend caller Origin (X-Demo-Origin header)", placeholder: "https://evil.example" }],
-    startingHint: "Try Order ID = abc to see the error leak, then set a fake Origin and check the response headers below.",
+    startingHint: "Try a non-numeric Order ID to see the error leak, then set a fake Origin and check the response headers below.",
   },
 };

@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { vulnerableOrderLookup } from "@/lib/labsSandbox";
 
+// Explicit rather than relying on Next's implicit "uses searchParams/headers ->
+// dynamic" detection - see /api/leaderboard for the bug caused by trusting that.
+export const dynamic = 'force-dynamic';
+
 // LAB-CONFIG-01 sandbox: two bugs in one endpoint.
 // 1) An unhandled exception's message (and a fake "stack") goes straight to the
 //    client - send id=abc instead of a number.

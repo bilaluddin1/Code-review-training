@@ -12,8 +12,9 @@ import { getSocketUrl } from '@/lib/get-socket-url'
 
 // Feedback questions are fully dynamic now (admin add/remove/reorder via
 // UI, stored server-side) - these are just the shapes the API returns.
-type FeedbackQuestion = { id: string; label: string; followUpLabel: string };
-type AdminFeedbackQuestion = { id: string; label: string; followUpLabel: string; order: number; active: boolean };
+type RatingStyle = "words" | "numbers";
+type FeedbackQuestion = { id: string; label: string; followUpLabel: string; ratingStyle: RatingStyle };
+type AdminFeedbackQuestion = { id: string; label: string; followUpLabel: string; order: number; active: boolean; ratingStyle: RatingStyle };
 
 // Simple avatar generator: pick a random emoji
 const AVATARS = ["🦊", "🐻", "🐼", "🐸", "🐵", "🐶", "🐱", "🦁", "🐯", "🐨", "🐰", "🦄", "🐙", "🐧", "🐢", "🐦", "🐝", "🐬", "🦋", "🐞"];
@@ -172,7 +173,7 @@ const EMPTY_FEEDBACK_VALUES: FeedbackValues = { answers: {}, comments: "" };
 // 1-5 under the hood (storage, averages, CSV), but devs pick a word, not a digit.
 const RATING_LABELS: Record<number, string> = { 1: "Poor", 2: "Fair", 3: "Neutral", 4: "Good", 5: "Excellent" };
 
-function RatingRow({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
+function RatingRow({ label, value, onChange, ratingStyle = "words" }: { label: string; value: number; onChange: (v: number) => void; ratingStyle?: RatingStyle }) {
   return (
     <div className="w-full">
       <div className="text-sm font-medium mb-1">{label}</div>
@@ -184,7 +185,7 @@ function RatingRow({ label, value, onChange }: { label: string; value: number; o
             onClick={() => onChange(n)}
             className={`px-3 h-9 rounded-full border text-sm font-semibold transition-colors ${value === n ? "bg-blue-600 text-white border-blue-600" : "bg-white text-gray-600 border-gray-300 hover:border-blue-400"}`}
           >
-            {RATING_LABELS[n]}
+            {ratingStyle === "numbers" ? n : RATING_LABELS[n]}
           </button>
         ))}
       </div>
@@ -238,13 +239,12 @@ function FeedbackModal({ open, onSubmit, onClose, currentTeam, questions }: { op
         ) : (
           <>
             <h2 className="text-xl font-bold">Session Feedback</h2>
-            <p className="text-gray-600 text-sm -mt-2">Rate 1 (poor) to 5 (excellent), and tell us why - that's the part that actually helps.</p>
             {currentTeam && (
               <p className="text-xs text-gray-500 -mt-2">Submitting for team: <span className="font-semibold">{currentTeam}</span></p>
             )}
             {questions.map((q) => (
               <div key={q.id} className="border-b pb-3 last:border-b-0">
-                <RatingRow label={q.label} value={values.answers[q.id]?.rating ?? 0} onChange={(v) => setRating(q.id, v)} />
+                <RatingRow label={q.label} value={values.answers[q.id]?.rating ?? 0} onChange={(v) => setRating(q.id, v)} ratingStyle={q.ratingStyle} />
                 <Textarea
                   className="mt-2"
                   placeholder={q.followUpLabel}
@@ -554,7 +554,7 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
     setQuestionsSaving(false);
   };
 
-  const updateQuestion = async (id: string, data: { label?: string; followUpLabel?: string; active?: boolean; order?: number }) => {
+  const updateQuestion = async (id: string, data: { label?: string; followUpLabel?: string; active?: boolean; order?: number; ratingStyle?: RatingStyle }) => {
     const res = await fetch(`/api/admin/feedback-questions/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -952,6 +952,15 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
                             onBlur={(e) => e.target.value.trim() && e.target.value !== q.followUpLabel && updateQuestion(q.id, { followUpLabel: e.target.value.trim() })}
                           />
                         </div>
+                        <select
+                          className="border rounded px-2 py-1 text-xs"
+                          value={q.ratingStyle}
+                          onChange={(e) => updateQuestion(q.id, { ratingStyle: e.target.value as RatingStyle })}
+                          title="How the 1-5 rating buttons are labeled for this question"
+                        >
+                          <option value="words">Poor..Excellent</option>
+                          <option value="numbers">1..5</option>
+                        </select>
                         <Button size="sm" variant="outline" onClick={() => updateQuestion(q.id, { active: !q.active })}>
                           {q.active ? 'Deactivate' : 'Activate'}
                         </Button>

@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { NOTES } from "@/lib/labsSandbox";
 
+// Explicit rather than relying on Next's implicit "uses searchParams -> dynamic"
+// detection - see /api/leaderboard for the bug caused by trusting that.
+export const dynamic = 'force-dynamic';
+
 // LAB-BAC-01 sandbox: "you are alice (note id 101)". No ownership check on read -
 // changing the id to 102 reads bob's note. Synthetic data only.
 export async function GET(req: NextRequest) {

@@ -11,29 +11,36 @@
 // it, is what actually surfaces usable, critical feedback - and cutting
 // down to a handful of real dimensions (instead of ~13 overlapping ones)
 // means people don't skim through near-duplicate questions to get there.
-export const DEFAULT_FEEDBACK_QUESTIONS: { label: string; followUpLabel: string }[] = [
+export const DEFAULT_FEEDBACK_QUESTIONS: { label: string; followUpLabel: string; ratingStyle: "words" | "numbers" }[] = [
   {
     label: "Overall, how was this session?",
     followUpLabel: "What worked well, and what should we change next time?",
+    ratingStyle: "words",
   },
   {
     label: "Was this relevant to your role, and will it help you build more securely?",
     followUpLabel: "What was relevant, what wasn't, and what should we add?",
+    ratingStyle: "words",
   },
   {
     label: "Did you find the session engaging (delivery, interactivity, Q&A)?",
     followUpLabel: "Any parts you liked, or suggestions for how we run it?",
+    ratingStyle: "words",
   },
   {
     label: "Were the materials and real-world examples clear and useful?",
     followUpLabel: "What worked, what didn't, what should we add or cut?",
+    ratingStyle: "words",
   },
   {
     label: "Do you feel more confident spotting and fixing this yourself now?",
     followUpLabel: "What's one thing you still feel unsure about?",
+    ratingStyle: "words",
   },
   {
+    // NPS-style - a number (1-5) reads naturally here; "Poor..Excellent" doesn't.
     label: "Would you recommend this training to a peer?",
     followUpLabel: "What's the main reason for your answer?",
+    ratingStyle: "numbers",
   },
 ];

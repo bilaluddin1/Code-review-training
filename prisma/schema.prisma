@@ -105,6 +105,9 @@ model FeedbackQuestion {
   followUpLabel String
   order         Int
   active        Boolean  @default(true)
+  // "words" (Poor..Excellent) or "numbers" (plain 1-5) - e.g. an NPS-style
+  // "would you recommend this" question reads better as a number.
+  ratingStyle   String   @default("words")
   createdAt     DateTime @default(now())
 }
 

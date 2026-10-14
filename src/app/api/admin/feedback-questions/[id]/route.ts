@@ -2,14 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { isAdminSession } from "@/lib/isAdminSession";
 import { prisma } from "@/lib/prisma";
 
-// PATCH /api/admin/feedback-questions/[id] { label?, followUpLabel?, active?, order? }
+// PATCH /api/admin/feedback-questions/[id] { label?, followUpLabel?, active?, order?, ratingStyle? }
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   if (!(await isAdminSession(req))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const { id } = await params;
   const body = await req.json().catch(() => ({}));
-  const data: { label?: string; followUpLabel?: string; active?: boolean; order?: number } = {};
+  const data: { label?: string; followUpLabel?: string; active?: boolean; order?: number; ratingStyle?: string } = {};
   if (body.label !== undefined) {
     if (typeof body.label !== "string" || !body.label.trim()) {
       return NextResponse.json({ error: "label must be a non-empty string" }, { status: 400 });
@@ -33,6 +33,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       return NextResponse.json({ error: "order must be a number" }, { status: 400 });
     }
     data.order = body.order;
+  }
+  if (body.ratingStyle !== undefined) {
+    if (body.ratingStyle !== "words" && body.ratingStyle !== "numbers") {
+      return NextResponse.json({ error: "ratingStyle must be 'words' or 'numbers'" }, { status: 400 });
+    }
+    data.ratingStyle = body.ratingStyle;
   }
   if (Object.keys(data).length === 0) {
     return NextResponse.json({ error: "Nothing to update" }, { status: 400 });
