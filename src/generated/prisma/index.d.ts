@@ -7767,6 +7767,8 @@ export namespace Prisma {
     questionId: string | null
     labelSnapshot: string | null
     rating: number | null
+    followUpLabelSnapshot: string | null
+    followUpText: string | null
   }
 
   export type FeedbackAnswerMaxAggregateOutputType = {
@@ -7775,6 +7777,8 @@ export namespace Prisma {
     questionId: string | null
     labelSnapshot: string | null
     rating: number | null
+    followUpLabelSnapshot: string | null
+    followUpText: string | null
   }
 
   export type FeedbackAnswerCountAggregateOutputType = {
@@ -7783,6 +7787,8 @@ export namespace Prisma {
     questionId: number
     labelSnapshot: number
     rating: number
+    followUpLabelSnapshot: number
+    followUpText: number
     _all: number
   }
 
@@ -7801,6 +7807,8 @@ export namespace Prisma {
     questionId?: true
     labelSnapshot?: true
     rating?: true
+    followUpLabelSnapshot?: true
+    followUpText?: true
   }
 
   export type FeedbackAnswerMaxAggregateInputType = {
@@ -7809,6 +7817,8 @@ export namespace Prisma {
     questionId?: true
     labelSnapshot?: true
     rating?: true
+    followUpLabelSnapshot?: true
+    followUpText?: true
   }
 
   export type FeedbackAnswerCountAggregateInputType = {
@@ -7817,6 +7827,8 @@ export namespace Prisma {
     questionId?: true
     labelSnapshot?: true
     rating?: true
+    followUpLabelSnapshot?: true
+    followUpText?: true
     _all?: true
   }
 
@@ -7912,6 +7924,8 @@ export namespace Prisma {
     questionId: string
     labelSnapshot: string
     rating: number
+    followUpLabelSnapshot: string
+    followUpText: string
     _count: FeedbackAnswerCountAggregateOutputType | null
     _avg: FeedbackAnswerAvgAggregateOutputType | null
     _sum: FeedbackAnswerSumAggregateOutputType | null
@@ -7939,6 +7953,8 @@ export namespace Prisma {
     questionId?: boolean
     labelSnapshot?: boolean
     rating?: boolean
+    followUpLabelSnapshot?: boolean
+    followUpText?: boolean
     response?: boolean | FeedbackResponseDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["feedbackAnswer"]>
 
@@ -7948,6 +7964,8 @@ export namespace Prisma {
     questionId?: boolean
     labelSnapshot?: boolean
     rating?: boolean
+    followUpLabelSnapshot?: boolean
+    followUpText?: boolean
     response?: boolean | FeedbackResponseDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["feedbackAnswer"]>
 
@@ -7957,6 +7975,8 @@ export namespace Prisma {
     questionId?: boolean
     labelSnapshot?: boolean
     rating?: boolean
+    followUpLabelSnapshot?: boolean
+    followUpText?: boolean
     response?: boolean | FeedbackResponseDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["feedbackAnswer"]>
 
@@ -7966,9 +7986,11 @@ export namespace Prisma {
     questionId?: boolean
     labelSnapshot?: boolean
     rating?: boolean
+    followUpLabelSnapshot?: boolean
+    followUpText?: boolean
   }
 
-  export type FeedbackAnswerOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "responseId" | "questionId" | "labelSnapshot" | "rating", ExtArgs["result"]["feedbackAnswer"]>
+  export type FeedbackAnswerOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "responseId" | "questionId" | "labelSnapshot" | "rating" | "followUpLabelSnapshot" | "followUpText", ExtArgs["result"]["feedbackAnswer"]>
   export type FeedbackAnswerInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     response?: boolean | FeedbackResponseDefaultArgs<ExtArgs>
   }
@@ -7990,6 +8012,8 @@ export namespace Prisma {
       questionId: string
       labelSnapshot: string
       rating: number
+      followUpLabelSnapshot: string
+      followUpText: string
     }, ExtArgs["result"]["feedbackAnswer"]>
     composites: {}
   }
@@ -8419,6 +8443,8 @@ export namespace Prisma {
     readonly questionId: FieldRef<"FeedbackAnswer", 'String'>
     readonly labelSnapshot: FieldRef<"FeedbackAnswer", 'String'>
     readonly rating: FieldRef<"FeedbackAnswer", 'Int'>
+    readonly followUpLabelSnapshot: FieldRef<"FeedbackAnswer", 'String'>
+    readonly followUpText: FieldRef<"FeedbackAnswer", 'String'>
   }
     
 
@@ -8854,6 +8880,7 @@ export namespace Prisma {
   export type FeedbackQuestionMinAggregateOutputType = {
     id: string | null
     label: string | null
+    followUpLabel: string | null
     order: number | null
     active: boolean | null
     createdAt: Date | null
@@ -8862,6 +8889,7 @@ export namespace Prisma {
   export type FeedbackQuestionMaxAggregateOutputType = {
     id: string | null
     label: string | null
+    followUpLabel: string | null
     order: number | null
     active: boolean | null
     createdAt: Date | null
@@ -8870,6 +8898,7 @@ export namespace Prisma {
   export type FeedbackQuestionCountAggregateOutputType = {
     id: number
     label: number
+    followUpLabel: number
     order: number
     active: number
     createdAt: number
@@ -8888,6 +8917,7 @@ export namespace Prisma {
   export type FeedbackQuestionMinAggregateInputType = {
     id?: true
     label?: true
+    followUpLabel?: true
     order?: true
     active?: true
     createdAt?: true
@@ -8896,6 +8926,7 @@ export namespace Prisma {
   export type FeedbackQuestionMaxAggregateInputType = {
     id?: true
     label?: true
+    followUpLabel?: true
     order?: true
     active?: true
     createdAt?: true
@@ -8904,6 +8935,7 @@ export namespace Prisma {
   export type FeedbackQuestionCountAggregateInputType = {
     id?: true
     label?: true
+    followUpLabel?: true
     order?: true
     active?: true
     createdAt?: true
@@ -8999,6 +9031,7 @@ export namespace Prisma {
   export type FeedbackQuestionGroupByOutputType = {
     id: string
     label: string
+    followUpLabel: string
     order: number
     active: boolean
     createdAt: Date
@@ -9026,6 +9059,7 @@ export namespace Prisma {
   export type FeedbackQuestionSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     label?: boolean
+    followUpLabel?: boolean
     order?: boolean
     active?: boolean
     createdAt?: boolean
@@ -9034,6 +9068,7 @@ export namespace Prisma {
   export type FeedbackQuestionSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     label?: boolean
+    followUpLabel?: boolean
     order?: boolean
     active?: boolean
     createdAt?: boolean
@@ -9042,6 +9077,7 @@ export namespace Prisma {
   export type FeedbackQuestionSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     label?: boolean
+    followUpLabel?: boolean
     order?: boolean
     active?: boolean
     createdAt?: boolean
@@ -9050,12 +9086,13 @@ export namespace Prisma {
   export type FeedbackQuestionSelectScalar = {
     id?: boolean
     label?: boolean
+    followUpLabel?: boolean
     order?: boolean
     active?: boolean
     createdAt?: boolean
   }
 
-  export type FeedbackQuestionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "label" | "order" | "active" | "createdAt", ExtArgs["result"]["feedbackQuestion"]>
+  export type FeedbackQuestionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "label" | "followUpLabel" | "order" | "active" | "createdAt", ExtArgs["result"]["feedbackQuestion"]>
 
   export type $FeedbackQuestionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "FeedbackQuestion"
@@ -9063,6 +9100,7 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       label: string
+      followUpLabel: string
       order: number
       active: boolean
       createdAt: Date
@@ -9491,6 +9529,7 @@ export namespace Prisma {
   interface FeedbackQuestionFieldRefs {
     readonly id: FieldRef<"FeedbackQuestion", 'String'>
     readonly label: FieldRef<"FeedbackQuestion", 'String'>
+    readonly followUpLabel: FieldRef<"FeedbackQuestion", 'String'>
     readonly order: FieldRef<"FeedbackQuestion", 'Int'>
     readonly active: FieldRef<"FeedbackQuestion", 'Boolean'>
     readonly createdAt: FieldRef<"FeedbackQuestion", 'DateTime'>
@@ -10942,7 +10981,9 @@ export namespace Prisma {
     responseId: 'responseId',
     questionId: 'questionId',
     labelSnapshot: 'labelSnapshot',
-    rating: 'rating'
+    rating: 'rating',
+    followUpLabelSnapshot: 'followUpLabelSnapshot',
+    followUpText: 'followUpText'
   };
 
   export type FeedbackAnswerScalarFieldEnum = (typeof FeedbackAnswerScalarFieldEnum)[keyof typeof FeedbackAnswerScalarFieldEnum]
@@ -10951,6 +10992,7 @@ export namespace Prisma {
   export const FeedbackQuestionScalarFieldEnum: {
     id: 'id',
     label: 'label',
+    followUpLabel: 'followUpLabel',
     order: 'order',
     active: 'active',
     createdAt: 'createdAt'
@@ -11360,6 +11402,8 @@ export namespace Prisma {
     questionId?: StringFilter<"FeedbackAnswer"> | string
     labelSnapshot?: StringFilter<"FeedbackAnswer"> | string
     rating?: IntFilter<"FeedbackAnswer"> | number
+    followUpLabelSnapshot?: StringFilter<"FeedbackAnswer"> | string
+    followUpText?: StringFilter<"FeedbackAnswer"> | string
     response?: XOR<FeedbackResponseScalarRelationFilter, FeedbackResponseWhereInput>
   }
 
@@ -11369,6 +11413,8 @@ export namespace Prisma {
     questionId?: SortOrder
     labelSnapshot?: SortOrder
     rating?: SortOrder
+    followUpLabelSnapshot?: SortOrder
+    followUpText?: SortOrder
     response?: FeedbackResponseOrderByWithRelationInput
   }
 
@@ -11381,6 +11427,8 @@ export namespace Prisma {
     questionId?: StringFilter<"FeedbackAnswer"> | string
     labelSnapshot?: StringFilter<"FeedbackAnswer"> | string
     rating?: IntFilter<"FeedbackAnswer"> | number
+    followUpLabelSnapshot?: StringFilter<"FeedbackAnswer"> | string
+    followUpText?: StringFilter<"FeedbackAnswer"> | string
     response?: XOR<FeedbackResponseScalarRelationFilter, FeedbackResponseWhereInput>
   }, "id">
 
@@ -11390,6 +11438,8 @@ export namespace Prisma {
     questionId?: SortOrder
     labelSnapshot?: SortOrder
     rating?: SortOrder
+    followUpLabelSnapshot?: SortOrder
+    followUpText?: SortOrder
     _count?: FeedbackAnswerCountOrderByAggregateInput
     _avg?: FeedbackAnswerAvgOrderByAggregateInput
     _max?: FeedbackAnswerMaxOrderByAggregateInput
@@ -11406,6 +11456,8 @@ export namespace Prisma {
     questionId?: StringWithAggregatesFilter<"FeedbackAnswer"> | string
     labelSnapshot?: StringWithAggregatesFilter<"FeedbackAnswer"> | string
     rating?: IntWithAggregatesFilter<"FeedbackAnswer"> | number
+    followUpLabelSnapshot?: StringWithAggregatesFilter<"FeedbackAnswer"> | string
+    followUpText?: StringWithAggregatesFilter<"FeedbackAnswer"> | string
   }
 
   export type FeedbackQuestionWhereInput = {
@@ -11414,6 +11466,7 @@ export namespace Prisma {
     NOT?: FeedbackQuestionWhereInput | FeedbackQuestionWhereInput[]
     id?: StringFilter<"FeedbackQuestion"> | string
     label?: StringFilter<"FeedbackQuestion"> | string
+    followUpLabel?: StringFilter<"FeedbackQuestion"> | string
     order?: IntFilter<"FeedbackQuestion"> | number
     active?: BoolFilter<"FeedbackQuestion"> | boolean
     createdAt?: DateTimeFilter<"FeedbackQuestion"> | Date | string
@@ -11422,6 +11475,7 @@ export namespace Prisma {
   export type FeedbackQuestionOrderByWithRelationInput = {
     id?: SortOrder
     label?: SortOrder
+    followUpLabel?: SortOrder
     order?: SortOrder
     active?: SortOrder
     createdAt?: SortOrder
@@ -11433,6 +11487,7 @@ export namespace Prisma {
     OR?: FeedbackQuestionWhereInput[]
     NOT?: FeedbackQuestionWhereInput | FeedbackQuestionWhereInput[]
     label?: StringFilter<"FeedbackQuestion"> | string
+    followUpLabel?: StringFilter<"FeedbackQuestion"> | string
     order?: IntFilter<"FeedbackQuestion"> | number
     active?: BoolFilter<"FeedbackQuestion"> | boolean
     createdAt?: DateTimeFilter<"FeedbackQuestion"> | Date | string
@@ -11441,6 +11496,7 @@ export namespace Prisma {
   export type FeedbackQuestionOrderByWithAggregationInput = {
     id?: SortOrder
     label?: SortOrder
+    followUpLabel?: SortOrder
     order?: SortOrder
     active?: SortOrder
     createdAt?: SortOrder
@@ -11457,6 +11513,7 @@ export namespace Prisma {
     NOT?: FeedbackQuestionScalarWhereWithAggregatesInput | FeedbackQuestionScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"FeedbackQuestion"> | string
     label?: StringWithAggregatesFilter<"FeedbackQuestion"> | string
+    followUpLabel?: StringWithAggregatesFilter<"FeedbackQuestion"> | string
     order?: IntWithAggregatesFilter<"FeedbackQuestion"> | number
     active?: BoolWithAggregatesFilter<"FeedbackQuestion"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"FeedbackQuestion"> | Date | string
@@ -11858,6 +11915,8 @@ export namespace Prisma {
     questionId: string
     labelSnapshot: string
     rating: number
+    followUpLabelSnapshot: string
+    followUpText: string
     response: FeedbackResponseCreateNestedOneWithoutAnswersInput
   }
 
@@ -11867,6 +11926,8 @@ export namespace Prisma {
     questionId: string
     labelSnapshot: string
     rating: number
+    followUpLabelSnapshot: string
+    followUpText: string
   }
 
   export type FeedbackAnswerUpdateInput = {
@@ -11874,6 +11935,8 @@ export namespace Prisma {
     questionId?: StringFieldUpdateOperationsInput | string
     labelSnapshot?: StringFieldUpdateOperationsInput | string
     rating?: IntFieldUpdateOperationsInput | number
+    followUpLabelSnapshot?: StringFieldUpdateOperationsInput | string
+    followUpText?: StringFieldUpdateOperationsInput | string
     response?: FeedbackResponseUpdateOneRequiredWithoutAnswersNestedInput
   }
 
@@ -11883,6 +11946,8 @@ export namespace Prisma {
     questionId?: StringFieldUpdateOperationsInput | string
     labelSnapshot?: StringFieldUpdateOperationsInput | string
     rating?: IntFieldUpdateOperationsInput | number
+    followUpLabelSnapshot?: StringFieldUpdateOperationsInput | string
+    followUpText?: StringFieldUpdateOperationsInput | string
   }
 
   export type FeedbackAnswerCreateManyInput = {
@@ -11891,6 +11956,8 @@ export namespace Prisma {
     questionId: string
     labelSnapshot: string
     rating: number
+    followUpLabelSnapshot: string
+    followUpText: string
   }
 
   export type FeedbackAnswerUpdateManyMutationInput = {
@@ -11898,6 +11965,8 @@ export namespace Prisma {
     questionId?: StringFieldUpdateOperationsInput | string
     labelSnapshot?: StringFieldUpdateOperationsInput | string
     rating?: IntFieldUpdateOperationsInput | number
+    followUpLabelSnapshot?: StringFieldUpdateOperationsInput | string
+    followUpText?: StringFieldUpdateOperationsInput | string
   }
 
   export type FeedbackAnswerUncheckedUpdateManyInput = {
@@ -11906,11 +11975,14 @@ export namespace Prisma {
     questionId?: StringFieldUpdateOperationsInput | string
     labelSnapshot?: StringFieldUpdateOperationsInput | string
     rating?: IntFieldUpdateOperationsInput | number
+    followUpLabelSnapshot?: StringFieldUpdateOperationsInput | string
+    followUpText?: StringFieldUpdateOperationsInput | string
   }
 
   export type FeedbackQuestionCreateInput = {
     id?: string
     label: string
+    followUpLabel: string
     order: number
     active?: boolean
     createdAt?: Date | string
@@ -11919,6 +11991,7 @@ export namespace Prisma {
   export type FeedbackQuestionUncheckedCreateInput = {
     id?: string
     label: string
+    followUpLabel: string
     order: number
     active?: boolean
     createdAt?: Date | string
@@ -11927,6 +12000,7 @@ export namespace Prisma {
   export type FeedbackQuestionUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     label?: StringFieldUpdateOperationsInput | string
+    followUpLabel?: StringFieldUpdateOperationsInput | string
     order?: IntFieldUpdateOperationsInput | number
     active?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -11935,6 +12009,7 @@ export namespace Prisma {
   export type FeedbackQuestionUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     label?: StringFieldUpdateOperationsInput | string
+    followUpLabel?: StringFieldUpdateOperationsInput | string
     order?: IntFieldUpdateOperationsInput | number
     active?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -11943,6 +12018,7 @@ export namespace Prisma {
   export type FeedbackQuestionCreateManyInput = {
     id?: string
     label: string
+    followUpLabel: string
     order: number
     active?: boolean
     createdAt?: Date | string
@@ -11951,6 +12027,7 @@ export namespace Prisma {
   export type FeedbackQuestionUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     label?: StringFieldUpdateOperationsInput | string
+    followUpLabel?: StringFieldUpdateOperationsInput | string
     order?: IntFieldUpdateOperationsInput | number
     active?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -11959,6 +12036,7 @@ export namespace Prisma {
   export type FeedbackQuestionUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     label?: StringFieldUpdateOperationsInput | string
+    followUpLabel?: StringFieldUpdateOperationsInput | string
     order?: IntFieldUpdateOperationsInput | number
     active?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -12322,6 +12400,8 @@ export namespace Prisma {
     questionId?: SortOrder
     labelSnapshot?: SortOrder
     rating?: SortOrder
+    followUpLabelSnapshot?: SortOrder
+    followUpText?: SortOrder
   }
 
   export type FeedbackAnswerAvgOrderByAggregateInput = {
@@ -12334,6 +12414,8 @@ export namespace Prisma {
     questionId?: SortOrder
     labelSnapshot?: SortOrder
     rating?: SortOrder
+    followUpLabelSnapshot?: SortOrder
+    followUpText?: SortOrder
   }
 
   export type FeedbackAnswerMinOrderByAggregateInput = {
@@ -12342,6 +12424,8 @@ export namespace Prisma {
     questionId?: SortOrder
     labelSnapshot?: SortOrder
     rating?: SortOrder
+    followUpLabelSnapshot?: SortOrder
+    followUpText?: SortOrder
   }
 
   export type FeedbackAnswerSumOrderByAggregateInput = {
@@ -12351,6 +12435,7 @@ export namespace Prisma {
   export type FeedbackQuestionCountOrderByAggregateInput = {
     id?: SortOrder
     label?: SortOrder
+    followUpLabel?: SortOrder
     order?: SortOrder
     active?: SortOrder
     createdAt?: SortOrder
@@ -12363,6 +12448,7 @@ export namespace Prisma {
   export type FeedbackQuestionMaxOrderByAggregateInput = {
     id?: SortOrder
     label?: SortOrder
+    followUpLabel?: SortOrder
     order?: SortOrder
     active?: SortOrder
     createdAt?: SortOrder
@@ -12371,6 +12457,7 @@ export namespace Prisma {
   export type FeedbackQuestionMinOrderByAggregateInput = {
     id?: SortOrder
     label?: SortOrder
+    followUpLabel?: SortOrder
     order?: SortOrder
     active?: SortOrder
     createdAt?: SortOrder
@@ -12640,6 +12727,8 @@ export namespace Prisma {
     questionId: string
     labelSnapshot: string
     rating: number
+    followUpLabelSnapshot: string
+    followUpText: string
   }
 
   export type FeedbackAnswerUncheckedCreateWithoutResponseInput = {
@@ -12647,6 +12736,8 @@ export namespace Prisma {
     questionId: string
     labelSnapshot: string
     rating: number
+    followUpLabelSnapshot: string
+    followUpText: string
   }
 
   export type FeedbackAnswerCreateOrConnectWithoutResponseInput = {
@@ -12683,6 +12774,8 @@ export namespace Prisma {
     questionId?: StringFilter<"FeedbackAnswer"> | string
     labelSnapshot?: StringFilter<"FeedbackAnswer"> | string
     rating?: IntFilter<"FeedbackAnswer"> | number
+    followUpLabelSnapshot?: StringFilter<"FeedbackAnswer"> | string
+    followUpText?: StringFilter<"FeedbackAnswer"> | string
   }
 
   export type FeedbackResponseCreateWithoutAnswersInput = {
@@ -12738,6 +12831,8 @@ export namespace Prisma {
     questionId: string
     labelSnapshot: string
     rating: number
+    followUpLabelSnapshot: string
+    followUpText: string
   }
 
   export type FeedbackAnswerUpdateWithoutResponseInput = {
@@ -12745,6 +12840,8 @@ export namespace Prisma {
     questionId?: StringFieldUpdateOperationsInput | string
     labelSnapshot?: StringFieldUpdateOperationsInput | string
     rating?: IntFieldUpdateOperationsInput | number
+    followUpLabelSnapshot?: StringFieldUpdateOperationsInput | string
+    followUpText?: StringFieldUpdateOperationsInput | string
   }
 
   export type FeedbackAnswerUncheckedUpdateWithoutResponseInput = {
@@ -12752,6 +12849,8 @@ export namespace Prisma {
     questionId?: StringFieldUpdateOperationsInput | string
     labelSnapshot?: StringFieldUpdateOperationsInput | string
     rating?: IntFieldUpdateOperationsInput | number
+    followUpLabelSnapshot?: StringFieldUpdateOperationsInput | string
+    followUpText?: StringFieldUpdateOperationsInput | string
   }
 
   export type FeedbackAnswerUncheckedUpdateManyWithoutResponseInput = {
@@ -12759,6 +12858,8 @@ export namespace Prisma {
     questionId?: StringFieldUpdateOperationsInput | string
     labelSnapshot?: StringFieldUpdateOperationsInput | string
     rating?: IntFieldUpdateOperationsInput | number
+    followUpLabelSnapshot?: StringFieldUpdateOperationsInput | string
+    followUpText?: StringFieldUpdateOperationsInput | string
   }
 
 

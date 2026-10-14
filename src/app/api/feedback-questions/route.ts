@@ -5,5 +5,5 @@ import { getActiveFeedbackQuestions } from "@/lib/effectiveFeedbackQuestions";
 // (id + wording + order) - fully admin-controlled, no hardcoded list.
 export async function GET() {
   const questions = await getActiveFeedbackQuestions();
-  return NextResponse.json({ questions: questions.map((q) => ({ id: q.id, label: q.label })) });
+  return NextResponse.json({ questions: questions.map((q) => ({ id: q.id, label: q.label, followUpLabel: q.followUpLabel })) });
 }

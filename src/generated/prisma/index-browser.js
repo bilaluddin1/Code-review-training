@@ -171,12 +171,15 @@ exports.Prisma.FeedbackAnswerScalarFieldEnum = {
   responseId: 'responseId',
   questionId: 'questionId',
   labelSnapshot: 'labelSnapshot',
-  rating: 'rating'
+  rating: 'rating',
+  followUpLabelSnapshot: 'followUpLabelSnapshot',
+  followUpText: 'followUpText'
 };
 
 exports.Prisma.FeedbackQuestionScalarFieldEnum = {
   id: 'id',
   label: 'label',
+  followUpLabel: 'followUpLabel',
   order: 'order',
   active: 'active',
   createdAt: 'createdAt'

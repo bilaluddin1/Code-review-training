@@ -73,17 +73,23 @@ model FeedbackResponse {
   answers   FeedbackAnswer[]
 }
 
-// One rating for one question on one response. questionId points at the
-// question that existed when this was answered; labelSnapshot freezes that
-// question's wording at that moment, so historical reports and CSV exports
-// stay meaningful even after a question is later reworded or deleted.
+// One answer to one question on one response: a 1-5 rating PLUS its own
+// required open-text follow-up (e.g. "what should we change next time?"),
+// so a low rating always comes with an explanation instead of landing in
+// one generic catch-all comment box. questionId points at the question
+// that existed when this was answered; labelSnapshot/followUpLabelSnapshot
+// freeze that question's wording at that moment, so historical reports and
+// CSV exports stay meaningful even after a question is later reworded or
+// deleted.
 model FeedbackAnswer {
-  id            String           @id @default(uuid())
-  response      FeedbackResponse @relation(fields: [responseId], references: [id])
-  responseId    String
-  questionId    String
-  labelSnapshot String
-  rating        Int // 1-5
+  id                    String           @id @default(uuid())
+  response              FeedbackResponse @relation(fields: [responseId], references: [id])
+  responseId            String
+  questionId            String
+  labelSnapshot         String
+  rating                Int // 1-5
+  followUpLabelSnapshot String
+  followUpText          String // required - see schema comment above
 
   @@index([responseId])
   @@index([questionId])
@@ -91,13 +97,15 @@ model FeedbackAnswer {
 
 // The live, admin-editable list of feedback questions. Order and active
 // state control what the form asks right now; existing FeedbackAnswer rows
-// are untouched by edits here (they keep their own labelSnapshot).
+// are untouched by edits here (they keep their own label/followUp snapshots).
+// Each question pairs a rating with its own open-text follow-up.
 model FeedbackQuestion {
-  id        String   @id @default(uuid())
-  label     String
-  order     Int
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now())
+  id            String   @id @default(uuid())
+  label         String
+  followUpLabel String
+  order         Int
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
 }
 
 // Single-row session settings:

@@ -10,7 +10,7 @@ export async function getActiveFeedbackQuestions() {
   const count = await prisma.feedbackQuestion.count();
   if (count === 0) {
     await prisma.feedbackQuestion.createMany({
-      data: DEFAULT_FEEDBACK_QUESTIONS.map((label, i) => ({ label, order: i, active: true })),
+      data: DEFAULT_FEEDBACK_QUESTIONS.map((q, i) => ({ label: q.label, followUpLabel: q.followUpLabel, order: i, active: true })),
     });
   }
   return prisma.feedbackQuestion.findMany({ where: { active: true }, orderBy: { order: "asc" } });

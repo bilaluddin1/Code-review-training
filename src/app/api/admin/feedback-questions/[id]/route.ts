@@ -4,19 +4,25 @@ import { isAdminSession } from "@/lib/isAdminSession";
 
 const prisma = new PrismaClient();
 
-// PATCH /api/admin/feedback-questions/[id] { label?, active?, order? }
+// PATCH /api/admin/feedback-questions/[id] { label?, followUpLabel?, active?, order? }
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   if (!(await isAdminSession(req))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const { id } = await params;
   const body = await req.json().catch(() => ({}));
-  const data: { label?: string; active?: boolean; order?: number } = {};
+  const data: { label?: string; followUpLabel?: string; active?: boolean; order?: number } = {};
   if (body.label !== undefined) {
     if (typeof body.label !== "string" || !body.label.trim()) {
       return NextResponse.json({ error: "label must be a non-empty string" }, { status: 400 });
     }
     data.label = body.label.trim();
+  }
+  if (body.followUpLabel !== undefined) {
+    if (typeof body.followUpLabel !== "string" || !body.followUpLabel.trim()) {
+      return NextResponse.json({ error: "followUpLabel must be a non-empty string" }, { status: 400 });
+    }
+    data.followUpLabel = body.followUpLabel.trim();
   }
   if (body.active !== undefined) {
     if (typeof body.active !== "boolean") {

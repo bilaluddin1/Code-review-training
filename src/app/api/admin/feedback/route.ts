@@ -4,13 +4,14 @@ import { isAdminSession } from "@/lib/isAdminSession";
 
 const prisma = new PrismaClient();
 
-// GET /api/admin/feedback - every response with its answers, most recent
-// first, plus per-question averages. Entirely driven by what's actually in
-// FeedbackAnswer (via each answer's own labelSnapshot) - never depends on
-// the live FeedbackQuestion list, so renaming or deactivating a question
-// never changes historical reports. Columns are ordered using the live
-// question order when available (a deleted question can't happen while it
-// has answers - see the DELETE guard), so the CSV reads naturally.
+// GET /api/admin/feedback - every response with its answers (rating +
+// follow-up text), most recent first, plus per-question averages. Entirely
+// driven by what's actually in FeedbackAnswer (via each answer's own
+// label/followUp snapshots) - never depends on the live FeedbackQuestion
+// list, so renaming or deactivating a question never changes historical
+// reports. Columns are ordered using the live question order when
+// available (a question can't be deleted while it has answers - see the
+// DELETE guard), so the CSV reads naturally.
 export async function GET(req: NextRequest) {
   if (!(await isAdminSession(req))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -24,7 +25,7 @@ export async function GET(req: NextRequest) {
   ]);
 
   const liveOrder = new Map(liveQuestions.map((q, i) => [q.id, i]));
-  const seen = new Map<string, { questionId: string; label: string; firstSeenOrder: number }>();
+  const seen = new Map<string, { questionId: string; label: string; followUpLabel: string; firstSeenOrder: number }>();
   let fallbackOrder = liveQuestions.length;
   for (const r of responses) {
     for (const a of r.answers) {
@@ -32,6 +33,7 @@ export async function GET(req: NextRequest) {
         seen.set(a.questionId, {
           questionId: a.questionId,
           label: a.labelSnapshot,
+          followUpLabel: a.followUpLabelSnapshot,
           firstSeenOrder: liveOrder.get(a.questionId) ?? fallbackOrder++,
         });
       }
@@ -47,14 +49,20 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json({
     count: responses.length,
-    columns: columns.map((c) => ({ questionId: c.questionId, label: c.label })),
+    columns: columns.map((c) => ({ questionId: c.questionId, label: c.label, followUpLabel: c.followUpLabel })),
     averages,
     responses: responses.map((r) => ({
       userName: r.userName,
       teamName: r.teamName,
       comments: r.comments,
       createdAt: r.createdAt.toISOString(),
-      answers: r.answers.map((a) => ({ questionId: a.questionId, label: a.labelSnapshot, rating: a.rating })),
+      answers: r.answers.map((a) => ({
+        questionId: a.questionId,
+        label: a.labelSnapshot,
+        rating: a.rating,
+        followUpLabel: a.followUpLabelSnapshot,
+        followUpText: a.followUpText,
+      })),
     })),
   });
 }

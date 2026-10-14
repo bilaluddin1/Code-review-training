@@ -12,8 +12,8 @@ import { getSocketUrl } from '@/lib/get-socket-url'
 
 // Feedback questions are fully dynamic now (admin add/remove/reorder via
 // UI, stored server-side) - these are just the shapes the API returns.
-type FeedbackQuestion = { id: string; label: string };
-type AdminFeedbackQuestion = { id: string; label: string; order: number; active: boolean };
+type FeedbackQuestion = { id: string; label: string; followUpLabel: string };
+type AdminFeedbackQuestion = { id: string; label: string; followUpLabel: string; order: number; active: boolean };
 
 // Simple avatar generator: pick a random emoji
 const AVATARS = ["🦊", "🐻", "🐼", "🐸", "🐵", "🐶", "🐱", "🦁", "🐯", "🐨", "🐰", "🦄", "🐙", "🐧", "🐢", "🐦", "🐝", "🐬", "🦋", "🐞"];
@@ -166,7 +166,7 @@ function AdminModal({ open, onSubmit, onClose, error }: { open: boolean, onSubmi
 // instead of each person typing (and misspelling) their own team name.
 // answers is keyed by question id (dynamic, admin-managed) rather than a
 // fixed set of keys.
-type FeedbackValues = { answers: Record<string, number>; comments: string };
+type FeedbackValues = { answers: Record<string, { rating: number; followUpText: string }>; comments: string };
 const EMPTY_FEEDBACK_VALUES: FeedbackValues = { answers: {}, comments: "" };
 
 // 1-5 under the hood (storage, averages, CSV), but devs pick a word, not a digit.
@@ -199,11 +199,14 @@ function FeedbackModal({ open, onSubmit, onClose, currentTeam, questions }: { op
   const [error, setError] = useState("");
   if (!open) return null;
 
-  const allRated = questions.length > 0 && questions.every((q) => (values.answers[q.id] ?? 0) > 0);
+  const allAnswered = questions.length > 0 && questions.every((q) => {
+    const a = values.answers[q.id];
+    return a && a.rating > 0 && a.followUpText.trim().length > 0;
+  });
 
   const submit = async () => {
-    if (!allRated) {
-      setError("Please rate every question.");
+    if (!allAnswered) {
+      setError("Please rate every question and answer its follow-up.");
       return;
     }
     setSubmitting(true);
@@ -213,6 +216,11 @@ function FeedbackModal({ open, onSubmit, onClose, currentTeam, questions }: { op
     if (ok) setSubmitted(true);
     else setError("Could not submit feedback - ask your trainer to confirm the session team is set, then try again.");
   };
+
+  const setRating = (id: string, rating: number) =>
+    setValues((s) => ({ ...s, answers: { ...s.answers, [id]: { rating, followUpText: s.answers[id]?.followUpText ?? "" } } }));
+  const setFollowUp = (id: string, followUpText: string) =>
+    setValues((s) => ({ ...s, answers: { ...s.answers, [id]: { rating: s.answers[id]?.rating ?? 0, followUpText } } }));
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
@@ -230,17 +238,25 @@ function FeedbackModal({ open, onSubmit, onClose, currentTeam, questions }: { op
         ) : (
           <>
             <h2 className="text-xl font-bold">Session Feedback</h2>
-            <p className="text-gray-600 text-sm -mt-2">Rate 1 (poor) to 5 (excellent).</p>
+            <p className="text-gray-600 text-sm -mt-2">Rate 1 (poor) to 5 (excellent), and tell us why - that's the part that actually helps.</p>
             {currentTeam && (
               <p className="text-xs text-gray-500 -mt-2">Submitting for team: <span className="font-semibold">{currentTeam}</span></p>
             )}
             {questions.map((q) => (
-              <RatingRow key={q.id} label={q.label} value={values.answers[q.id] ?? 0} onChange={(v) => setValues((s) => ({ ...s, answers: { ...s.answers, [q.id]: v } }))} />
+              <div key={q.id} className="border-b pb-3 last:border-b-0">
+                <RatingRow label={q.label} value={values.answers[q.id]?.rating ?? 0} onChange={(v) => setRating(q.id, v)} />
+                <Textarea
+                  className="mt-2"
+                  placeholder={q.followUpLabel}
+                  value={values.answers[q.id]?.followUpText ?? ""}
+                  onChange={(e) => setFollowUp(q.id, e.target.value)}
+                />
+              </div>
             ))}
             <div>
               <div className="text-sm font-medium mb-1">Anything else? (optional)</div>
               <Textarea
-                placeholder="What should change next time?"
+                placeholder="Anything that didn't fit above"
                 value={values.comments}
                 onChange={(e) => setValues((s) => ({ ...s, comments: e.target.value }))}
               />
@@ -338,9 +354,9 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const [feedback, setFeedback] = useState<{
     count: number;
-    columns: { questionId: string; label: string }[];
+    columns: { questionId: string; label: string; followUpLabel: string }[];
     averages: { questionId: string; label: string; average: number | null; count: number }[];
-    responses: { userName: string; teamName: string | null; comments: string | null; createdAt: string; answers: { questionId: string; label: string; rating: number }[] }[];
+    responses: { userName: string; teamName: string | null; comments: string | null; createdAt: string; answers: { questionId: string; label: string; rating: number; followUpLabel: string; followUpText: string }[] }[];
   } | null>(null);
   const [feedbackToggle, setFeedbackToggle] = useState(false);
   const [feedbackToggleLoading, setFeedbackToggleLoading] = useState(false);
@@ -350,6 +366,7 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
   const [editingQuestions, setEditingQuestions] = useState(false);
   const [adminQuestions, setAdminQuestions] = useState<AdminFeedbackQuestion[]>([]);
   const [newQuestionLabel, setNewQuestionLabel] = useState("");
+  const [newQuestionFollowUp, setNewQuestionFollowUp] = useState("");
   const [questionsSaving, setQuestionsSaving] = useState(false);
   const [timerDurations, setTimerDurations] = useState<Record<string, number>>({});
   const [timers, setTimers] = useState<Record<string, { startTime: number; duration: number; isRunning: boolean; isPaused: boolean; remaining?: number }>>({});
@@ -520,15 +537,16 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
   }, [editingQuestions]);
 
   const addQuestion = async () => {
-    if (!newQuestionLabel.trim()) return;
+    if (!newQuestionLabel.trim() || !newQuestionFollowUp.trim()) return;
     setQuestionsSaving(true);
     const res = await fetch('/api/admin/feedback-questions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ label: newQuestionLabel.trim() }),
+      body: JSON.stringify({ label: newQuestionLabel.trim(), followUpLabel: newQuestionFollowUp.trim() }),
     });
     if (res.ok) {
       setNewQuestionLabel("");
+      setNewQuestionFollowUp("");
       await fetchAdminQuestions();
     } else {
       alert('Could not add question - ' + ((await res.json().catch(() => ({})))?.error ?? 'unknown error'));
@@ -536,7 +554,7 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
     setQuestionsSaving(false);
   };
 
-  const updateQuestion = async (id: string, data: { label?: string; active?: boolean; order?: number }) => {
+  const updateQuestion = async (id: string, data: { label?: string; followUpLabel?: string; active?: boolean; order?: number }) => {
     const res = await fetch(`/api/admin/feedback-questions/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -886,11 +904,14 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
                       feedback &&
                       downloadCsv(
                         'feedback.csv',
-                        ['Name', 'Team', ...feedback.columns.map((c) => c.label), 'Comments', 'Submitted At'],
+                        ['Name', 'Team', ...feedback.columns.flatMap((c) => [c.label, `${c.label} - why`]), 'Comments', 'Submitted At'],
                         feedback.responses.map((r) => [
                           r.userName,
                           r.teamName ?? '',
-                          ...feedback.columns.map((c) => r.answers.find((a) => a.questionId === c.questionId)?.rating ?? ''),
+                          ...feedback.columns.flatMap((c) => {
+                            const a = r.answers.find((a) => a.questionId === c.questionId);
+                            return [a?.rating ?? '', a?.followUpText ?? ''];
+                          }),
                           r.comments ?? '',
                           new Date(r.createdAt).toLocaleString(),
                         ])
@@ -905,8 +926,9 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
                 {editingQuestions && (
                   <div className="bg-white border rounded-lg p-3 mb-3 space-y-2">
                     <p className="text-xs text-gray-500">
-                      Add, rename, reorder, deactivate, or delete questions. A question that already has responses can't be
-                      deleted (deactivate it instead) - this keeps past reports meaningful.
+                      Add, rename, reorder, deactivate, or delete questions. Every rating pairs with its own open-text
+                      follow-up. A question that already has responses can't be deleted (deactivate it instead) - this keeps
+                      past reports meaningful.
                     </p>
                     {adminQuestions.map((q, i) => (
                       <div key={q.id} className={`flex items-center gap-2 ${!q.active ? 'opacity-50' : ''}`}>
@@ -916,40 +938,62 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
                           <button type="button" className="text-gray-400 hover:text-gray-700 disabled:opacity-20" disabled={i === adminQuestions.length - 1 || questionsSaving}
                             onClick={() => moveQuestion(i, 1)}>▼</button>
                         </div>
-                        <input
-                          className="border rounded px-2 py-1 text-sm flex-1"
-                          defaultValue={q.label}
-                          onBlur={(e) => e.target.value.trim() && e.target.value !== q.label && updateQuestion(q.id, { label: e.target.value.trim() })}
-                        />
+                        <div className="flex-1 flex flex-col gap-1">
+                          <input
+                            className="border rounded px-2 py-1 text-sm"
+                            defaultValue={q.label}
+                            placeholder="Rating question"
+                            onBlur={(e) => e.target.value.trim() && e.target.value !== q.label && updateQuestion(q.id, { label: e.target.value.trim() })}
+                          />
+                          <input
+                            className="border rounded px-2 py-1 text-xs text-gray-600"
+                            defaultValue={q.followUpLabel}
+                            placeholder="Open-text follow-up"
+                            onBlur={(e) => e.target.value.trim() && e.target.value !== q.followUpLabel && updateQuestion(q.id, { followUpLabel: e.target.value.trim() })}
+                          />
+                        </div>
                         <Button size="sm" variant="outline" onClick={() => updateQuestion(q.id, { active: !q.active })}>
                           {q.active ? 'Deactivate' : 'Activate'}
                         </Button>
                         <Button size="sm" variant="destructive" onClick={() => deleteQuestion(q.id)}>Delete</Button>
                       </div>
                     ))}
-                    <div className="flex gap-2 pt-2">
-                      <input
-                        className="border rounded px-2 py-1 text-sm flex-1"
-                        placeholder="New question wording..."
-                        value={newQuestionLabel}
-                        onChange={(e) => setNewQuestionLabel(e.target.value)}
-                        onKeyDown={(e) => { if (e.key === 'Enter') addQuestion(); }}
-                      />
-                      <Button size="sm" onClick={addQuestion} disabled={questionsSaving || !newQuestionLabel.trim()}>Add Question</Button>
+                    <div className="flex items-end gap-2 pt-2">
+                      <div className="flex-1 flex flex-col gap-1">
+                        <input
+                          className="border rounded px-2 py-1 text-sm"
+                          placeholder="New rating question..."
+                          value={newQuestionLabel}
+                          onChange={(e) => setNewQuestionLabel(e.target.value)}
+                        />
+                        <input
+                          className="border rounded px-2 py-1 text-xs text-gray-600"
+                          placeholder="Its open-text follow-up..."
+                          value={newQuestionFollowUp}
+                          onChange={(e) => setNewQuestionFollowUp(e.target.value)}
+                          onKeyDown={(e) => { if (e.key === 'Enter') addQuestion(); }}
+                        />
+                      </div>
+                      <Button size="sm" onClick={addQuestion} disabled={questionsSaving || !newQuestionLabel.trim() || !newQuestionFollowUp.trim()}>Add Question</Button>
                     </div>
                   </div>
                 )}
 
                 {feedback && feedback.responses.length > 0 && (
-                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                  <div className="space-y-2 max-h-96 overflow-y-auto">
                     {feedback.responses.map((r, i) => (
                       <div key={i} className="bg-white border rounded p-2 text-sm">
                         <div className="flex justify-between font-medium">
                           <span>{r.userName}{r.teamName ? ` · ${r.teamName}` : ''}</span>
                           <span className="text-gray-500">{new Date(r.createdAt).toLocaleString()}</span>
                         </div>
-                        <div className="text-xs text-gray-600">
-                          {r.answers.map((a) => `${a.label}: ${a.rating}`).join(' · ')}
+                        <div className="mt-1 space-y-1">
+                          {r.answers.map((a) => (
+                            <div key={a.questionId} className="text-xs">
+                              <span className="font-medium text-gray-700">{a.label}: {a.rating}</span>
+                              {a.followUpText && <span className="text-gray-600"> - &quot;{a.followUpText}&quot;</span>}
+                            </div>
+                          ))}
                         </div>
                         {r.comments && <div className="text-gray-700 mt-1 italic">&quot;{r.comments}&quot;</div>}
                       </div>
@@ -1235,7 +1279,7 @@ export default function CodeReviewChallenge() {
       body: JSON.stringify({
         userName: user.name,
         comments: v.comments,
-        answers: Object.entries(v.answers).map(([questionId, rating]) => ({ questionId, rating })),
+        answers: Object.entries(v.answers).map(([questionId, a]) => ({ questionId, rating: a.rating, followUpText: a.followUpText })),
       }),
     });
     return res.ok;
