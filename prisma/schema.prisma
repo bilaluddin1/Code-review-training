@@ -59,46 +59,56 @@ model SessionArchive {
 }
 
 // Submitted by devs themselves via the "Give Feedback" button, any time -
-// not gated on finishing every lab. teamName is free text they type, same
-// as the admin types when archiving a session, so results can be
-// cross-referenced by eye (team + rough date) in the Analytics tab.
-// teamName stays nullable in the DB (so older rows are never invalidated by
-// a schema change), but the API and UI both require it on every new submission.
-// Question set matches last year's full training survey, 1-5 each.
+// not gated on finishing every lab. teamName is derived server-side from
+// FeedbackToggle.currentTeam at submit time, not typed by the dev.
+// Ratings live in FeedbackAnswer (one row per question answered), NOT as
+// fixed columns here - so questions can be added/removed/reworded via the
+// admin UI with no further schema changes, ever.
 model FeedbackResponse {
-  id                     String   @id @default(uuid())
-  userName               String
-  teamName               String?
-  overall                Int // Overall, how was this session?
-  relevantToRole         Int // Relevant to my role
-  objectivesClear        Int // Objectives were clear
-  realWorld              Int // Real-world applicable
-  trainerEngaging        Int // Trainer was engaging
-  interactiveQA          Int // Interactive / Q&A
-  paceAndStructure       Int // Pace and structure
-  materialsClear         Int // Materials were clear
-  supplementaryResources Int // Supplementary resources
-  materialQuality        Int // Material quality
-  practicalSkills        Int // Practical skills gained
-  realExamplesUsed       Int // Real examples were used
-  moreConfident          Int // I feel more confident spotting this myself now
-  comments               String?
-  createdAt              DateTime @default(now())
+  id        String           @id @default(uuid())
+  userName  String
+  teamName  String?
+  comments  String?
+  createdAt DateTime         @default(now())
+  answers   FeedbackAnswer[]
 }
 
-// Single-row session settings. Three jobs:
+// One rating for one question on one response. questionId points at the
+// question that existed when this was answered; labelSnapshot freezes that
+// question's wording at that moment, so historical reports and CSV exports
+// stay meaningful even after a question is later reworded or deleted.
+model FeedbackAnswer {
+  id             String           @id @default(uuid())
+  response       FeedbackResponse @relation(fields: [responseId], references: [id])
+  responseId     String
+  questionId     String
+  labelSnapshot  String
+  rating         Int // 1-5
+
+  @@index([responseId])
+  @@index([questionId])
+}
+
+// The live, admin-editable list of feedback questions. Order and active
+// state control what the form asks right now; existing FeedbackAnswer rows
+// are untouched by edits here (they keep their own labelSnapshot).
+model FeedbackQuestion {
+  id        String   @id @default(uuid())
+  label     String
+  order     Int
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+// Single-row session settings:
 // 1) "Give Feedback" stays greyed out for everyone until an admin turns it
 //    on (e.g. near the end of a session).
 // 2) currentTeam is the ONE place a team name gets typed, by the admin -
 //    not re-typed by every dev. Every feedback submission is tagged with
 //    this value server-side, and "Reset Everything" pre-fills its archive
 //    prompt from it, so the same name is used everywhere without retyping.
-// 3) questionsJson: admin-editable wording/order for the fixed 13 feedback
-//    questions (JSON array of {key,label}, same keys as FEEDBACK_QUESTIONS,
-//    just reordered/relabeled). Null means "use the built-in defaults".
 model FeedbackToggle {
-  id           Int     @id @default(1)
-  enabled      Boolean @default(false)
-  currentTeam  String?
-  questionsJson String?
+  id          Int     @id @default(1)
+  enabled     Boolean @default(false)
+  currentTeam String?
 }

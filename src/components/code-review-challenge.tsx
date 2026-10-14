@@ -9,7 +9,11 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import { io, Socket } from 'socket.io-client'
 import { getSocketUrl } from '@/lib/get-socket-url'
-import { FEEDBACK_QUESTIONS, type FeedbackQuestionKey, type EffectiveQuestion } from '@/lib/feedbackQuestions'
+
+// Feedback questions are fully dynamic now (admin add/remove/reorder via
+// UI, stored server-side) - these are just the shapes the API returns.
+type FeedbackQuestion = { id: string; label: string };
+type AdminFeedbackQuestion = { id: string; label: string; order: number; active: boolean };
 
 // Simple avatar generator: pick a random emoji
 const AVATARS = ["🦊", "🐻", "🐼", "🐸", "🐵", "🐶", "🐱", "🦁", "🐯", "🐨", "🐰", "🦄", "🐙", "🐧", "🐢", "🐦", "🐝", "🐬", "🦋", "🐞"];
@@ -160,11 +164,10 @@ function AdminModal({ open, onSubmit, onClose, error }: { open: boolean, onSubmi
 // Team is NOT part of this - it's set once by the admin (FeedbackToggle.currentTeam)
 // and attached server-side, so every dev's submission is tagged consistently
 // instead of each person typing (and misspelling) their own team name.
-type FeedbackValues = Record<FeedbackQuestionKey, number> & { comments: string };
-const EMPTY_FEEDBACK_VALUES: FeedbackValues = {
-  ...(Object.fromEntries(FEEDBACK_QUESTIONS.map((q) => [q.key, 0])) as Record<FeedbackQuestionKey, number>),
-  comments: "",
-};
+// answers is keyed by question id (dynamic, admin-managed) rather than a
+// fixed set of keys.
+type FeedbackValues = { answers: Record<string, number>; comments: string };
+const EMPTY_FEEDBACK_VALUES: FeedbackValues = { answers: {}, comments: "" };
 
 // 1-5 under the hood (storage, averages, CSV), but devs pick a word, not a digit.
 const RATING_LABELS: Record<number, string> = { 1: "Poor", 2: "Fair", 3: "Neutral", 4: "Good", 5: "Excellent" };
@@ -189,14 +192,14 @@ function RatingRow({ label, value, onChange }: { label: string; value: number; o
   );
 }
 
-function FeedbackModal({ open, onSubmit, onClose, currentTeam, questions }: { open: boolean; onSubmit: (v: FeedbackValues) => Promise<boolean>; onClose: () => void; currentTeam: string | null; questions: EffectiveQuestion[] }) {
+function FeedbackModal({ open, onSubmit, onClose, currentTeam, questions }: { open: boolean; onSubmit: (v: FeedbackValues) => Promise<boolean>; onClose: () => void; currentTeam: string | null; questions: FeedbackQuestion[] }) {
   const [values, setValues] = useState<FeedbackValues>(EMPTY_FEEDBACK_VALUES);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
   if (!open) return null;
 
-  const allRated = questions.every((q) => values[q.key] > 0);
+  const allRated = questions.length > 0 && questions.every((q) => (values.answers[q.id] ?? 0) > 0);
 
   const submit = async () => {
     if (!allRated) {
@@ -232,7 +235,7 @@ function FeedbackModal({ open, onSubmit, onClose, currentTeam, questions }: { op
               <p className="text-xs text-gray-500 -mt-2">Submitting for team: <span className="font-semibold">{currentTeam}</span></p>
             )}
             {questions.map((q) => (
-              <RatingRow key={q.key} label={q.label} value={values[q.key]} onChange={(v) => setValues((s) => ({ ...s, [q.key]: v }))} />
+              <RatingRow key={q.id} label={q.label} value={values.answers[q.id] ?? 0} onChange={(v) => setValues((s) => ({ ...s, answers: { ...s.answers, [q.id]: v } }))} />
             ))}
             <div>
               <div className="text-sm font-medium mb-1">Anything else? (optional)</div>
@@ -335,9 +338,9 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const [feedback, setFeedback] = useState<{
     count: number;
-    questions: EffectiveQuestion[];
-    averages: Record<FeedbackQuestionKey, number | null>;
-    responses: (Record<FeedbackQuestionKey, number> & { userName: string; teamName: string | null; comments: string | null; createdAt: string })[];
+    columns: { questionId: string; label: string }[];
+    averages: { questionId: string; label: string; average: number | null; count: number }[];
+    responses: { userName: string; teamName: string | null; comments: string | null; createdAt: string; answers: { questionId: string; label: string; rating: number }[] }[];
   } | null>(null);
   const [feedbackToggle, setFeedbackToggle] = useState(false);
   const [feedbackToggleLoading, setFeedbackToggleLoading] = useState(false);
@@ -345,7 +348,8 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
   const [teamInput, setTeamInput] = useState("");
   const [teamSaving, setTeamSaving] = useState(false);
   const [editingQuestions, setEditingQuestions] = useState(false);
-  const [draftQuestions, setDraftQuestions] = useState<EffectiveQuestion[]>([]);
+  const [adminQuestions, setAdminQuestions] = useState<AdminFeedbackQuestion[]>([]);
+  const [newQuestionLabel, setNewQuestionLabel] = useState("");
   const [questionsSaving, setQuestionsSaving] = useState(false);
   const [timerDurations, setTimerDurations] = useState<Record<string, number>>({});
   const [timers, setTimers] = useState<Record<string, { startTime: number; duration: number; isRunning: boolean; isPaused: boolean; remaining?: number }>>({});
@@ -471,11 +475,7 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
       fetch('/api/feedback-enabled'),
     ]);
     if (analyticsRes.ok) setAnalytics(await analyticsRes.json());
-    if (feedbackRes.ok) {
-      const f = await feedbackRes.json();
-      setFeedback(f);
-      setDraftQuestions(f.questions);
-    }
+    if (feedbackRes.ok) setFeedback(await feedbackRes.json());
     if (toggleRes.ok) {
       const t = await toggleRes.json();
       setFeedbackToggle(t.enabled);
@@ -507,34 +507,68 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
     setTeamSaving(false);
   };
 
-  const moveQuestion = (index: number, dir: -1 | 1) => {
-    setDraftQuestions((prev) => {
-      const next = [...prev];
-      const target = index + dir;
-      if (target < 0 || target >= next.length) return prev;
-      [next[index], next[target]] = [next[target], next[index]];
-      return next;
-    });
+  const fetchAdminQuestions = async () => {
+    const res = await fetch('/api/admin/feedback-questions');
+    if (res.ok) setAdminQuestions((await res.json()).questions);
   };
 
-  const saveQuestions = async () => {
+  // Opening the editor loads the full list (including inactive ones),
+  // separate from the reporting data fetched in fetchAnalytics.
+  useEffect(() => {
+    if (editingQuestions) fetchAdminQuestions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editingQuestions]);
+
+  const addQuestion = async () => {
+    if (!newQuestionLabel.trim()) return;
     setQuestionsSaving(true);
     const res = await fetch('/api/admin/feedback-questions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ questions: draftQuestions }),
+      body: JSON.stringify({ label: newQuestionLabel.trim() }),
     });
     if (res.ok) {
-      await fetchAnalytics();
-      setEditingQuestions(false);
+      setNewQuestionLabel("");
+      await fetchAdminQuestions();
     } else {
-      alert('Could not save - ' + ((await res.json().catch(() => ({})))?.error ?? 'unknown error'));
+      alert('Could not add question - ' + ((await res.json().catch(() => ({})))?.error ?? 'unknown error'));
     }
     setQuestionsSaving(false);
   };
 
-  const resetQuestionsToDefault = () => {
-    setDraftQuestions(FEEDBACK_QUESTIONS.map((q) => ({ key: q.key, label: q.label })));
+  const updateQuestion = async (id: string, data: { label?: string; active?: boolean; order?: number }) => {
+    const res = await fetch(`/api/admin/feedback-questions/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (res.ok) await fetchAdminQuestions();
+    else alert('Could not update - ' + ((await res.json().catch(() => ({})))?.error ?? 'unknown error'));
+  };
+
+  const moveQuestion = async (index: number, dir: -1 | 1) => {
+    const target = index + dir;
+    if (target < 0 || target >= adminQuestions.length) return;
+    const a = adminQuestions[index], b = adminQuestions[target];
+    setQuestionsSaving(true);
+    await Promise.all([
+      fetch(`/api/admin/feedback-questions/${a.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ order: b.order }) }),
+      fetch(`/api/admin/feedback-questions/${b.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ order: a.order }) }),
+    ]);
+    await fetchAdminQuestions();
+    setQuestionsSaving(false);
+  };
+
+  const deleteQuestion = async (id: string) => {
+    if (!window.confirm('Delete this question? Only possible if no one has answered it yet.')) return;
+    const res = await fetch(`/api/admin/feedback-questions/${id}`, { method: 'DELETE' });
+    if (res.ok) await fetchAdminQuestions();
+    else alert(((await res.json().catch(() => ({})))?.error) ?? 'Could not delete');
+  };
+
+  const closeQuestionEditor = async () => {
+    setEditingQuestions(false);
+    await fetchAnalytics(); // refresh reporting + the live public question list
   };
 
   useEffect(() => {
@@ -829,8 +863,8 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
                     <h3 className="font-semibold">Dev Feedback ({feedback?.count ?? 0} response{feedback?.count === 1 ? '' : 's'})</h3>
                     {feedback && feedback.count > 0 && (
                       <p className="text-sm text-gray-600">
-                        Avg overall {feedback.averages.overall} · relevant to role {feedback.averages.relevantToRole} · pace {feedback.averages.paceAndStructure} · more confident {feedback.averages.moreConfident}
-                        <span className="text-xs text-gray-400"> (full breakdown of all {(feedback?.questions ?? FEEDBACK_QUESTIONS).length} questions in the CSV)</span>
+                        {feedback.averages.slice(0, 3).map((a) => `${a.label}: ${a.average}`).join(' · ')}
+                        <span className="text-xs text-gray-400"> (full breakdown of all {feedback.columns.length} questions in the CSV)</span>
                       </p>
                     )}
                   </div>
@@ -842,7 +876,7 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
                     >
                       {feedbackToggleLoading ? "..." : feedbackToggle ? "Feedback: ON (click to disable)" : "Feedback: OFF (click to enable)"}
                     </Button>
-                    <Button variant="outline" onClick={() => setEditingQuestions((v) => !v)}>
+                    <Button variant="outline" onClick={() => editingQuestions ? closeQuestionEditor() : setEditingQuestions(true)}>
                       {editingQuestions ? "Close Editor" : "Edit Questions"}
                     </Button>
                   <Button
@@ -852,11 +886,11 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
                       feedback &&
                       downloadCsv(
                         'feedback.csv',
-                        ['Name', 'Team', ...feedback.questions.map((q) => q.label), 'Comments', 'Submitted At'],
+                        ['Name', 'Team', ...feedback.columns.map((c) => c.label), 'Comments', 'Submitted At'],
                         feedback.responses.map((r) => [
                           r.userName,
                           r.teamName ?? '',
-                          ...feedback.questions.map((q) => r[q.key]),
+                          ...feedback.columns.map((c) => r.answers.find((a) => a.questionId === c.questionId)?.rating ?? ''),
                           r.comments ?? '',
                           new Date(r.createdAt).toLocaleString(),
                         ])
@@ -871,30 +905,37 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
                 {editingQuestions && (
                   <div className="bg-white border rounded-lg p-3 mb-3 space-y-2">
                     <p className="text-xs text-gray-500">
-                      Rename wording or reorder with the arrows. The set of 13 questions is fixed (each is its own database
-                      column) - adding or removing questions needs a code change, not this editor.
+                      Add, rename, reorder, deactivate, or delete questions. A question that already has responses can't be
+                      deleted (deactivate it instead) - this keeps past reports meaningful.
                     </p>
-                    {draftQuestions.map((q, i) => (
-                      <div key={q.key} className="flex items-center gap-2">
+                    {adminQuestions.map((q, i) => (
+                      <div key={q.id} className={`flex items-center gap-2 ${!q.active ? 'opacity-50' : ''}`}>
                         <div className="flex flex-col">
-                          <button type="button" className="text-gray-400 hover:text-gray-700 disabled:opacity-20" disabled={i === 0}
+                          <button type="button" className="text-gray-400 hover:text-gray-700 disabled:opacity-20" disabled={i === 0 || questionsSaving}
                             onClick={() => moveQuestion(i, -1)}>▲</button>
-                          <button type="button" className="text-gray-400 hover:text-gray-700 disabled:opacity-20" disabled={i === draftQuestions.length - 1}
+                          <button type="button" className="text-gray-400 hover:text-gray-700 disabled:opacity-20" disabled={i === adminQuestions.length - 1 || questionsSaving}
                             onClick={() => moveQuestion(i, 1)}>▼</button>
                         </div>
                         <input
                           className="border rounded px-2 py-1 text-sm flex-1"
-                          value={q.label}
-                          onChange={(e) => setDraftQuestions((prev) => prev.map((p, idx) => idx === i ? { ...p, label: e.target.value } : p))}
+                          defaultValue={q.label}
+                          onBlur={(e) => e.target.value.trim() && e.target.value !== q.label && updateQuestion(q.id, { label: e.target.value.trim() })}
                         />
+                        <Button size="sm" variant="outline" onClick={() => updateQuestion(q.id, { active: !q.active })}>
+                          {q.active ? 'Deactivate' : 'Activate'}
+                        </Button>
+                        <Button size="sm" variant="destructive" onClick={() => deleteQuestion(q.id)}>Delete</Button>
                       </div>
                     ))}
                     <div className="flex gap-2 pt-2">
-                      <Button size="sm" onClick={saveQuestions} disabled={questionsSaving}>
-                        {questionsSaving ? 'Saving...' : 'Save'}
-                      </Button>
-                      <Button size="sm" variant="outline" onClick={resetQuestionsToDefault}>Reset to Defaults</Button>
-                      <Button size="sm" variant="outline" onClick={() => setEditingQuestions(false)}>Cancel</Button>
+                      <input
+                        className="border rounded px-2 py-1 text-sm flex-1"
+                        placeholder="New question wording..."
+                        value={newQuestionLabel}
+                        onChange={(e) => setNewQuestionLabel(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === 'Enter') addQuestion(); }}
+                      />
+                      <Button size="sm" onClick={addQuestion} disabled={questionsSaving || !newQuestionLabel.trim()}>Add Question</Button>
                     </div>
                   </div>
                 )}
@@ -908,7 +949,7 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
                           <span className="text-gray-500">{new Date(r.createdAt).toLocaleString()}</span>
                         </div>
                         <div className="text-xs text-gray-600">
-                          {feedback.questions.map((q) => `${q.label}: ${r[q.key]}`).join(' · ')}
+                          {r.answers.map((a) => `${a.label}: ${a.rating}`).join(' · ')}
                         </div>
                         {r.comments && <div className="text-gray-700 mt-1 italic">&quot;{r.comments}&quot;</div>}
                       </div>
@@ -1186,14 +1227,16 @@ export default function CodeReviewChallenge() {
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [feedbackEnabled, setFeedbackEnabled] = useState(false);
   const [currentTeam, setCurrentTeam] = useState<string | null>(null);
-  const [feedbackQuestions, setFeedbackQuestions] = useState<EffectiveQuestion[]>(
-    FEEDBACK_QUESTIONS.map((q) => ({ key: q.key, label: q.label }))
-  );
+  const [feedbackQuestions, setFeedbackQuestions] = useState<FeedbackQuestion[]>([]);
   const handleFeedbackSubmit = async (v: FeedbackValues): Promise<boolean> => {
     const res = await fetch("/api/feedback", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userName: user.name, ...v }),
+      body: JSON.stringify({
+        userName: user.name,
+        comments: v.comments,
+        answers: Object.entries(v.answers).map(([questionId, rating]) => ({ questionId, rating })),
+      }),
     });
     return res.ok;
   };

@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { getEffectiveFeedbackQuestions } from "@/lib/effectiveFeedbackQuestions";
+import { getActiveFeedbackQuestions } from "@/lib/effectiveFeedbackQuestions";
 
 // GET /api/feedback-questions - public. The feedback form renders from this
-// (wording + order), not the hardcoded defaults directly, so an admin's
-// customization is reflected immediately for every dev.
+// (id + wording + order) - fully admin-controlled, no hardcoded list.
 export async function GET() {
-  return NextResponse.json({ questions: await getEffectiveFeedbackQuestions() });
+  const questions = await getActiveFeedbackQuestions();
+  return NextResponse.json({ questions: questions.map((q) => ({ id: q.id, label: q.label })) });
 }

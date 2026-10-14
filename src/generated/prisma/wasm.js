@@ -162,28 +162,30 @@ exports.Prisma.FeedbackResponseScalarFieldEnum = {
   id: 'id',
   userName: 'userName',
   teamName: 'teamName',
-  overall: 'overall',
-  relevantToRole: 'relevantToRole',
-  objectivesClear: 'objectivesClear',
-  realWorld: 'realWorld',
-  trainerEngaging: 'trainerEngaging',
-  interactiveQA: 'interactiveQA',
-  paceAndStructure: 'paceAndStructure',
-  materialsClear: 'materialsClear',
-  supplementaryResources: 'supplementaryResources',
-  materialQuality: 'materialQuality',
-  practicalSkills: 'practicalSkills',
-  realExamplesUsed: 'realExamplesUsed',
-  moreConfident: 'moreConfident',
   comments: 'comments',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.FeedbackAnswerScalarFieldEnum = {
+  id: 'id',
+  responseId: 'responseId',
+  questionId: 'questionId',
+  labelSnapshot: 'labelSnapshot',
+  rating: 'rating'
+};
+
+exports.Prisma.FeedbackQuestionScalarFieldEnum = {
+  id: 'id',
+  label: 'label',
+  order: 'order',
+  active: 'active',
   createdAt: 'createdAt'
 };
 
 exports.Prisma.FeedbackToggleScalarFieldEnum = {
   id: 'id',
   enabled: 'enabled',
-  currentTeam: 'currentTeam',
-  questionsJson: 'questionsJson'
+  currentTeam: 'currentTeam'
 };
 
 exports.Prisma.SortOrder = {
@@ -204,6 +206,8 @@ exports.Prisma.ModelName = {
   FlagSubmission: 'FlagSubmission',
   SessionArchive: 'SessionArchive',
   FeedbackResponse: 'FeedbackResponse',
+  FeedbackAnswer: 'FeedbackAnswer',
+  FeedbackQuestion: 'FeedbackQuestion',
   FeedbackToggle: 'FeedbackToggle'
 };
 

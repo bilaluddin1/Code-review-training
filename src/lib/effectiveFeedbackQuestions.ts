@@ -1,26 +1,17 @@
 import { PrismaClient } from "@/generated/prisma";
-import { FEEDBACK_QUESTIONS, type EffectiveQuestion } from "@/lib/feedbackQuestions";
+import { DEFAULT_FEEDBACK_QUESTIONS } from "@/lib/feedbackQuestions";
 
 const prisma = new PrismaClient();
 
-// Returns the admin-customized question list (wording/order) if one has been
-// saved, otherwise the built-in defaults. Always exactly the same set of
-// keys as FEEDBACK_QUESTIONS - only label text and order can be customized,
-// since each key maps to a fixed, already-shipped database column.
-export async function getEffectiveFeedbackQuestions(): Promise<EffectiveQuestion[]> {
-  const row = await prisma.feedbackToggle.findUnique({ where: { id: 1 } });
-  if (!row?.questionsJson) return FEEDBACK_QUESTIONS.map((q) => ({ key: q.key, label: q.label }));
-  try {
-    const parsed = JSON.parse(row.questionsJson) as EffectiveQuestion[];
-    const knownKeys = new Set(FEEDBACK_QUESTIONS.map((q) => q.key));
-    const valid = parsed.filter((q) => knownKeys.has(q.key) && typeof q.label === "string" && q.label.trim());
-    // Guard against a corrupted/partial save silently hiding questions -
-    // only trust it if every known key is present exactly once.
-    if (valid.length === FEEDBACK_QUESTIONS.length && new Set(valid.map((q) => q.key)).size === FEEDBACK_QUESTIONS.length) {
-      return valid;
-    }
-  } catch {
-    // fall through to defaults
+// Returns the live, active feedback questions in order - the ONLY source of
+// truth now (no hardcoded key list anywhere else). If the table is empty
+// (first run), seeds it once with the default wording.
+export async function getActiveFeedbackQuestions() {
+  const count = await prisma.feedbackQuestion.count();
+  if (count === 0) {
+    await prisma.feedbackQuestion.createMany({
+      data: DEFAULT_FEEDBACK_QUESTIONS.map((label, i) => ({ label, order: i, active: true })),
+    });
   }
-  return FEEDBACK_QUESTIONS.map((q) => ({ key: q.key, label: q.label }));
+  return prisma.feedbackQuestion.findMany({ where: { active: true }, orderBy: { order: "asc" } });
 }
