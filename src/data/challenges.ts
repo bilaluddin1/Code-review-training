@@ -4,7 +4,7 @@ export const challenges: Challenge[] = [
   {
     "id": "DEMO",
     "title": "How to Play: Demo Challenge",
-    "description": "Use it to practice how to view code, check hints, read explanations, and submit answers in this lab environment. For this walkthrough, the flag is FLAG{getting_started} - try pasting it into Submit Flag to see how that works too.",
+    "description": "Use it to practice how to view code, check hints, read explanations, and submit answers in this lab environment.",
     "difficulty": "beginner",
     "vulnerableLines": [
       3
@@ -12,15 +12,16 @@ export const challenges: Challenge[] = [
     "hints": [
       "There is no security bug here\u2014just a Hello World!",
       "Use this challenge to learn how the interface works.",
-      "Try submitting any answer to see how submissions are handled."
+      "Try submitting any answer to see how submissions are handled.",
+      "Click 'Go to Lab' to try the real flow - it works the same way for every lab."
     ],
     "explanations": {
       "3": "Good work"
     },
     "code": "@GetMapping(\"/hello-world\")\npublic ResponseEntity<String> helloWorld() {\n    return ResponseEntity.ok(\"I am vulnerable line!\");\n}",
-    "labUrl": "/demo",
+    "labUrl": "/labs/demo",
     "maxSelectableLines": 1,
-    "flag": "FLAG{getting_started}"
+    "flag": "FLAG{22609b82f1}"
   },
   {
     "id": "CHALLENGE1",

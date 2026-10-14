@@ -38,6 +38,11 @@ export type FlagSubmission = $Result.DefaultSelection<Prisma.$FlagSubmissionPayl
  * 
  */
 export type SessionArchive = $Result.DefaultSelection<Prisma.$SessionArchivePayload>
+/**
+ * Model FeedbackResponse
+ * 
+ */
+export type FeedbackResponse = $Result.DefaultSelection<Prisma.$FeedbackResponsePayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -213,6 +218,16 @@ export class PrismaClient<
     * ```
     */
   get sessionArchive(): Prisma.SessionArchiveDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.feedbackResponse`: Exposes CRUD operations for the **FeedbackResponse** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more FeedbackResponses
+    * const feedbackResponses = await prisma.feedbackResponse.findMany()
+    * ```
+    */
+  get feedbackResponse(): Prisma.FeedbackResponseDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -657,7 +672,8 @@ export namespace Prisma {
     LeaderboardUser: 'LeaderboardUser',
     ChallengeSubmission: 'ChallengeSubmission',
     FlagSubmission: 'FlagSubmission',
-    SessionArchive: 'SessionArchive'
+    SessionArchive: 'SessionArchive',
+    FeedbackResponse: 'FeedbackResponse'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -676,7 +692,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "challengeLock" | "leaderboardUser" | "challengeSubmission" | "flagSubmission" | "sessionArchive"
+      modelProps: "challengeLock" | "leaderboardUser" | "challengeSubmission" | "flagSubmission" | "sessionArchive" | "feedbackResponse"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1050,6 +1066,80 @@ export namespace Prisma {
           }
         }
       }
+      FeedbackResponse: {
+        payload: Prisma.$FeedbackResponsePayload<ExtArgs>
+        fields: Prisma.FeedbackResponseFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.FeedbackResponseFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FeedbackResponsePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.FeedbackResponseFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FeedbackResponsePayload>
+          }
+          findFirst: {
+            args: Prisma.FeedbackResponseFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FeedbackResponsePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.FeedbackResponseFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FeedbackResponsePayload>
+          }
+          findMany: {
+            args: Prisma.FeedbackResponseFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FeedbackResponsePayload>[]
+          }
+          create: {
+            args: Prisma.FeedbackResponseCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FeedbackResponsePayload>
+          }
+          createMany: {
+            args: Prisma.FeedbackResponseCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.FeedbackResponseCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FeedbackResponsePayload>[]
+          }
+          delete: {
+            args: Prisma.FeedbackResponseDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FeedbackResponsePayload>
+          }
+          update: {
+            args: Prisma.FeedbackResponseUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FeedbackResponsePayload>
+          }
+          deleteMany: {
+            args: Prisma.FeedbackResponseDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.FeedbackResponseUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.FeedbackResponseUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FeedbackResponsePayload>[]
+          }
+          upsert: {
+            args: Prisma.FeedbackResponseUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FeedbackResponsePayload>
+          }
+          aggregate: {
+            args: Prisma.FeedbackResponseAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateFeedbackResponse>
+          }
+          groupBy: {
+            args: Prisma.FeedbackResponseGroupByArgs<ExtArgs>
+            result: $Utils.Optional<FeedbackResponseGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.FeedbackResponseCountArgs<ExtArgs>
+            result: $Utils.Optional<FeedbackResponseCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -1139,6 +1229,7 @@ export namespace Prisma {
     challengeSubmission?: ChallengeSubmissionOmit
     flagSubmission?: FlagSubmissionOmit
     sessionArchive?: SessionArchiveOmit
+    feedbackResponse?: FeedbackResponseOmit
   }
 
   /* Types for Logging */
@@ -6280,6 +6371,1097 @@ export namespace Prisma {
 
 
   /**
+   * Model FeedbackResponse
+   */
+
+  export type AggregateFeedbackResponse = {
+    _count: FeedbackResponseCountAggregateOutputType | null
+    _avg: FeedbackResponseAvgAggregateOutputType | null
+    _sum: FeedbackResponseSumAggregateOutputType | null
+    _min: FeedbackResponseMinAggregateOutputType | null
+    _max: FeedbackResponseMaxAggregateOutputType | null
+  }
+
+  export type FeedbackResponseAvgAggregateOutputType = {
+    overall: number | null
+    relevantToRole: number | null
+    realWorld: number | null
+    paceAndStructure: number | null
+  }
+
+  export type FeedbackResponseSumAggregateOutputType = {
+    overall: number | null
+    relevantToRole: number | null
+    realWorld: number | null
+    paceAndStructure: number | null
+  }
+
+  export type FeedbackResponseMinAggregateOutputType = {
+    id: string | null
+    userName: string | null
+    teamName: string | null
+    overall: number | null
+    relevantToRole: number | null
+    realWorld: number | null
+    paceAndStructure: number | null
+    comments: string | null
+    createdAt: Date | null
+  }
+
+  export type FeedbackResponseMaxAggregateOutputType = {
+    id: string | null
+    userName: string | null
+    teamName: string | null
+    overall: number | null
+    relevantToRole: number | null
+    realWorld: number | null
+    paceAndStructure: number | null
+    comments: string | null
+    createdAt: Date | null
+  }
+
+  export type FeedbackResponseCountAggregateOutputType = {
+    id: number
+    userName: number
+    teamName: number
+    overall: number
+    relevantToRole: number
+    realWorld: number
+    paceAndStructure: number
+    comments: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type FeedbackResponseAvgAggregateInputType = {
+    overall?: true
+    relevantToRole?: true
+    realWorld?: true
+    paceAndStructure?: true
+  }
+
+  export type FeedbackResponseSumAggregateInputType = {
+    overall?: true
+    relevantToRole?: true
+    realWorld?: true
+    paceAndStructure?: true
+  }
+
+  export type FeedbackResponseMinAggregateInputType = {
+    id?: true
+    userName?: true
+    teamName?: true
+    overall?: true
+    relevantToRole?: true
+    realWorld?: true
+    paceAndStructure?: true
+    comments?: true
+    createdAt?: true
+  }
+
+  export type FeedbackResponseMaxAggregateInputType = {
+    id?: true
+    userName?: true
+    teamName?: true
+    overall?: true
+    relevantToRole?: true
+    realWorld?: true
+    paceAndStructure?: true
+    comments?: true
+    createdAt?: true
+  }
+
+  export type FeedbackResponseCountAggregateInputType = {
+    id?: true
+    userName?: true
+    teamName?: true
+    overall?: true
+    relevantToRole?: true
+    realWorld?: true
+    paceAndStructure?: true
+    comments?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type FeedbackResponseAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which FeedbackResponse to aggregate.
+     */
+    where?: FeedbackResponseWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FeedbackResponses to fetch.
+     */
+    orderBy?: FeedbackResponseOrderByWithRelationInput | FeedbackResponseOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: FeedbackResponseWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FeedbackResponses from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FeedbackResponses.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned FeedbackResponses
+    **/
+    _count?: true | FeedbackResponseCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: FeedbackResponseAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: FeedbackResponseSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: FeedbackResponseMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: FeedbackResponseMaxAggregateInputType
+  }
+
+  export type GetFeedbackResponseAggregateType<T extends FeedbackResponseAggregateArgs> = {
+        [P in keyof T & keyof AggregateFeedbackResponse]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateFeedbackResponse[P]>
+      : GetScalarType<T[P], AggregateFeedbackResponse[P]>
+  }
+
+
+
+
+  export type FeedbackResponseGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: FeedbackResponseWhereInput
+    orderBy?: FeedbackResponseOrderByWithAggregationInput | FeedbackResponseOrderByWithAggregationInput[]
+    by: FeedbackResponseScalarFieldEnum[] | FeedbackResponseScalarFieldEnum
+    having?: FeedbackResponseScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: FeedbackResponseCountAggregateInputType | true
+    _avg?: FeedbackResponseAvgAggregateInputType
+    _sum?: FeedbackResponseSumAggregateInputType
+    _min?: FeedbackResponseMinAggregateInputType
+    _max?: FeedbackResponseMaxAggregateInputType
+  }
+
+  export type FeedbackResponseGroupByOutputType = {
+    id: string
+    userName: string
+    teamName: string | null
+    overall: number
+    relevantToRole: number
+    realWorld: number
+    paceAndStructure: number
+    comments: string | null
+    createdAt: Date
+    _count: FeedbackResponseCountAggregateOutputType | null
+    _avg: FeedbackResponseAvgAggregateOutputType | null
+    _sum: FeedbackResponseSumAggregateOutputType | null
+    _min: FeedbackResponseMinAggregateOutputType | null
+    _max: FeedbackResponseMaxAggregateOutputType | null
+  }
+
+  type GetFeedbackResponseGroupByPayload<T extends FeedbackResponseGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<FeedbackResponseGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof FeedbackResponseGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], FeedbackResponseGroupByOutputType[P]>
+            : GetScalarType<T[P], FeedbackResponseGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type FeedbackResponseSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userName?: boolean
+    teamName?: boolean
+    overall?: boolean
+    relevantToRole?: boolean
+    realWorld?: boolean
+    paceAndStructure?: boolean
+    comments?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["feedbackResponse"]>
+
+  export type FeedbackResponseSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userName?: boolean
+    teamName?: boolean
+    overall?: boolean
+    relevantToRole?: boolean
+    realWorld?: boolean
+    paceAndStructure?: boolean
+    comments?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["feedbackResponse"]>
+
+  export type FeedbackResponseSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userName?: boolean
+    teamName?: boolean
+    overall?: boolean
+    relevantToRole?: boolean
+    realWorld?: boolean
+    paceAndStructure?: boolean
+    comments?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["feedbackResponse"]>
+
+  export type FeedbackResponseSelectScalar = {
+    id?: boolean
+    userName?: boolean
+    teamName?: boolean
+    overall?: boolean
+    relevantToRole?: boolean
+    realWorld?: boolean
+    paceAndStructure?: boolean
+    comments?: boolean
+    createdAt?: boolean
+  }
+
+  export type FeedbackResponseOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userName" | "teamName" | "overall" | "relevantToRole" | "realWorld" | "paceAndStructure" | "comments" | "createdAt", ExtArgs["result"]["feedbackResponse"]>
+
+  export type $FeedbackResponsePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "FeedbackResponse"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userName: string
+      teamName: string | null
+      overall: number
+      relevantToRole: number
+      realWorld: number
+      paceAndStructure: number
+      comments: string | null
+      createdAt: Date
+    }, ExtArgs["result"]["feedbackResponse"]>
+    composites: {}
+  }
+
+  type FeedbackResponseGetPayload<S extends boolean | null | undefined | FeedbackResponseDefaultArgs> = $Result.GetResult<Prisma.$FeedbackResponsePayload, S>
+
+  type FeedbackResponseCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<FeedbackResponseFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: FeedbackResponseCountAggregateInputType | true
+    }
+
+  export interface FeedbackResponseDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['FeedbackResponse'], meta: { name: 'FeedbackResponse' } }
+    /**
+     * Find zero or one FeedbackResponse that matches the filter.
+     * @param {FeedbackResponseFindUniqueArgs} args - Arguments to find a FeedbackResponse
+     * @example
+     * // Get one FeedbackResponse
+     * const feedbackResponse = await prisma.feedbackResponse.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends FeedbackResponseFindUniqueArgs>(args: SelectSubset<T, FeedbackResponseFindUniqueArgs<ExtArgs>>): Prisma__FeedbackResponseClient<$Result.GetResult<Prisma.$FeedbackResponsePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one FeedbackResponse that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {FeedbackResponseFindUniqueOrThrowArgs} args - Arguments to find a FeedbackResponse
+     * @example
+     * // Get one FeedbackResponse
+     * const feedbackResponse = await prisma.feedbackResponse.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends FeedbackResponseFindUniqueOrThrowArgs>(args: SelectSubset<T, FeedbackResponseFindUniqueOrThrowArgs<ExtArgs>>): Prisma__FeedbackResponseClient<$Result.GetResult<Prisma.$FeedbackResponsePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first FeedbackResponse that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FeedbackResponseFindFirstArgs} args - Arguments to find a FeedbackResponse
+     * @example
+     * // Get one FeedbackResponse
+     * const feedbackResponse = await prisma.feedbackResponse.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends FeedbackResponseFindFirstArgs>(args?: SelectSubset<T, FeedbackResponseFindFirstArgs<ExtArgs>>): Prisma__FeedbackResponseClient<$Result.GetResult<Prisma.$FeedbackResponsePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first FeedbackResponse that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FeedbackResponseFindFirstOrThrowArgs} args - Arguments to find a FeedbackResponse
+     * @example
+     * // Get one FeedbackResponse
+     * const feedbackResponse = await prisma.feedbackResponse.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends FeedbackResponseFindFirstOrThrowArgs>(args?: SelectSubset<T, FeedbackResponseFindFirstOrThrowArgs<ExtArgs>>): Prisma__FeedbackResponseClient<$Result.GetResult<Prisma.$FeedbackResponsePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more FeedbackResponses that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FeedbackResponseFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all FeedbackResponses
+     * const feedbackResponses = await prisma.feedbackResponse.findMany()
+     * 
+     * // Get first 10 FeedbackResponses
+     * const feedbackResponses = await prisma.feedbackResponse.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const feedbackResponseWithIdOnly = await prisma.feedbackResponse.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends FeedbackResponseFindManyArgs>(args?: SelectSubset<T, FeedbackResponseFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FeedbackResponsePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a FeedbackResponse.
+     * @param {FeedbackResponseCreateArgs} args - Arguments to create a FeedbackResponse.
+     * @example
+     * // Create one FeedbackResponse
+     * const FeedbackResponse = await prisma.feedbackResponse.create({
+     *   data: {
+     *     // ... data to create a FeedbackResponse
+     *   }
+     * })
+     * 
+     */
+    create<T extends FeedbackResponseCreateArgs>(args: SelectSubset<T, FeedbackResponseCreateArgs<ExtArgs>>): Prisma__FeedbackResponseClient<$Result.GetResult<Prisma.$FeedbackResponsePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many FeedbackResponses.
+     * @param {FeedbackResponseCreateManyArgs} args - Arguments to create many FeedbackResponses.
+     * @example
+     * // Create many FeedbackResponses
+     * const feedbackResponse = await prisma.feedbackResponse.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends FeedbackResponseCreateManyArgs>(args?: SelectSubset<T, FeedbackResponseCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many FeedbackResponses and returns the data saved in the database.
+     * @param {FeedbackResponseCreateManyAndReturnArgs} args - Arguments to create many FeedbackResponses.
+     * @example
+     * // Create many FeedbackResponses
+     * const feedbackResponse = await prisma.feedbackResponse.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many FeedbackResponses and only return the `id`
+     * const feedbackResponseWithIdOnly = await prisma.feedbackResponse.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends FeedbackResponseCreateManyAndReturnArgs>(args?: SelectSubset<T, FeedbackResponseCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FeedbackResponsePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a FeedbackResponse.
+     * @param {FeedbackResponseDeleteArgs} args - Arguments to delete one FeedbackResponse.
+     * @example
+     * // Delete one FeedbackResponse
+     * const FeedbackResponse = await prisma.feedbackResponse.delete({
+     *   where: {
+     *     // ... filter to delete one FeedbackResponse
+     *   }
+     * })
+     * 
+     */
+    delete<T extends FeedbackResponseDeleteArgs>(args: SelectSubset<T, FeedbackResponseDeleteArgs<ExtArgs>>): Prisma__FeedbackResponseClient<$Result.GetResult<Prisma.$FeedbackResponsePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one FeedbackResponse.
+     * @param {FeedbackResponseUpdateArgs} args - Arguments to update one FeedbackResponse.
+     * @example
+     * // Update one FeedbackResponse
+     * const feedbackResponse = await prisma.feedbackResponse.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends FeedbackResponseUpdateArgs>(args: SelectSubset<T, FeedbackResponseUpdateArgs<ExtArgs>>): Prisma__FeedbackResponseClient<$Result.GetResult<Prisma.$FeedbackResponsePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more FeedbackResponses.
+     * @param {FeedbackResponseDeleteManyArgs} args - Arguments to filter FeedbackResponses to delete.
+     * @example
+     * // Delete a few FeedbackResponses
+     * const { count } = await prisma.feedbackResponse.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends FeedbackResponseDeleteManyArgs>(args?: SelectSubset<T, FeedbackResponseDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more FeedbackResponses.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FeedbackResponseUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many FeedbackResponses
+     * const feedbackResponse = await prisma.feedbackResponse.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends FeedbackResponseUpdateManyArgs>(args: SelectSubset<T, FeedbackResponseUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more FeedbackResponses and returns the data updated in the database.
+     * @param {FeedbackResponseUpdateManyAndReturnArgs} args - Arguments to update many FeedbackResponses.
+     * @example
+     * // Update many FeedbackResponses
+     * const feedbackResponse = await prisma.feedbackResponse.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more FeedbackResponses and only return the `id`
+     * const feedbackResponseWithIdOnly = await prisma.feedbackResponse.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends FeedbackResponseUpdateManyAndReturnArgs>(args: SelectSubset<T, FeedbackResponseUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FeedbackResponsePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one FeedbackResponse.
+     * @param {FeedbackResponseUpsertArgs} args - Arguments to update or create a FeedbackResponse.
+     * @example
+     * // Update or create a FeedbackResponse
+     * const feedbackResponse = await prisma.feedbackResponse.upsert({
+     *   create: {
+     *     // ... data to create a FeedbackResponse
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the FeedbackResponse we want to update
+     *   }
+     * })
+     */
+    upsert<T extends FeedbackResponseUpsertArgs>(args: SelectSubset<T, FeedbackResponseUpsertArgs<ExtArgs>>): Prisma__FeedbackResponseClient<$Result.GetResult<Prisma.$FeedbackResponsePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of FeedbackResponses.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FeedbackResponseCountArgs} args - Arguments to filter FeedbackResponses to count.
+     * @example
+     * // Count the number of FeedbackResponses
+     * const count = await prisma.feedbackResponse.count({
+     *   where: {
+     *     // ... the filter for the FeedbackResponses we want to count
+     *   }
+     * })
+    **/
+    count<T extends FeedbackResponseCountArgs>(
+      args?: Subset<T, FeedbackResponseCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], FeedbackResponseCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a FeedbackResponse.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FeedbackResponseAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends FeedbackResponseAggregateArgs>(args: Subset<T, FeedbackResponseAggregateArgs>): Prisma.PrismaPromise<GetFeedbackResponseAggregateType<T>>
+
+    /**
+     * Group by FeedbackResponse.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FeedbackResponseGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends FeedbackResponseGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: FeedbackResponseGroupByArgs['orderBy'] }
+        : { orderBy?: FeedbackResponseGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, FeedbackResponseGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetFeedbackResponseGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the FeedbackResponse model
+   */
+  readonly fields: FeedbackResponseFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for FeedbackResponse.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__FeedbackResponseClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the FeedbackResponse model
+   */
+  interface FeedbackResponseFieldRefs {
+    readonly id: FieldRef<"FeedbackResponse", 'String'>
+    readonly userName: FieldRef<"FeedbackResponse", 'String'>
+    readonly teamName: FieldRef<"FeedbackResponse", 'String'>
+    readonly overall: FieldRef<"FeedbackResponse", 'Int'>
+    readonly relevantToRole: FieldRef<"FeedbackResponse", 'Int'>
+    readonly realWorld: FieldRef<"FeedbackResponse", 'Int'>
+    readonly paceAndStructure: FieldRef<"FeedbackResponse", 'Int'>
+    readonly comments: FieldRef<"FeedbackResponse", 'String'>
+    readonly createdAt: FieldRef<"FeedbackResponse", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * FeedbackResponse findUnique
+   */
+  export type FeedbackResponseFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FeedbackResponse
+     */
+    select?: FeedbackResponseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FeedbackResponse
+     */
+    omit?: FeedbackResponseOmit<ExtArgs> | null
+    /**
+     * Filter, which FeedbackResponse to fetch.
+     */
+    where: FeedbackResponseWhereUniqueInput
+  }
+
+  /**
+   * FeedbackResponse findUniqueOrThrow
+   */
+  export type FeedbackResponseFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FeedbackResponse
+     */
+    select?: FeedbackResponseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FeedbackResponse
+     */
+    omit?: FeedbackResponseOmit<ExtArgs> | null
+    /**
+     * Filter, which FeedbackResponse to fetch.
+     */
+    where: FeedbackResponseWhereUniqueInput
+  }
+
+  /**
+   * FeedbackResponse findFirst
+   */
+  export type FeedbackResponseFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FeedbackResponse
+     */
+    select?: FeedbackResponseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FeedbackResponse
+     */
+    omit?: FeedbackResponseOmit<ExtArgs> | null
+    /**
+     * Filter, which FeedbackResponse to fetch.
+     */
+    where?: FeedbackResponseWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FeedbackResponses to fetch.
+     */
+    orderBy?: FeedbackResponseOrderByWithRelationInput | FeedbackResponseOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for FeedbackResponses.
+     */
+    cursor?: FeedbackResponseWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FeedbackResponses from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FeedbackResponses.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of FeedbackResponses.
+     */
+    distinct?: FeedbackResponseScalarFieldEnum | FeedbackResponseScalarFieldEnum[]
+  }
+
+  /**
+   * FeedbackResponse findFirstOrThrow
+   */
+  export type FeedbackResponseFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FeedbackResponse
+     */
+    select?: FeedbackResponseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FeedbackResponse
+     */
+    omit?: FeedbackResponseOmit<ExtArgs> | null
+    /**
+     * Filter, which FeedbackResponse to fetch.
+     */
+    where?: FeedbackResponseWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FeedbackResponses to fetch.
+     */
+    orderBy?: FeedbackResponseOrderByWithRelationInput | FeedbackResponseOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for FeedbackResponses.
+     */
+    cursor?: FeedbackResponseWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FeedbackResponses from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FeedbackResponses.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of FeedbackResponses.
+     */
+    distinct?: FeedbackResponseScalarFieldEnum | FeedbackResponseScalarFieldEnum[]
+  }
+
+  /**
+   * FeedbackResponse findMany
+   */
+  export type FeedbackResponseFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FeedbackResponse
+     */
+    select?: FeedbackResponseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FeedbackResponse
+     */
+    omit?: FeedbackResponseOmit<ExtArgs> | null
+    /**
+     * Filter, which FeedbackResponses to fetch.
+     */
+    where?: FeedbackResponseWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FeedbackResponses to fetch.
+     */
+    orderBy?: FeedbackResponseOrderByWithRelationInput | FeedbackResponseOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing FeedbackResponses.
+     */
+    cursor?: FeedbackResponseWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FeedbackResponses from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FeedbackResponses.
+     */
+    skip?: number
+    distinct?: FeedbackResponseScalarFieldEnum | FeedbackResponseScalarFieldEnum[]
+  }
+
+  /**
+   * FeedbackResponse create
+   */
+  export type FeedbackResponseCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FeedbackResponse
+     */
+    select?: FeedbackResponseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FeedbackResponse
+     */
+    omit?: FeedbackResponseOmit<ExtArgs> | null
+    /**
+     * The data needed to create a FeedbackResponse.
+     */
+    data: XOR<FeedbackResponseCreateInput, FeedbackResponseUncheckedCreateInput>
+  }
+
+  /**
+   * FeedbackResponse createMany
+   */
+  export type FeedbackResponseCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many FeedbackResponses.
+     */
+    data: FeedbackResponseCreateManyInput | FeedbackResponseCreateManyInput[]
+  }
+
+  /**
+   * FeedbackResponse createManyAndReturn
+   */
+  export type FeedbackResponseCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FeedbackResponse
+     */
+    select?: FeedbackResponseSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the FeedbackResponse
+     */
+    omit?: FeedbackResponseOmit<ExtArgs> | null
+    /**
+     * The data used to create many FeedbackResponses.
+     */
+    data: FeedbackResponseCreateManyInput | FeedbackResponseCreateManyInput[]
+  }
+
+  /**
+   * FeedbackResponse update
+   */
+  export type FeedbackResponseUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FeedbackResponse
+     */
+    select?: FeedbackResponseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FeedbackResponse
+     */
+    omit?: FeedbackResponseOmit<ExtArgs> | null
+    /**
+     * The data needed to update a FeedbackResponse.
+     */
+    data: XOR<FeedbackResponseUpdateInput, FeedbackResponseUncheckedUpdateInput>
+    /**
+     * Choose, which FeedbackResponse to update.
+     */
+    where: FeedbackResponseWhereUniqueInput
+  }
+
+  /**
+   * FeedbackResponse updateMany
+   */
+  export type FeedbackResponseUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update FeedbackResponses.
+     */
+    data: XOR<FeedbackResponseUpdateManyMutationInput, FeedbackResponseUncheckedUpdateManyInput>
+    /**
+     * Filter which FeedbackResponses to update
+     */
+    where?: FeedbackResponseWhereInput
+    /**
+     * Limit how many FeedbackResponses to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * FeedbackResponse updateManyAndReturn
+   */
+  export type FeedbackResponseUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FeedbackResponse
+     */
+    select?: FeedbackResponseSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the FeedbackResponse
+     */
+    omit?: FeedbackResponseOmit<ExtArgs> | null
+    /**
+     * The data used to update FeedbackResponses.
+     */
+    data: XOR<FeedbackResponseUpdateManyMutationInput, FeedbackResponseUncheckedUpdateManyInput>
+    /**
+     * Filter which FeedbackResponses to update
+     */
+    where?: FeedbackResponseWhereInput
+    /**
+     * Limit how many FeedbackResponses to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * FeedbackResponse upsert
+   */
+  export type FeedbackResponseUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FeedbackResponse
+     */
+    select?: FeedbackResponseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FeedbackResponse
+     */
+    omit?: FeedbackResponseOmit<ExtArgs> | null
+    /**
+     * The filter to search for the FeedbackResponse to update in case it exists.
+     */
+    where: FeedbackResponseWhereUniqueInput
+    /**
+     * In case the FeedbackResponse found by the `where` argument doesn't exist, create a new FeedbackResponse with this data.
+     */
+    create: XOR<FeedbackResponseCreateInput, FeedbackResponseUncheckedCreateInput>
+    /**
+     * In case the FeedbackResponse was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<FeedbackResponseUpdateInput, FeedbackResponseUncheckedUpdateInput>
+  }
+
+  /**
+   * FeedbackResponse delete
+   */
+  export type FeedbackResponseDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FeedbackResponse
+     */
+    select?: FeedbackResponseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FeedbackResponse
+     */
+    omit?: FeedbackResponseOmit<ExtArgs> | null
+    /**
+     * Filter which FeedbackResponse to delete.
+     */
+    where: FeedbackResponseWhereUniqueInput
+  }
+
+  /**
+   * FeedbackResponse deleteMany
+   */
+  export type FeedbackResponseDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which FeedbackResponses to delete
+     */
+    where?: FeedbackResponseWhereInput
+    /**
+     * Limit how many FeedbackResponses to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * FeedbackResponse without action
+   */
+  export type FeedbackResponseDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FeedbackResponse
+     */
+    select?: FeedbackResponseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FeedbackResponse
+     */
+    omit?: FeedbackResponseOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -6346,12 +7528,35 @@ export namespace Prisma {
   export type SessionArchiveScalarFieldEnum = (typeof SessionArchiveScalarFieldEnum)[keyof typeof SessionArchiveScalarFieldEnum]
 
 
+  export const FeedbackResponseScalarFieldEnum: {
+    id: 'id',
+    userName: 'userName',
+    teamName: 'teamName',
+    overall: 'overall',
+    relevantToRole: 'relevantToRole',
+    realWorld: 'realWorld',
+    paceAndStructure: 'paceAndStructure',
+    comments: 'comments',
+    createdAt: 'createdAt'
+  };
+
+  export type FeedbackResponseScalarFieldEnum = (typeof FeedbackResponseScalarFieldEnum)[keyof typeof FeedbackResponseScalarFieldEnum]
+
+
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
   };
 
   export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+  export const NullsOrder: {
+    first: 'first',
+    last: 'last'
+  };
+
+  export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
 
 
   /**
@@ -6666,6 +7871,80 @@ export namespace Prisma {
     score?: IntWithAggregatesFilter<"SessionArchive"> | number
   }
 
+  export type FeedbackResponseWhereInput = {
+    AND?: FeedbackResponseWhereInput | FeedbackResponseWhereInput[]
+    OR?: FeedbackResponseWhereInput[]
+    NOT?: FeedbackResponseWhereInput | FeedbackResponseWhereInput[]
+    id?: StringFilter<"FeedbackResponse"> | string
+    userName?: StringFilter<"FeedbackResponse"> | string
+    teamName?: StringNullableFilter<"FeedbackResponse"> | string | null
+    overall?: IntFilter<"FeedbackResponse"> | number
+    relevantToRole?: IntFilter<"FeedbackResponse"> | number
+    realWorld?: IntFilter<"FeedbackResponse"> | number
+    paceAndStructure?: IntFilter<"FeedbackResponse"> | number
+    comments?: StringNullableFilter<"FeedbackResponse"> | string | null
+    createdAt?: DateTimeFilter<"FeedbackResponse"> | Date | string
+  }
+
+  export type FeedbackResponseOrderByWithRelationInput = {
+    id?: SortOrder
+    userName?: SortOrder
+    teamName?: SortOrderInput | SortOrder
+    overall?: SortOrder
+    relevantToRole?: SortOrder
+    realWorld?: SortOrder
+    paceAndStructure?: SortOrder
+    comments?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type FeedbackResponseWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: FeedbackResponseWhereInput | FeedbackResponseWhereInput[]
+    OR?: FeedbackResponseWhereInput[]
+    NOT?: FeedbackResponseWhereInput | FeedbackResponseWhereInput[]
+    userName?: StringFilter<"FeedbackResponse"> | string
+    teamName?: StringNullableFilter<"FeedbackResponse"> | string | null
+    overall?: IntFilter<"FeedbackResponse"> | number
+    relevantToRole?: IntFilter<"FeedbackResponse"> | number
+    realWorld?: IntFilter<"FeedbackResponse"> | number
+    paceAndStructure?: IntFilter<"FeedbackResponse"> | number
+    comments?: StringNullableFilter<"FeedbackResponse"> | string | null
+    createdAt?: DateTimeFilter<"FeedbackResponse"> | Date | string
+  }, "id">
+
+  export type FeedbackResponseOrderByWithAggregationInput = {
+    id?: SortOrder
+    userName?: SortOrder
+    teamName?: SortOrderInput | SortOrder
+    overall?: SortOrder
+    relevantToRole?: SortOrder
+    realWorld?: SortOrder
+    paceAndStructure?: SortOrder
+    comments?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    _count?: FeedbackResponseCountOrderByAggregateInput
+    _avg?: FeedbackResponseAvgOrderByAggregateInput
+    _max?: FeedbackResponseMaxOrderByAggregateInput
+    _min?: FeedbackResponseMinOrderByAggregateInput
+    _sum?: FeedbackResponseSumOrderByAggregateInput
+  }
+
+  export type FeedbackResponseScalarWhereWithAggregatesInput = {
+    AND?: FeedbackResponseScalarWhereWithAggregatesInput | FeedbackResponseScalarWhereWithAggregatesInput[]
+    OR?: FeedbackResponseScalarWhereWithAggregatesInput[]
+    NOT?: FeedbackResponseScalarWhereWithAggregatesInput | FeedbackResponseScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"FeedbackResponse"> | string
+    userName?: StringWithAggregatesFilter<"FeedbackResponse"> | string
+    teamName?: StringNullableWithAggregatesFilter<"FeedbackResponse"> | string | null
+    overall?: IntWithAggregatesFilter<"FeedbackResponse"> | number
+    relevantToRole?: IntWithAggregatesFilter<"FeedbackResponse"> | number
+    realWorld?: IntWithAggregatesFilter<"FeedbackResponse"> | number
+    paceAndStructure?: IntWithAggregatesFilter<"FeedbackResponse"> | number
+    comments?: StringNullableWithAggregatesFilter<"FeedbackResponse"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"FeedbackResponse"> | Date | string
+  }
+
   export type ChallengeLockCreateInput = {
     id: string
     locked: boolean
@@ -6953,6 +8232,90 @@ export namespace Prisma {
     score?: IntFieldUpdateOperationsInput | number
   }
 
+  export type FeedbackResponseCreateInput = {
+    id?: string
+    userName: string
+    teamName?: string | null
+    overall: number
+    relevantToRole: number
+    realWorld: number
+    paceAndStructure: number
+    comments?: string | null
+    createdAt?: Date | string
+  }
+
+  export type FeedbackResponseUncheckedCreateInput = {
+    id?: string
+    userName: string
+    teamName?: string | null
+    overall: number
+    relevantToRole: number
+    realWorld: number
+    paceAndStructure: number
+    comments?: string | null
+    createdAt?: Date | string
+  }
+
+  export type FeedbackResponseUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userName?: StringFieldUpdateOperationsInput | string
+    teamName?: NullableStringFieldUpdateOperationsInput | string | null
+    overall?: IntFieldUpdateOperationsInput | number
+    relevantToRole?: IntFieldUpdateOperationsInput | number
+    realWorld?: IntFieldUpdateOperationsInput | number
+    paceAndStructure?: IntFieldUpdateOperationsInput | number
+    comments?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FeedbackResponseUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userName?: StringFieldUpdateOperationsInput | string
+    teamName?: NullableStringFieldUpdateOperationsInput | string | null
+    overall?: IntFieldUpdateOperationsInput | number
+    relevantToRole?: IntFieldUpdateOperationsInput | number
+    realWorld?: IntFieldUpdateOperationsInput | number
+    paceAndStructure?: IntFieldUpdateOperationsInput | number
+    comments?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FeedbackResponseCreateManyInput = {
+    id?: string
+    userName: string
+    teamName?: string | null
+    overall: number
+    relevantToRole: number
+    realWorld: number
+    paceAndStructure: number
+    comments?: string | null
+    createdAt?: Date | string
+  }
+
+  export type FeedbackResponseUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userName?: StringFieldUpdateOperationsInput | string
+    teamName?: NullableStringFieldUpdateOperationsInput | string | null
+    overall?: IntFieldUpdateOperationsInput | number
+    relevantToRole?: IntFieldUpdateOperationsInput | number
+    realWorld?: IntFieldUpdateOperationsInput | number
+    paceAndStructure?: IntFieldUpdateOperationsInput | number
+    comments?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FeedbackResponseUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userName?: StringFieldUpdateOperationsInput | string
+    teamName?: NullableStringFieldUpdateOperationsInput | string | null
+    overall?: IntFieldUpdateOperationsInput | number
+    relevantToRole?: IntFieldUpdateOperationsInput | number
+    realWorld?: IntFieldUpdateOperationsInput | number
+    paceAndStructure?: IntFieldUpdateOperationsInput | number
+    comments?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[]
@@ -7188,6 +8551,92 @@ export namespace Prisma {
     score?: SortOrder
   }
 
+  export type StringNullableFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | null
+    notIn?: string[] | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    not?: NestedStringNullableFilter<$PrismaModel> | string | null
+  }
+
+  export type SortOrderInput = {
+    sort: SortOrder
+    nulls?: NullsOrder
+  }
+
+  export type FeedbackResponseCountOrderByAggregateInput = {
+    id?: SortOrder
+    userName?: SortOrder
+    teamName?: SortOrder
+    overall?: SortOrder
+    relevantToRole?: SortOrder
+    realWorld?: SortOrder
+    paceAndStructure?: SortOrder
+    comments?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type FeedbackResponseAvgOrderByAggregateInput = {
+    overall?: SortOrder
+    relevantToRole?: SortOrder
+    realWorld?: SortOrder
+    paceAndStructure?: SortOrder
+  }
+
+  export type FeedbackResponseMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userName?: SortOrder
+    teamName?: SortOrder
+    overall?: SortOrder
+    relevantToRole?: SortOrder
+    realWorld?: SortOrder
+    paceAndStructure?: SortOrder
+    comments?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type FeedbackResponseMinOrderByAggregateInput = {
+    id?: SortOrder
+    userName?: SortOrder
+    teamName?: SortOrder
+    overall?: SortOrder
+    relevantToRole?: SortOrder
+    realWorld?: SortOrder
+    paceAndStructure?: SortOrder
+    comments?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type FeedbackResponseSumOrderByAggregateInput = {
+    overall?: SortOrder
+    relevantToRole?: SortOrder
+    realWorld?: SortOrder
+    paceAndStructure?: SortOrder
+  }
+
+  export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | null
+    notIn?: string[] | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedStringNullableFilter<$PrismaModel>
+    _max?: NestedStringNullableFilter<$PrismaModel>
+  }
+
   export type StringFieldUpdateOperationsInput = {
     set?: string
   }
@@ -7206,6 +8655,10 @@ export namespace Prisma {
 
   export type DateTimeFieldUpdateOperationsInput = {
     set?: Date | string
+  }
+
+  export type NullableStringFieldUpdateOperationsInput = {
+    set?: string | null
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -7313,6 +8766,48 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedDateTimeFilter<$PrismaModel>
     _max?: NestedDateTimeFilter<$PrismaModel>
+  }
+
+  export type NestedStringNullableFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | null
+    notIn?: string[] | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    not?: NestedStringNullableFilter<$PrismaModel> | string | null
+  }
+
+  export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | null
+    notIn?: string[] | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedStringNullableFilter<$PrismaModel>
+    _max?: NestedStringNullableFilter<$PrismaModel>
+  }
+
+  export type NestedIntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | null
+    notIn?: number[] | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
   }
 
 

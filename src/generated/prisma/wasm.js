@@ -158,9 +158,26 @@ exports.Prisma.SessionArchiveScalarFieldEnum = {
   score: 'score'
 };
 
+exports.Prisma.FeedbackResponseScalarFieldEnum = {
+  id: 'id',
+  userName: 'userName',
+  teamName: 'teamName',
+  overall: 'overall',
+  relevantToRole: 'relevantToRole',
+  realWorld: 'realWorld',
+  paceAndStructure: 'paceAndStructure',
+  comments: 'comments',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
+};
+
+exports.Prisma.NullsOrder = {
+  first: 'first',
+  last: 'last'
 };
 
 
@@ -169,7 +186,8 @@ exports.Prisma.ModelName = {
   LeaderboardUser: 'LeaderboardUser',
   ChallengeSubmission: 'ChallengeSubmission',
   FlagSubmission: 'FlagSubmission',
-  SessionArchive: 'SessionArchive'
+  SessionArchive: 'SessionArchive',
+  FeedbackResponse: 'FeedbackResponse'
 };
 
 /**

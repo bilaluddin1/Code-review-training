@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Textarea } from "@/components/ui/textarea"
 import { CheckCircle, XCircle, AlertTriangle, ArrowLeft, Lightbulb, Lock, Unlock, X } from "lucide-react"
 import type { Challenge } from "@/types/challenge"
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
@@ -16,12 +17,15 @@ function getRandomAvatar() {
 }
 
 
-function UserBar({ name, avatar, score, isAdmin, onAdminLogout }: { name: string; avatar: string; score: number; isAdmin: boolean; onAdminLogout: () => void }) {
+function UserBar({ name, avatar, score, isAdmin, onAdminLogout, onGiveFeedback }: { name: string; avatar: string; score: number; isAdmin: boolean; onAdminLogout: () => void; onGiveFeedback?: () => void }) {
   return (
     <div className="fixed top-4 right-4 z-50 flex items-center gap-3 bg-white/80 shadow rounded-full px-4 py-2 border border-gray-200">
       <span className="text-2xl select-none" aria-label="avatar">{avatar}</span>
       <span className="font-medium text-gray-800">{name}</span>
       <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-semibold">Score: {score}</span>
+      {!isAdmin && onGiveFeedback && (
+        <Button size="sm" variant="outline" onClick={onGiveFeedback}>Give Feedback</Button>
+      )}
       {isAdmin && (
         <Button size="sm" variant="outline" onClick={onAdminLogout}>Logout Admin</Button>
       )}
@@ -144,6 +148,97 @@ function AdminModal({ open, onSubmit, onClose, error }: { open: boolean, onSubmi
   );
 }
 
+type FeedbackValues = { overall: number; relevantToRole: number; realWorld: number; paceAndStructure: number; teamName: string; comments: string };
+
+function RatingRow({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
+  return (
+    <div className="w-full">
+      <div className="text-sm font-medium mb-1">{label}</div>
+      <div className="flex gap-2">
+        {[1, 2, 3, 4, 5].map((n) => (
+          <button
+            key={n}
+            type="button"
+            onClick={() => onChange(n)}
+            className={`h-9 w-9 rounded-full border text-sm font-semibold transition-colors ${value === n ? "bg-blue-600 text-white border-blue-600" : "bg-white text-gray-600 border-gray-300 hover:border-blue-400"}`}
+          >
+            {n}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function FeedbackModal({ open, onSubmit, onClose }: { open: boolean; onSubmit: (v: FeedbackValues) => Promise<boolean>; onClose: () => void }) {
+  const [values, setValues] = useState<FeedbackValues>({ overall: 0, relevantToRole: 0, realWorld: 0, paceAndStructure: 0, teamName: "", comments: "" });
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState("");
+  if (!open) return null;
+
+  const allRated = values.overall > 0 && values.relevantToRole > 0 && values.realWorld > 0 && values.paceAndStructure > 0;
+
+  const submit = async () => {
+    if (!allRated) {
+      setError("Please rate all four questions.");
+      return;
+    }
+    setSubmitting(true);
+    setError("");
+    const ok = await onSubmit(values);
+    setSubmitting(false);
+    if (ok) setSubmitted(true);
+    else setError("Could not submit feedback - please try again.");
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
+      <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md flex flex-col gap-4 relative max-h-[90vh] overflow-y-auto">
+        <button className="absolute top-3 right-3 text-gray-400 hover:text-gray-700" onClick={onClose} aria-label="Close" type="button">
+          <X className="h-5 w-5" />
+        </button>
+        {submitted ? (
+          <div className="text-center py-6">
+            <div className="text-2xl mb-2">🙏</div>
+            <h2 className="text-xl font-bold mb-2">Thanks for the feedback!</h2>
+            <p className="text-gray-600 text-sm mb-4">It's been recorded for this session.</p>
+            <Button onClick={onClose}>Close</Button>
+          </div>
+        ) : (
+          <>
+            <h2 className="text-xl font-bold">Session Feedback</h2>
+            <p className="text-gray-600 text-sm -mt-2">Rate 1 (poor) to 5 (excellent). Available any time - you don't need to finish every lab first.</p>
+            <RatingRow label="Overall, how was this session?" value={values.overall} onChange={(v) => setValues((s) => ({ ...s, overall: v }))} />
+            <RatingRow label="Relevant to your role" value={values.relevantToRole} onChange={(v) => setValues((s) => ({ ...s, relevantToRole: v }))} />
+            <RatingRow label="Real-world applicable" value={values.realWorld} onChange={(v) => setValues((s) => ({ ...s, realWorld: v }))} />
+            <RatingRow label="Pace and structure" value={values.paceAndStructure} onChange={(v) => setValues((s) => ({ ...s, paceAndStructure: v }))} />
+            <div>
+              <div className="text-sm font-medium mb-1">Team (optional)</div>
+              <input
+                className="border rounded px-3 py-2 w-full focus:outline-none focus:ring"
+                placeholder="e.g. VLCore"
+                value={values.teamName}
+                onChange={(e) => setValues((s) => ({ ...s, teamName: e.target.value }))}
+              />
+            </div>
+            <div>
+              <div className="text-sm font-medium mb-1">Anything else? (optional)</div>
+              <Textarea
+                placeholder="What should change next time?"
+                value={values.comments}
+                onChange={(e) => setValues((s) => ({ ...s, comments: e.target.value }))}
+              />
+            </div>
+            {error && <div className="text-red-600 text-xs">{error}</div>}
+            <Button onClick={submit} disabled={submitting}>{submitting ? "Submitting..." : "Submit Feedback"}</Button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // --- Timer Hook ---
 function useChallengeTimer(selectedChallenge: Challenge | null) {
   const [timer, setTimer] = useState<{ startTime: number; duration: number; isRunning: boolean; isPaused: boolean } | null>(null);
@@ -226,6 +321,11 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
     live: { userName: string; avatar: string; score: number }[];
   } | null>(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
+  const [feedback, setFeedback] = useState<{
+    count: number;
+    averages: { overall: number | null; relevantToRole: number | null; realWorld: number | null; paceAndStructure: number | null };
+    responses: { userName: string; teamName: string | null; overall: number; relevantToRole: number; realWorld: number; paceAndStructure: number; comments: string | null; createdAt: string }[];
+  } | null>(null);
   const [timerDurations, setTimerDurations] = useState<Record<string, number>>({});
   const [timers, setTimers] = useState<Record<string, { startTime: number; duration: number; isRunning: boolean; isPaused: boolean; remaining?: number }>>({});
   const [timeLefts, setTimeLefts] = useState<Record<string, number>>({});
@@ -344,8 +444,12 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
 
   const fetchAnalytics = async () => {
     setAnalyticsLoading(true);
-    const res = await fetch('/api/admin/analytics');
-    if (res.ok) setAnalytics(await res.json());
+    const [analyticsRes, feedbackRes] = await Promise.all([
+      fetch('/api/admin/analytics'),
+      fetch('/api/admin/feedback'),
+    ]);
+    if (analyticsRes.ok) setAnalytics(await analyticsRes.json());
+    if (feedbackRes.ok) setFeedback(await feedbackRes.json());
     setAnalyticsLoading(false);
   };
 
@@ -604,6 +708,47 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
                 >
                   Export All Teams CSV
                 </Button>
+              </div>
+
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h3 className="font-semibold">Dev Feedback ({feedback?.count ?? 0} response{feedback?.count === 1 ? '' : 's'})</h3>
+                    {feedback && feedback.count > 0 && (
+                      <p className="text-sm text-gray-600">
+                        Avg overall {feedback.averages.overall} · relevant to role {feedback.averages.relevantToRole} · real-world {feedback.averages.realWorld} · pace {feedback.averages.paceAndStructure}
+                      </p>
+                    )}
+                  </div>
+                  <Button
+                    variant="outline"
+                    disabled={!feedback || feedback.count === 0}
+                    onClick={() =>
+                      feedback &&
+                      downloadCsv(
+                        'feedback.csv',
+                        ['Name', 'Team', 'Overall', 'Relevant to Role', 'Real-World', 'Pace', 'Comments', 'Submitted At'],
+                        feedback.responses.map((r) => [r.userName, r.teamName ?? '', r.overall, r.relevantToRole, r.realWorld, r.paceAndStructure, r.comments ?? '', new Date(r.createdAt).toLocaleString()])
+                      )
+                    }
+                  >
+                    Export CSV
+                  </Button>
+                </div>
+                {feedback && feedback.responses.length > 0 && (
+                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                    {feedback.responses.map((r, i) => (
+                      <div key={i} className="bg-white border rounded p-2 text-sm">
+                        <div className="flex justify-between font-medium">
+                          <span>{r.userName}{r.teamName ? ` · ${r.teamName}` : ''}</span>
+                          <span className="text-gray-500">{new Date(r.createdAt).toLocaleString()}</span>
+                        </div>
+                        <div className="text-xs text-gray-600">Overall {r.overall} · Role {r.relevantToRole} · Real-world {r.realWorld} · Pace {r.paceAndStructure}</div>
+                        {r.comments && <div className="text-gray-700 mt-1 italic">&quot;{r.comments}&quot;</div>}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <h3 className="font-semibold mt-6">Past sessions</h3>
@@ -870,6 +1015,17 @@ export default function CodeReviewChallenge() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [showAdminModal, setShowAdminModal] = useState(false);
   const [adminError, setAdminError] = useState("");
+
+  // Feedback state - available any time, not gated on finishing every lab
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const handleFeedbackSubmit = async (v: FeedbackValues): Promise<boolean> => {
+    const res = await fetch("/api/feedback", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userName: user.name, ...v }),
+    });
+    return res.ok;
+  };
 
   // Challenge lock state (persisted via API)
   const [locks, setLocks] = useState<Record<string, boolean>>({});
@@ -1252,7 +1408,7 @@ export default function CodeReviewChallenge() {
     });
     return (
       <>
-        <UserBar name={user.name} avatar={user.avatar} score={user.score} isAdmin={isAdmin} onAdminLogout={handleAdminLogout} />
+        <UserBar name={user.name} avatar={user.avatar} score={user.score} isAdmin={isAdmin} onAdminLogout={handleAdminLogout} onGiveFeedback={() => setShowFeedbackModal(true)} />
         {challengesLoading ? (
           <div className="min-h-screen bg-gray-50 p-4 flex items-center justify-center">
             <div className="text-gray-500">Loading admin panel...</div>
@@ -1268,7 +1424,8 @@ export default function CodeReviewChallenge() {
   if (!selectedChallenge) {
     return (
       <>
-        <UserBar name={user.name} avatar={user.avatar} score={user.score} isAdmin={isAdmin} onAdminLogout={handleAdminLogout} />
+        <UserBar name={user.name} avatar={user.avatar} score={user.score} isAdmin={isAdmin} onAdminLogout={handleAdminLogout} onGiveFeedback={() => setShowFeedbackModal(true)} />
+        <FeedbackModal open={showFeedbackModal} onSubmit={handleFeedbackSubmit} onClose={() => setShowFeedbackModal(false)} />
         <div className="min-h-screen bg-gray-50 p-4">
           <div className="max-w-4xl mx-auto space-y-6">
             <div className="text-center mb-8">
@@ -1276,6 +1433,10 @@ export default function CodeReviewChallenge() {
               <p className="text-gray-600 text-center">Choose a challenge to test your skills</p>
               <div className="mt-2 text-sm text-gray-500">
                 💡 <strong>Timer Info:</strong> Timers can be started from the admin panel. When active, they appear in the bottom-right corner of challenge cards.
+              </div>
+              <div className="mt-4 flex items-center justify-center gap-3 bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 text-sm text-blue-800">
+                <span>Finished (or finishing up)? Tell us how the session went.</span>
+                <Button size="sm" onClick={() => setShowFeedbackModal(true)}>Give Feedback</Button>
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1366,7 +1527,8 @@ export default function CodeReviewChallenge() {
 
   return (
     <>
-      <UserBar name={user.name} avatar={user.avatar} score={user.score} isAdmin={isAdmin} onAdminLogout={handleAdminLogout} />
+      <UserBar name={user.name} avatar={user.avatar} score={user.score} isAdmin={isAdmin} onAdminLogout={handleAdminLogout} onGiveFeedback={() => setShowFeedbackModal(true)} />
+      <FeedbackModal open={showFeedbackModal} onSubmit={handleFeedbackSubmit} onClose={() => setShowFeedbackModal(false)} />
       <div className="min-h-screen bg-gray-50 p-4">
         <div className="max-w-6xl mx-auto space-y-6">
           <div className="flex flex-col md:flex-row md:items-start md:gap-6">

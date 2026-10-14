@@ -57,3 +57,19 @@ model SessionArchive {
 
   @@index([sessionId])
 }
+
+// Submitted by devs themselves via the "Give Feedback" button, any time -
+// not gated on finishing every lab. teamName is free text they type, same
+// as the admin types when archiving a session, so results can be
+// cross-referenced by eye (team + rough date) in the Analytics tab.
+model FeedbackResponse {
+  id               String   @id @default(uuid())
+  userName         String
+  teamName         String?
+  overall          Int // 1-5
+  relevantToRole   Int // 1-5
+  realWorld        Int // 1-5
+  paceAndStructure Int // 1-5
+  comments         String?
+  createdAt        DateTime @default(now())
+}

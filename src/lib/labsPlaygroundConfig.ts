@@ -21,6 +21,15 @@ export type PlaygroundConfig = {
 };
 
 export const PLAYGROUNDS: Record<string, PlaygroundConfig> = {
+  "demo": {
+    title: "Practice Run",
+    linkedChallengeId: "DEMO",
+    blurb: "This isn't a real vulnerability - it's just practice using the same live-exploit flow every other lab uses.",
+    method: "GET",
+    endpoint: "/api/labs/demo",
+    fields: [],
+    startingHint: "Click Send request below.",
+  },
   "bac-01": {
     title: "Secure Notes (IDOR)",
     linkedChallengeId: "LAB-BAC-01",
