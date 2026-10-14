@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@/generated/prisma';
+import { prisma } from "@/lib/prisma";
 
-const prisma = new PrismaClient();
+// A GET handler with no dynamic function (cookies/headers) gets cached as a
+// static response at build time by default - this route only calls Prisma,
+// so without this it serves one frozen snapshot of the leaderboard forever,
+// no matter how many new scores are written afterward.
+export const dynamic = 'force-dynamic';
 
 // GET: Return leaderboard (top users by score)
 export async function GET() {

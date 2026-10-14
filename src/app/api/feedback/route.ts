@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@/generated/prisma";
 import { getActiveFeedbackQuestions } from "@/lib/effectiveFeedbackQuestions";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
 
 // POST /api/feedback { userName, comments?, answers: [{questionId, rating, followUpText}] }
 // Public, submitted by devs themselves. Every currently-active question

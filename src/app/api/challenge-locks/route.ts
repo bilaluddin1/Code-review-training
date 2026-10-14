@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@/generated/prisma';
 import { isAdminSession } from '@/lib/isAdminSession';
+import { prisma } from "@/lib/prisma";
 
-const prisma = new PrismaClient();
+// Same static-caching trap as /api/leaderboard: GET has no cookies()/headers()
+// call, so without this it gets frozen into a build-time snapshot and never
+// reflects an admin's lock/unlock changes.
+export const dynamic = 'force-dynamic';
 
 // GET: Return all challenge lock states
 export async function GET() {

@@ -9,14 +9,9 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
-  Settings,
   Code,
-  Users,
-  BarChart3,
   Lock,
   LogOut,
-  Trash2,
-  AlertCircle
 } from "lucide-react"
 import { io } from 'socket.io-client'
 import type { Challenge } from "@/types/challenge"
@@ -28,8 +23,6 @@ export default function AdminDashboard() {
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("challenges");
-  const [resettingLeaderboard, setResettingLeaderboard] = useState(false);
-  const [resetMessage, setResetMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const router = useRouter();
 
   // Debug challenges state
@@ -173,46 +166,6 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleResetLeaderboard = async () => {
-    if (!confirm('⚠️ Are you sure you want to reset the leaderboard?\n\nThis will delete all leaderboard scores and rankings.\n\nChallenges, submissions, and locks will NOT be affected.')) {
-      return;
-    }
-
-    setResettingLeaderboard(true);
-    setResetMessage(null);
-
-    try {
-      const res = await fetch('/api/admin/reset-leaderboard', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to reset leaderboard');
-      }
-
-      setResetMessage({
-        type: 'success',
-        text: `Leaderboard reset successfully! Deleted ${data.deletedCount} users.`
-      });
-
-      // Auto-hide success message after 5 seconds
-      setTimeout(() => setResetMessage(null), 5000);
-
-    } catch (error) {
-      console.error('Error resetting leaderboard:', error);
-      setResetMessage({
-        type: 'error',
-        text: error instanceof Error ? error.message : 'Failed to reset leaderboard'
-      });
-    } finally {
-      setResettingLeaderboard(false);
-    }
-  };
-
   const handleLogout = async () => {
     try {
       await fetch('/api/admin-login', {
@@ -259,18 +212,14 @@ export default function AdminDashboard() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="challenges" className="flex items-center gap-2">
               <Code className="h-4 w-4" />
               Challenges
             </TabsTrigger>
             <TabsTrigger value="locks" className="flex items-center gap-2">
               <Lock className="h-4 w-4" />
-              Challenge Locks
-            </TabsTrigger>
-            <TabsTrigger value="analytics" className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4" />
-              Analytics
+              Locks, Reset &amp; Analytics
             </TabsTrigger>
           </TabsList>
 
@@ -295,108 +244,11 @@ export default function AdminDashboard() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {console.log('Rendering AdminPanel with:', { locks, challengesLength: challenges.length, challenges })}
                 <AdminPanel locks={locks} onToggleLock={handleToggleLock} challenges={challenges} />
               </CardContent>
             </Card>
           </TabsContent>
 
-          <TabsContent value="analytics" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5" />
-                  Analytics &amp; Data Management
-                </CardTitle>
-                <CardDescription>
-                  Manage leaderboard data and view platform statistics
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Reset Message Alert */}
-                {resetMessage && (
-                  <div
-                    className={`p-4 rounded-lg border flex items-start gap-3 ${resetMessage.type === 'success'
-                      ? 'bg-green-50 border-green-200 text-green-800'
-                      : 'bg-red-50 border-red-200 text-red-800'
-                      }`}
-                  >
-                    <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
-                    <div className="flex-1">
-                      <p className="font-medium">{resetMessage.text}</p>
-                    </div>
-                    <button
-                      onClick={() => setResetMessage(null)}
-                      className="text-gray-500 hover:text-gray-700"
-                    >
-                      ×
-                    </button>
-                  </div>
-                )}
-
-                {/* Reset Leaderboard Section */}
-                <div className="border rounded-lg p-6 bg-gray-50">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                        <Trash2 className="h-5 w-5 text-red-600" />
-                        Reset Leaderboard
-                      </h3>
-                      <p className="mt-2 text-sm text-gray-600">
-                        Full reset — clears all scores, attempts, and flag submissions. Users can participate again from scratch. This action cannot be undone.
-                      </p>
-                      <div className="mt-3 space-y-1 text-sm">
-                        <p className="text-green-600 flex items-center gap-1.5">
-                          <span className="font-mono">✓</span> Challenge definitions will be preserved
-                        </p>
-                        <p className="text-green-600 flex items-center gap-1.5">
-                          <span className="font-mono">✓</span> Challenge locks will be preserved
-                        </p>
-                        <p className="text-red-600 flex items-center gap-1.5 font-medium">
-                          <span className="font-mono">✗</span> Leaderboard scores will be deleted
-                        </p>
-                        <p className="text-red-600 flex items-center gap-1.5 font-medium">
-                          <span className="font-mono">✗</span> All challenge attempts will be deleted
-                        </p>
-                        <p className="text-red-600 flex items-center gap-1.5 font-medium">
-                          <span className="font-mono">✗</span> All flag submissions will be deleted
-                        </p>
-                      </div>
-                    </div>
-                    <Button
-                      onClick={handleResetLeaderboard}
-                      disabled={resettingLeaderboard}
-                      variant="destructive"
-                      className="ml-4"
-                    >
-                      {resettingLeaderboard ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                          Resetting...
-                        </>
-                      ) : (
-                        <>
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Reset Leaderboard
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Future Analytics Placeholder */}
-                <div className="border-t pt-6">
-                  <div className="text-center py-8 text-gray-500">
-                    <BarChart3 className="h-12 w-12 mx-auto mb-3 text-gray-400" />
-                    <p className="font-medium">Analytics dashboard coming soon</p>
-                    <p className="text-sm mt-1">
-                      Future features: user statistics, challenge completion rates, and performance metrics.
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
         </Tabs>
       </div>
     </div>

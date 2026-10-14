@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server';
 import { loadChallenges } from '@/lib/loadChallenges';
 
+// Same static-caching trap as /api/leaderboard: no cookies()/headers() call
+// here, so without this an admin's edits to challenges.json (new labs,
+// unlock changes to content) could get frozen at build time.
+export const dynamic = 'force-dynamic';
+
 // Public endpoint used by the player UI.
 // It MUST NOT expose the answer key. vulnerableLines, explanations and flag
 // are removed here; the server reveals them (via /api/submit-challenge) only

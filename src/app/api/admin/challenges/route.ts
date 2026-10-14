@@ -5,6 +5,10 @@ import type { Challenge } from '@/types/challenge';
 import fs from 'fs/promises';
 import path from 'path';
 
+// Explicit, so this GET can never get frozen into a build-time static
+// response - see /api/leaderboard for the bug this caused.
+export const dynamic = 'force-dynamic';
+
 // GET: Return all challenges
 export async function GET(req: NextRequest) {
   try {

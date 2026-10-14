@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { loadChallenges } from '@/lib/loadChallenges';
-
-import { PrismaClient } from '@/generated/prisma'
-
-const prisma = new PrismaClient()
+import { prisma } from "@/lib/prisma";
 
 export async function POST(req: NextRequest) {
   const { name, avatar, challengeId, selectedLines } = await req.json();

@@ -1,8 +1,5 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@/generated/prisma'
-
-const prisma = new PrismaClient()
-
+import { prisma } from "@/lib/prisma";
 // Reserved usernames that cannot be used by regular participants
 const RESERVED_USERNAMES = ['admin', 'administrator', 'root', 'system', 'moderator'];
 

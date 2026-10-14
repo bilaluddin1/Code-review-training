@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@/generated/prisma";
 import { isAdminSession } from "@/lib/isAdminSession";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
 
 // POST /api/admin/feedback-enabled { enabled?, currentTeam? } - admin-only.
 // Either field can be sent alone (e.g. just updating the team name without

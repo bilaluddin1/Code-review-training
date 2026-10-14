@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@/generated/prisma";
 import { isAdminSession } from "@/lib/isAdminSession";
 import { randomUUID } from "crypto";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
 
 // POST /api/admin/archive-session { teamName }
 // Snapshots the CURRENT leaderboard into SessionArchive, tagged with a team

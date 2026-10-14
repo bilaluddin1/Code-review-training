@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@/generated/prisma";
 import { isAdminSession } from "@/lib/isAdminSession";
 import { getActiveFeedbackQuestions } from "@/lib/effectiveFeedbackQuestions";
+import { prisma } from "@/lib/prisma";
 
-const prisma = new PrismaClient();
+// Explicit, so this GET can never get frozen into a build-time static
+// response - see /api/leaderboard for the bug this caused.
+export const dynamic = 'force-dynamic';
 
 // GET /api/admin/feedback-questions - every question, including inactive
 // ones, ordered - the full editor list (unlike the public endpoint, which

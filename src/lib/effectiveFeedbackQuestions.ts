@@ -1,7 +1,5 @@
-import { PrismaClient } from "@/generated/prisma";
 import { DEFAULT_FEEDBACK_QUESTIONS } from "@/lib/feedbackQuestions";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
 
 // Returns the live, active feedback questions in order - the ONLY source of
 // truth now (no hardcoded key list anywhere else). If the table is empty

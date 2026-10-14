@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@/generated/prisma";
+import { prisma } from "@/lib/prisma";
 
-const prisma = new PrismaClient();
+// Without this, a GET with no cookies()/headers() call gets cached as a
+// static response at build time - devs would keep seeing the button's
+// build-time state forever, no matter what the admin toggles later.
+export const dynamic = 'force-dynamic';
 
 // GET /api/feedback-enabled - public. Whether the "Give Feedback" button is
 // live for players right now, and which team the session is currently set
