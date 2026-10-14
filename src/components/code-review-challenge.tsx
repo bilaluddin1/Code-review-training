@@ -9,6 +9,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import { io, Socket } from 'socket.io-client'
 import { getSocketUrl } from '@/lib/get-socket-url'
+import { FEEDBACK_QUESTIONS, type FeedbackQuestionKey } from '@/lib/feedbackQuestions'
 
 // Simple avatar generator: pick a random emoji
 const AVATARS = ["🦊", "🐻", "🐼", "🐸", "🐵", "🐶", "🐱", "🦁", "🐯", "🐨", "🐰", "🦄", "🐙", "🐧", "🐢", "🐦", "🐝", "🐬", "🦋", "🐞"];
@@ -156,7 +157,12 @@ function AdminModal({ open, onSubmit, onClose, error }: { open: boolean, onSubmi
   );
 }
 
-type FeedbackValues = { overall: number; relevantToRole: number; realWorld: number; paceAndStructure: number; teamName: string; comments: string };
+type FeedbackValues = Record<FeedbackQuestionKey, number> & { teamName: string; comments: string };
+const EMPTY_FEEDBACK_VALUES: FeedbackValues = {
+  ...(Object.fromEntries(FEEDBACK_QUESTIONS.map((q) => [q.key, 0])) as Record<FeedbackQuestionKey, number>),
+  teamName: "",
+  comments: "",
+};
 
 function RatingRow({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
   return (
@@ -179,17 +185,22 @@ function RatingRow({ label, value, onChange }: { label: string; value: number; o
 }
 
 function FeedbackModal({ open, onSubmit, onClose }: { open: boolean; onSubmit: (v: FeedbackValues) => Promise<boolean>; onClose: () => void }) {
-  const [values, setValues] = useState<FeedbackValues>({ overall: 0, relevantToRole: 0, realWorld: 0, paceAndStructure: 0, teamName: "", comments: "" });
+  const [values, setValues] = useState<FeedbackValues>(EMPTY_FEEDBACK_VALUES);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
   if (!open) return null;
 
-  const allRated = values.overall > 0 && values.relevantToRole > 0 && values.realWorld > 0 && values.paceAndStructure > 0;
+  const allRated = FEEDBACK_QUESTIONS.every((q) => values[q.key] > 0);
+  const teamFilled = values.teamName.trim().length > 0;
 
   const submit = async () => {
+    if (!teamFilled) {
+      setError("Team is required.");
+      return;
+    }
     if (!allRated) {
-      setError("Please rate all four questions.");
+      setError("Please rate every question.");
       return;
     }
     setSubmitting(true);
@@ -217,12 +228,8 @@ function FeedbackModal({ open, onSubmit, onClose }: { open: boolean; onSubmit: (
           <>
             <h2 className="text-xl font-bold">Session Feedback</h2>
             <p className="text-gray-600 text-sm -mt-2">Rate 1 (poor) to 5 (excellent). Available any time - you don't need to finish every lab first.</p>
-            <RatingRow label="Overall, how was this session?" value={values.overall} onChange={(v) => setValues((s) => ({ ...s, overall: v }))} />
-            <RatingRow label="Relevant to your role" value={values.relevantToRole} onChange={(v) => setValues((s) => ({ ...s, relevantToRole: v }))} />
-            <RatingRow label="Real-world applicable" value={values.realWorld} onChange={(v) => setValues((s) => ({ ...s, realWorld: v }))} />
-            <RatingRow label="Pace and structure" value={values.paceAndStructure} onChange={(v) => setValues((s) => ({ ...s, paceAndStructure: v }))} />
             <div>
-              <div className="text-sm font-medium mb-1">Team (optional)</div>
+              <div className="text-sm font-medium mb-1">Team <span className="text-red-600">*</span></div>
               <input
                 className="border rounded px-3 py-2 w-full focus:outline-none focus:ring"
                 placeholder="e.g. VLCore"
@@ -230,6 +237,9 @@ function FeedbackModal({ open, onSubmit, onClose }: { open: boolean; onSubmit: (
                 onChange={(e) => setValues((s) => ({ ...s, teamName: e.target.value }))}
               />
             </div>
+            {FEEDBACK_QUESTIONS.map((q) => (
+              <RatingRow key={q.key} label={q.label} value={values[q.key]} onChange={(v) => setValues((s) => ({ ...s, [q.key]: v }))} />
+            ))}
             <div>
               <div className="text-sm font-medium mb-1">Anything else? (optional)</div>
               <Textarea
@@ -331,8 +341,8 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const [feedback, setFeedback] = useState<{
     count: number;
-    averages: { overall: number | null; relevantToRole: number | null; realWorld: number | null; paceAndStructure: number | null };
-    responses: { userName: string; teamName: string | null; overall: number; relevantToRole: number; realWorld: number; paceAndStructure: number; comments: string | null; createdAt: string }[];
+    averages: Record<FeedbackQuestionKey, number | null>;
+    responses: (Record<FeedbackQuestionKey, number> & { userName: string; teamName: string | null; comments: string | null; createdAt: string })[];
   } | null>(null);
   const [feedbackToggle, setFeedbackToggle] = useState(false);
   const [feedbackToggleLoading, setFeedbackToggleLoading] = useState(false);
@@ -739,7 +749,8 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
                     <h3 className="font-semibold">Dev Feedback ({feedback?.count ?? 0} response{feedback?.count === 1 ? '' : 's'})</h3>
                     {feedback && feedback.count > 0 && (
                       <p className="text-sm text-gray-600">
-                        Avg overall {feedback.averages.overall} · relevant to role {feedback.averages.relevantToRole} · real-world {feedback.averages.realWorld} · pace {feedback.averages.paceAndStructure}
+                        Avg overall {feedback.averages.overall} · relevant to role {feedback.averages.relevantToRole} · pace {feedback.averages.paceAndStructure} · more confident {feedback.averages.moreConfident}
+                        <span className="text-xs text-gray-400"> (full breakdown of all {FEEDBACK_QUESTIONS.length} questions in the CSV)</span>
                       </p>
                     )}
                   </div>
@@ -758,8 +769,14 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
                       feedback &&
                       downloadCsv(
                         'feedback.csv',
-                        ['Name', 'Team', 'Overall', 'Relevant to Role', 'Real-World', 'Pace', 'Comments', 'Submitted At'],
-                        feedback.responses.map((r) => [r.userName, r.teamName ?? '', r.overall, r.relevantToRole, r.realWorld, r.paceAndStructure, r.comments ?? '', new Date(r.createdAt).toLocaleString()])
+                        ['Name', 'Team', ...FEEDBACK_QUESTIONS.map((q) => q.label), 'Comments', 'Submitted At'],
+                        feedback.responses.map((r) => [
+                          r.userName,
+                          r.teamName ?? '',
+                          ...FEEDBACK_QUESTIONS.map((q) => r[q.key]),
+                          r.comments ?? '',
+                          new Date(r.createdAt).toLocaleString(),
+                        ])
                       )
                     }
                   >
@@ -775,7 +792,9 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
                           <span>{r.userName}{r.teamName ? ` · ${r.teamName}` : ''}</span>
                           <span className="text-gray-500">{new Date(r.createdAt).toLocaleString()}</span>
                         </div>
-                        <div className="text-xs text-gray-600">Overall {r.overall} · Role {r.relevantToRole} · Real-world {r.realWorld} · Pace {r.paceAndStructure}</div>
+                        <div className="text-xs text-gray-600">
+                          {FEEDBACK_QUESTIONS.map((q) => `${q.label}: ${r[q.key]}`).join(' · ')}
+                        </div>
                         {r.comments && <div className="text-gray-700 mt-1 italic">&quot;{r.comments}&quot;</div>}
                       </div>
                     ))}

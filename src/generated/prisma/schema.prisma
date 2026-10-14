@@ -62,16 +62,28 @@ model SessionArchive {
 // not gated on finishing every lab. teamName is free text they type, same
 // as the admin types when archiving a session, so results can be
 // cross-referenced by eye (team + rough date) in the Analytics tab.
+// teamName stays nullable in the DB (so older rows are never invalidated by
+// a schema change), but the API and UI both require it on every new submission.
+// Question set matches last year's full training survey, 1-5 each.
 model FeedbackResponse {
-  id               String   @id @default(uuid())
-  userName         String
-  teamName         String?
-  overall          Int // 1-5
-  relevantToRole   Int // 1-5
-  realWorld        Int // 1-5
-  paceAndStructure Int // 1-5
-  comments         String?
-  createdAt        DateTime @default(now())
+  id                     String   @id @default(uuid())
+  userName               String
+  teamName               String?
+  overall                Int // Overall, how was this session?
+  relevantToRole         Int // Relevant to my role
+  objectivesClear        Int // Objectives were clear
+  realWorld              Int // Real-world applicable
+  trainerEngaging        Int // Trainer was engaging
+  interactiveQA          Int // Interactive / Q&A
+  paceAndStructure       Int // Pace and structure
+  materialsClear         Int // Materials were clear
+  supplementaryResources Int // Supplementary resources
+  materialQuality        Int // Material quality
+  practicalSkills        Int // Practical skills gained
+  realExamplesUsed       Int // Real examples were used
+  moreConfident          Int // I feel more confident spotting this myself now
+  comments               String?
+  createdAt              DateTime @default(now())
 }
 
 // Single-row switch: the "Give Feedback" button stays greyed out for

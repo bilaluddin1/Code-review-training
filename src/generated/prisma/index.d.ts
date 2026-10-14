@@ -6476,15 +6476,33 @@ export namespace Prisma {
   export type FeedbackResponseAvgAggregateOutputType = {
     overall: number | null
     relevantToRole: number | null
+    objectivesClear: number | null
     realWorld: number | null
+    trainerEngaging: number | null
+    interactiveQA: number | null
     paceAndStructure: number | null
+    materialsClear: number | null
+    supplementaryResources: number | null
+    materialQuality: number | null
+    practicalSkills: number | null
+    realExamplesUsed: number | null
+    moreConfident: number | null
   }
 
   export type FeedbackResponseSumAggregateOutputType = {
     overall: number | null
     relevantToRole: number | null
+    objectivesClear: number | null
     realWorld: number | null
+    trainerEngaging: number | null
+    interactiveQA: number | null
     paceAndStructure: number | null
+    materialsClear: number | null
+    supplementaryResources: number | null
+    materialQuality: number | null
+    practicalSkills: number | null
+    realExamplesUsed: number | null
+    moreConfident: number | null
   }
 
   export type FeedbackResponseMinAggregateOutputType = {
@@ -6493,8 +6511,17 @@ export namespace Prisma {
     teamName: string | null
     overall: number | null
     relevantToRole: number | null
+    objectivesClear: number | null
     realWorld: number | null
+    trainerEngaging: number | null
+    interactiveQA: number | null
     paceAndStructure: number | null
+    materialsClear: number | null
+    supplementaryResources: number | null
+    materialQuality: number | null
+    practicalSkills: number | null
+    realExamplesUsed: number | null
+    moreConfident: number | null
     comments: string | null
     createdAt: Date | null
   }
@@ -6505,8 +6532,17 @@ export namespace Prisma {
     teamName: string | null
     overall: number | null
     relevantToRole: number | null
+    objectivesClear: number | null
     realWorld: number | null
+    trainerEngaging: number | null
+    interactiveQA: number | null
     paceAndStructure: number | null
+    materialsClear: number | null
+    supplementaryResources: number | null
+    materialQuality: number | null
+    practicalSkills: number | null
+    realExamplesUsed: number | null
+    moreConfident: number | null
     comments: string | null
     createdAt: Date | null
   }
@@ -6517,8 +6553,17 @@ export namespace Prisma {
     teamName: number
     overall: number
     relevantToRole: number
+    objectivesClear: number
     realWorld: number
+    trainerEngaging: number
+    interactiveQA: number
     paceAndStructure: number
+    materialsClear: number
+    supplementaryResources: number
+    materialQuality: number
+    practicalSkills: number
+    realExamplesUsed: number
+    moreConfident: number
     comments: number
     createdAt: number
     _all: number
@@ -6528,15 +6573,33 @@ export namespace Prisma {
   export type FeedbackResponseAvgAggregateInputType = {
     overall?: true
     relevantToRole?: true
+    objectivesClear?: true
     realWorld?: true
+    trainerEngaging?: true
+    interactiveQA?: true
     paceAndStructure?: true
+    materialsClear?: true
+    supplementaryResources?: true
+    materialQuality?: true
+    practicalSkills?: true
+    realExamplesUsed?: true
+    moreConfident?: true
   }
 
   export type FeedbackResponseSumAggregateInputType = {
     overall?: true
     relevantToRole?: true
+    objectivesClear?: true
     realWorld?: true
+    trainerEngaging?: true
+    interactiveQA?: true
     paceAndStructure?: true
+    materialsClear?: true
+    supplementaryResources?: true
+    materialQuality?: true
+    practicalSkills?: true
+    realExamplesUsed?: true
+    moreConfident?: true
   }
 
   export type FeedbackResponseMinAggregateInputType = {
@@ -6545,8 +6608,17 @@ export namespace Prisma {
     teamName?: true
     overall?: true
     relevantToRole?: true
+    objectivesClear?: true
     realWorld?: true
+    trainerEngaging?: true
+    interactiveQA?: true
     paceAndStructure?: true
+    materialsClear?: true
+    supplementaryResources?: true
+    materialQuality?: true
+    practicalSkills?: true
+    realExamplesUsed?: true
+    moreConfident?: true
     comments?: true
     createdAt?: true
   }
@@ -6557,8 +6629,17 @@ export namespace Prisma {
     teamName?: true
     overall?: true
     relevantToRole?: true
+    objectivesClear?: true
     realWorld?: true
+    trainerEngaging?: true
+    interactiveQA?: true
     paceAndStructure?: true
+    materialsClear?: true
+    supplementaryResources?: true
+    materialQuality?: true
+    practicalSkills?: true
+    realExamplesUsed?: true
+    moreConfident?: true
     comments?: true
     createdAt?: true
   }
@@ -6569,8 +6650,17 @@ export namespace Prisma {
     teamName?: true
     overall?: true
     relevantToRole?: true
+    objectivesClear?: true
     realWorld?: true
+    trainerEngaging?: true
+    interactiveQA?: true
     paceAndStructure?: true
+    materialsClear?: true
+    supplementaryResources?: true
+    materialQuality?: true
+    practicalSkills?: true
+    realExamplesUsed?: true
+    moreConfident?: true
     comments?: true
     createdAt?: true
     _all?: true
@@ -6668,8 +6758,17 @@ export namespace Prisma {
     teamName: string | null
     overall: number
     relevantToRole: number
+    objectivesClear: number
     realWorld: number
+    trainerEngaging: number
+    interactiveQA: number
     paceAndStructure: number
+    materialsClear: number
+    supplementaryResources: number
+    materialQuality: number
+    practicalSkills: number
+    realExamplesUsed: number
+    moreConfident: number
     comments: string | null
     createdAt: Date
     _count: FeedbackResponseCountAggregateOutputType | null
@@ -6699,8 +6798,17 @@ export namespace Prisma {
     teamName?: boolean
     overall?: boolean
     relevantToRole?: boolean
+    objectivesClear?: boolean
     realWorld?: boolean
+    trainerEngaging?: boolean
+    interactiveQA?: boolean
     paceAndStructure?: boolean
+    materialsClear?: boolean
+    supplementaryResources?: boolean
+    materialQuality?: boolean
+    practicalSkills?: boolean
+    realExamplesUsed?: boolean
+    moreConfident?: boolean
     comments?: boolean
     createdAt?: boolean
   }, ExtArgs["result"]["feedbackResponse"]>
@@ -6711,8 +6819,17 @@ export namespace Prisma {
     teamName?: boolean
     overall?: boolean
     relevantToRole?: boolean
+    objectivesClear?: boolean
     realWorld?: boolean
+    trainerEngaging?: boolean
+    interactiveQA?: boolean
     paceAndStructure?: boolean
+    materialsClear?: boolean
+    supplementaryResources?: boolean
+    materialQuality?: boolean
+    practicalSkills?: boolean
+    realExamplesUsed?: boolean
+    moreConfident?: boolean
     comments?: boolean
     createdAt?: boolean
   }, ExtArgs["result"]["feedbackResponse"]>
@@ -6723,8 +6840,17 @@ export namespace Prisma {
     teamName?: boolean
     overall?: boolean
     relevantToRole?: boolean
+    objectivesClear?: boolean
     realWorld?: boolean
+    trainerEngaging?: boolean
+    interactiveQA?: boolean
     paceAndStructure?: boolean
+    materialsClear?: boolean
+    supplementaryResources?: boolean
+    materialQuality?: boolean
+    practicalSkills?: boolean
+    realExamplesUsed?: boolean
+    moreConfident?: boolean
     comments?: boolean
     createdAt?: boolean
   }, ExtArgs["result"]["feedbackResponse"]>
@@ -6735,13 +6861,22 @@ export namespace Prisma {
     teamName?: boolean
     overall?: boolean
     relevantToRole?: boolean
+    objectivesClear?: boolean
     realWorld?: boolean
+    trainerEngaging?: boolean
+    interactiveQA?: boolean
     paceAndStructure?: boolean
+    materialsClear?: boolean
+    supplementaryResources?: boolean
+    materialQuality?: boolean
+    practicalSkills?: boolean
+    realExamplesUsed?: boolean
+    moreConfident?: boolean
     comments?: boolean
     createdAt?: boolean
   }
 
-  export type FeedbackResponseOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userName" | "teamName" | "overall" | "relevantToRole" | "realWorld" | "paceAndStructure" | "comments" | "createdAt", ExtArgs["result"]["feedbackResponse"]>
+  export type FeedbackResponseOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userName" | "teamName" | "overall" | "relevantToRole" | "objectivesClear" | "realWorld" | "trainerEngaging" | "interactiveQA" | "paceAndStructure" | "materialsClear" | "supplementaryResources" | "materialQuality" | "practicalSkills" | "realExamplesUsed" | "moreConfident" | "comments" | "createdAt", ExtArgs["result"]["feedbackResponse"]>
 
   export type $FeedbackResponsePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "FeedbackResponse"
@@ -6752,8 +6887,17 @@ export namespace Prisma {
       teamName: string | null
       overall: number
       relevantToRole: number
+      objectivesClear: number
       realWorld: number
+      trainerEngaging: number
+      interactiveQA: number
       paceAndStructure: number
+      materialsClear: number
+      supplementaryResources: number
+      materialQuality: number
+      practicalSkills: number
+      realExamplesUsed: number
+      moreConfident: number
       comments: string | null
       createdAt: Date
     }, ExtArgs["result"]["feedbackResponse"]>
@@ -7184,8 +7328,17 @@ export namespace Prisma {
     readonly teamName: FieldRef<"FeedbackResponse", 'String'>
     readonly overall: FieldRef<"FeedbackResponse", 'Int'>
     readonly relevantToRole: FieldRef<"FeedbackResponse", 'Int'>
+    readonly objectivesClear: FieldRef<"FeedbackResponse", 'Int'>
     readonly realWorld: FieldRef<"FeedbackResponse", 'Int'>
+    readonly trainerEngaging: FieldRef<"FeedbackResponse", 'Int'>
+    readonly interactiveQA: FieldRef<"FeedbackResponse", 'Int'>
     readonly paceAndStructure: FieldRef<"FeedbackResponse", 'Int'>
+    readonly materialsClear: FieldRef<"FeedbackResponse", 'Int'>
+    readonly supplementaryResources: FieldRef<"FeedbackResponse", 'Int'>
+    readonly materialQuality: FieldRef<"FeedbackResponse", 'Int'>
+    readonly practicalSkills: FieldRef<"FeedbackResponse", 'Int'>
+    readonly realExamplesUsed: FieldRef<"FeedbackResponse", 'Int'>
+    readonly moreConfident: FieldRef<"FeedbackResponse", 'Int'>
     readonly comments: FieldRef<"FeedbackResponse", 'String'>
     readonly createdAt: FieldRef<"FeedbackResponse", 'DateTime'>
   }
@@ -8613,8 +8766,17 @@ export namespace Prisma {
     teamName: 'teamName',
     overall: 'overall',
     relevantToRole: 'relevantToRole',
+    objectivesClear: 'objectivesClear',
     realWorld: 'realWorld',
+    trainerEngaging: 'trainerEngaging',
+    interactiveQA: 'interactiveQA',
     paceAndStructure: 'paceAndStructure',
+    materialsClear: 'materialsClear',
+    supplementaryResources: 'supplementaryResources',
+    materialQuality: 'materialQuality',
+    practicalSkills: 'practicalSkills',
+    realExamplesUsed: 'realExamplesUsed',
+    moreConfident: 'moreConfident',
     comments: 'comments',
     createdAt: 'createdAt'
   };
@@ -8967,8 +9129,17 @@ export namespace Prisma {
     teamName?: StringNullableFilter<"FeedbackResponse"> | string | null
     overall?: IntFilter<"FeedbackResponse"> | number
     relevantToRole?: IntFilter<"FeedbackResponse"> | number
+    objectivesClear?: IntFilter<"FeedbackResponse"> | number
     realWorld?: IntFilter<"FeedbackResponse"> | number
+    trainerEngaging?: IntFilter<"FeedbackResponse"> | number
+    interactiveQA?: IntFilter<"FeedbackResponse"> | number
     paceAndStructure?: IntFilter<"FeedbackResponse"> | number
+    materialsClear?: IntFilter<"FeedbackResponse"> | number
+    supplementaryResources?: IntFilter<"FeedbackResponse"> | number
+    materialQuality?: IntFilter<"FeedbackResponse"> | number
+    practicalSkills?: IntFilter<"FeedbackResponse"> | number
+    realExamplesUsed?: IntFilter<"FeedbackResponse"> | number
+    moreConfident?: IntFilter<"FeedbackResponse"> | number
     comments?: StringNullableFilter<"FeedbackResponse"> | string | null
     createdAt?: DateTimeFilter<"FeedbackResponse"> | Date | string
   }
@@ -8979,8 +9150,17 @@ export namespace Prisma {
     teamName?: SortOrderInput | SortOrder
     overall?: SortOrder
     relevantToRole?: SortOrder
+    objectivesClear?: SortOrder
     realWorld?: SortOrder
+    trainerEngaging?: SortOrder
+    interactiveQA?: SortOrder
     paceAndStructure?: SortOrder
+    materialsClear?: SortOrder
+    supplementaryResources?: SortOrder
+    materialQuality?: SortOrder
+    practicalSkills?: SortOrder
+    realExamplesUsed?: SortOrder
+    moreConfident?: SortOrder
     comments?: SortOrderInput | SortOrder
     createdAt?: SortOrder
   }
@@ -8994,8 +9174,17 @@ export namespace Prisma {
     teamName?: StringNullableFilter<"FeedbackResponse"> | string | null
     overall?: IntFilter<"FeedbackResponse"> | number
     relevantToRole?: IntFilter<"FeedbackResponse"> | number
+    objectivesClear?: IntFilter<"FeedbackResponse"> | number
     realWorld?: IntFilter<"FeedbackResponse"> | number
+    trainerEngaging?: IntFilter<"FeedbackResponse"> | number
+    interactiveQA?: IntFilter<"FeedbackResponse"> | number
     paceAndStructure?: IntFilter<"FeedbackResponse"> | number
+    materialsClear?: IntFilter<"FeedbackResponse"> | number
+    supplementaryResources?: IntFilter<"FeedbackResponse"> | number
+    materialQuality?: IntFilter<"FeedbackResponse"> | number
+    practicalSkills?: IntFilter<"FeedbackResponse"> | number
+    realExamplesUsed?: IntFilter<"FeedbackResponse"> | number
+    moreConfident?: IntFilter<"FeedbackResponse"> | number
     comments?: StringNullableFilter<"FeedbackResponse"> | string | null
     createdAt?: DateTimeFilter<"FeedbackResponse"> | Date | string
   }, "id">
@@ -9006,8 +9195,17 @@ export namespace Prisma {
     teamName?: SortOrderInput | SortOrder
     overall?: SortOrder
     relevantToRole?: SortOrder
+    objectivesClear?: SortOrder
     realWorld?: SortOrder
+    trainerEngaging?: SortOrder
+    interactiveQA?: SortOrder
     paceAndStructure?: SortOrder
+    materialsClear?: SortOrder
+    supplementaryResources?: SortOrder
+    materialQuality?: SortOrder
+    practicalSkills?: SortOrder
+    realExamplesUsed?: SortOrder
+    moreConfident?: SortOrder
     comments?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     _count?: FeedbackResponseCountOrderByAggregateInput
@@ -9026,8 +9224,17 @@ export namespace Prisma {
     teamName?: StringNullableWithAggregatesFilter<"FeedbackResponse"> | string | null
     overall?: IntWithAggregatesFilter<"FeedbackResponse"> | number
     relevantToRole?: IntWithAggregatesFilter<"FeedbackResponse"> | number
+    objectivesClear?: IntWithAggregatesFilter<"FeedbackResponse"> | number
     realWorld?: IntWithAggregatesFilter<"FeedbackResponse"> | number
+    trainerEngaging?: IntWithAggregatesFilter<"FeedbackResponse"> | number
+    interactiveQA?: IntWithAggregatesFilter<"FeedbackResponse"> | number
     paceAndStructure?: IntWithAggregatesFilter<"FeedbackResponse"> | number
+    materialsClear?: IntWithAggregatesFilter<"FeedbackResponse"> | number
+    supplementaryResources?: IntWithAggregatesFilter<"FeedbackResponse"> | number
+    materialQuality?: IntWithAggregatesFilter<"FeedbackResponse"> | number
+    practicalSkills?: IntWithAggregatesFilter<"FeedbackResponse"> | number
+    realExamplesUsed?: IntWithAggregatesFilter<"FeedbackResponse"> | number
+    moreConfident?: IntWithAggregatesFilter<"FeedbackResponse"> | number
     comments?: StringNullableWithAggregatesFilter<"FeedbackResponse"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"FeedbackResponse"> | Date | string
   }
@@ -9364,8 +9571,17 @@ export namespace Prisma {
     teamName?: string | null
     overall: number
     relevantToRole: number
+    objectivesClear: number
     realWorld: number
+    trainerEngaging: number
+    interactiveQA: number
     paceAndStructure: number
+    materialsClear: number
+    supplementaryResources: number
+    materialQuality: number
+    practicalSkills: number
+    realExamplesUsed: number
+    moreConfident: number
     comments?: string | null
     createdAt?: Date | string
   }
@@ -9376,8 +9592,17 @@ export namespace Prisma {
     teamName?: string | null
     overall: number
     relevantToRole: number
+    objectivesClear: number
     realWorld: number
+    trainerEngaging: number
+    interactiveQA: number
     paceAndStructure: number
+    materialsClear: number
+    supplementaryResources: number
+    materialQuality: number
+    practicalSkills: number
+    realExamplesUsed: number
+    moreConfident: number
     comments?: string | null
     createdAt?: Date | string
   }
@@ -9388,8 +9613,17 @@ export namespace Prisma {
     teamName?: NullableStringFieldUpdateOperationsInput | string | null
     overall?: IntFieldUpdateOperationsInput | number
     relevantToRole?: IntFieldUpdateOperationsInput | number
+    objectivesClear?: IntFieldUpdateOperationsInput | number
     realWorld?: IntFieldUpdateOperationsInput | number
+    trainerEngaging?: IntFieldUpdateOperationsInput | number
+    interactiveQA?: IntFieldUpdateOperationsInput | number
     paceAndStructure?: IntFieldUpdateOperationsInput | number
+    materialsClear?: IntFieldUpdateOperationsInput | number
+    supplementaryResources?: IntFieldUpdateOperationsInput | number
+    materialQuality?: IntFieldUpdateOperationsInput | number
+    practicalSkills?: IntFieldUpdateOperationsInput | number
+    realExamplesUsed?: IntFieldUpdateOperationsInput | number
+    moreConfident?: IntFieldUpdateOperationsInput | number
     comments?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -9400,8 +9634,17 @@ export namespace Prisma {
     teamName?: NullableStringFieldUpdateOperationsInput | string | null
     overall?: IntFieldUpdateOperationsInput | number
     relevantToRole?: IntFieldUpdateOperationsInput | number
+    objectivesClear?: IntFieldUpdateOperationsInput | number
     realWorld?: IntFieldUpdateOperationsInput | number
+    trainerEngaging?: IntFieldUpdateOperationsInput | number
+    interactiveQA?: IntFieldUpdateOperationsInput | number
     paceAndStructure?: IntFieldUpdateOperationsInput | number
+    materialsClear?: IntFieldUpdateOperationsInput | number
+    supplementaryResources?: IntFieldUpdateOperationsInput | number
+    materialQuality?: IntFieldUpdateOperationsInput | number
+    practicalSkills?: IntFieldUpdateOperationsInput | number
+    realExamplesUsed?: IntFieldUpdateOperationsInput | number
+    moreConfident?: IntFieldUpdateOperationsInput | number
     comments?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -9412,8 +9655,17 @@ export namespace Prisma {
     teamName?: string | null
     overall: number
     relevantToRole: number
+    objectivesClear: number
     realWorld: number
+    trainerEngaging: number
+    interactiveQA: number
     paceAndStructure: number
+    materialsClear: number
+    supplementaryResources: number
+    materialQuality: number
+    practicalSkills: number
+    realExamplesUsed: number
+    moreConfident: number
     comments?: string | null
     createdAt?: Date | string
   }
@@ -9424,8 +9676,17 @@ export namespace Prisma {
     teamName?: NullableStringFieldUpdateOperationsInput | string | null
     overall?: IntFieldUpdateOperationsInput | number
     relevantToRole?: IntFieldUpdateOperationsInput | number
+    objectivesClear?: IntFieldUpdateOperationsInput | number
     realWorld?: IntFieldUpdateOperationsInput | number
+    trainerEngaging?: IntFieldUpdateOperationsInput | number
+    interactiveQA?: IntFieldUpdateOperationsInput | number
     paceAndStructure?: IntFieldUpdateOperationsInput | number
+    materialsClear?: IntFieldUpdateOperationsInput | number
+    supplementaryResources?: IntFieldUpdateOperationsInput | number
+    materialQuality?: IntFieldUpdateOperationsInput | number
+    practicalSkills?: IntFieldUpdateOperationsInput | number
+    realExamplesUsed?: IntFieldUpdateOperationsInput | number
+    moreConfident?: IntFieldUpdateOperationsInput | number
     comments?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -9436,8 +9697,17 @@ export namespace Prisma {
     teamName?: NullableStringFieldUpdateOperationsInput | string | null
     overall?: IntFieldUpdateOperationsInput | number
     relevantToRole?: IntFieldUpdateOperationsInput | number
+    objectivesClear?: IntFieldUpdateOperationsInput | number
     realWorld?: IntFieldUpdateOperationsInput | number
+    trainerEngaging?: IntFieldUpdateOperationsInput | number
+    interactiveQA?: IntFieldUpdateOperationsInput | number
     paceAndStructure?: IntFieldUpdateOperationsInput | number
+    materialsClear?: IntFieldUpdateOperationsInput | number
+    supplementaryResources?: IntFieldUpdateOperationsInput | number
+    materialQuality?: IntFieldUpdateOperationsInput | number
+    practicalSkills?: IntFieldUpdateOperationsInput | number
+    realExamplesUsed?: IntFieldUpdateOperationsInput | number
+    moreConfident?: IntFieldUpdateOperationsInput | number
     comments?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -9737,8 +10007,17 @@ export namespace Prisma {
     teamName?: SortOrder
     overall?: SortOrder
     relevantToRole?: SortOrder
+    objectivesClear?: SortOrder
     realWorld?: SortOrder
+    trainerEngaging?: SortOrder
+    interactiveQA?: SortOrder
     paceAndStructure?: SortOrder
+    materialsClear?: SortOrder
+    supplementaryResources?: SortOrder
+    materialQuality?: SortOrder
+    practicalSkills?: SortOrder
+    realExamplesUsed?: SortOrder
+    moreConfident?: SortOrder
     comments?: SortOrder
     createdAt?: SortOrder
   }
@@ -9746,8 +10025,17 @@ export namespace Prisma {
   export type FeedbackResponseAvgOrderByAggregateInput = {
     overall?: SortOrder
     relevantToRole?: SortOrder
+    objectivesClear?: SortOrder
     realWorld?: SortOrder
+    trainerEngaging?: SortOrder
+    interactiveQA?: SortOrder
     paceAndStructure?: SortOrder
+    materialsClear?: SortOrder
+    supplementaryResources?: SortOrder
+    materialQuality?: SortOrder
+    practicalSkills?: SortOrder
+    realExamplesUsed?: SortOrder
+    moreConfident?: SortOrder
   }
 
   export type FeedbackResponseMaxOrderByAggregateInput = {
@@ -9756,8 +10044,17 @@ export namespace Prisma {
     teamName?: SortOrder
     overall?: SortOrder
     relevantToRole?: SortOrder
+    objectivesClear?: SortOrder
     realWorld?: SortOrder
+    trainerEngaging?: SortOrder
+    interactiveQA?: SortOrder
     paceAndStructure?: SortOrder
+    materialsClear?: SortOrder
+    supplementaryResources?: SortOrder
+    materialQuality?: SortOrder
+    practicalSkills?: SortOrder
+    realExamplesUsed?: SortOrder
+    moreConfident?: SortOrder
     comments?: SortOrder
     createdAt?: SortOrder
   }
@@ -9768,8 +10065,17 @@ export namespace Prisma {
     teamName?: SortOrder
     overall?: SortOrder
     relevantToRole?: SortOrder
+    objectivesClear?: SortOrder
     realWorld?: SortOrder
+    trainerEngaging?: SortOrder
+    interactiveQA?: SortOrder
     paceAndStructure?: SortOrder
+    materialsClear?: SortOrder
+    supplementaryResources?: SortOrder
+    materialQuality?: SortOrder
+    practicalSkills?: SortOrder
+    realExamplesUsed?: SortOrder
+    moreConfident?: SortOrder
     comments?: SortOrder
     createdAt?: SortOrder
   }
@@ -9777,8 +10083,17 @@ export namespace Prisma {
   export type FeedbackResponseSumOrderByAggregateInput = {
     overall?: SortOrder
     relevantToRole?: SortOrder
+    objectivesClear?: SortOrder
     realWorld?: SortOrder
+    trainerEngaging?: SortOrder
+    interactiveQA?: SortOrder
     paceAndStructure?: SortOrder
+    materialsClear?: SortOrder
+    supplementaryResources?: SortOrder
+    materialQuality?: SortOrder
+    practicalSkills?: SortOrder
+    realExamplesUsed?: SortOrder
+    moreConfident?: SortOrder
   }
 
   export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {

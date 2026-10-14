@@ -164,8 +164,17 @@ exports.Prisma.FeedbackResponseScalarFieldEnum = {
   teamName: 'teamName',
   overall: 'overall',
   relevantToRole: 'relevantToRole',
+  objectivesClear: 'objectivesClear',
   realWorld: 'realWorld',
+  trainerEngaging: 'trainerEngaging',
+  interactiveQA: 'interactiveQA',
   paceAndStructure: 'paceAndStructure',
+  materialsClear: 'materialsClear',
+  supplementaryResources: 'supplementaryResources',
+  materialQuality: 'materialQuality',
+  practicalSkills: 'practicalSkills',
+  realExamplesUsed: 'realExamplesUsed',
+  moreConfident: 'moreConfident',
   comments: 'comments',
   createdAt: 'createdAt'
 };
