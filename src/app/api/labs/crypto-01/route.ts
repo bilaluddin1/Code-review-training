@@ -17,7 +17,11 @@ export async function GET(req: NextRequest) {
   const { username, valid } = readCookie(cookie);
   if (!valid) return NextResponse.json({ error: "Invalid cookie" }, { status: 401 });
   if (username === "admin") {
-    return NextResponse.json({ loggedInAs: username, secret: "ADMIN-ONLY: Q4 pricing changes, do not share externally" });
+    return NextResponse.json({
+      loggedInAs: username,
+      secret: "ADMIN-ONLY: Q4 pricing changes, do not share externally",
+      flag: "FLAG{43141c521f}",
+    });
   }
   return NextResponse.json({ loggedInAs: username, secret: null });
 }

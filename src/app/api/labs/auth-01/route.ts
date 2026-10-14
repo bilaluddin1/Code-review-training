@@ -13,5 +13,11 @@ export async function POST(req: NextRequest) {
   const { token } = await req.json().catch(() => ({ token: "" }));
   const { rejected, reason } = isTokenRejected(token ?? "");
   if (rejected) return NextResponse.json({ accessGranted: false, reason }, { status: 401 });
-  return NextResponse.json({ accessGranted: true, reason, secret: "ADMIN-ONLY resource unlocked" });
+  const exploited = reason.startsWith("FAIL-OPEN"); // only the bug path, not a legitimately-valid token
+  return NextResponse.json({
+    accessGranted: true,
+    reason,
+    secret: "ADMIN-ONLY resource unlocked",
+    ...(exploited ? { flag: "FLAG{842139d233}" } : {}),
+  });
 }

@@ -10,5 +10,7 @@ export async function GET() {
 }
 export async function POST(req: NextRequest) {
   const { html } = await req.json().catch(() => ({ html: "" }));
-  return NextResponse.json({ html: setEngagementInstructions(String(html ?? "")) });
+  const stored = setEngagementInstructions(String(html ?? ""));
+  const exploited = /<script|onerror\s*=|onload\s*=|<img/i.test(stored);
+  return NextResponse.json({ html: stored, ...(exploited ? { flag: "FLAG{3f6daa1cd6}" } : {}) });
 }

@@ -42,3 +42,18 @@ model FlagSubmission {
   correct     Boolean
   createdAt   DateTime @default(now())
 }
+
+// A frozen snapshot of the leaderboard, taken right before "Reset Everything"
+// wipes it. Lets each product team's session results be kept and exported
+// (CSV) even after the next team's session resets the live leaderboard.
+model SessionArchive {
+  id         String   @id @default(uuid())
+  sessionId  String   // groups the rows taken in one archive call together
+  teamName   String
+  archivedAt DateTime @default(now())
+  userName   String
+  avatar     String
+  score      Int
+
+  @@index([sessionId])
+}

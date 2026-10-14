@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: false, error: 'Invalid JSON' }, { status: 400 });
   }
   const { password, logout } = body;
-  console.log('[ADMIN-LOGIN] password:', password, 'logout:', logout);
+  console.log('[ADMIN-LOGIN] attempt, logout:', !!logout); // never log the password itself
 
   // Prepare the response object you will return
   const res = NextResponse.json({ success: true });

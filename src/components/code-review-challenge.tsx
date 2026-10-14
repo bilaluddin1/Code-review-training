@@ -220,6 +220,12 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
 }) {
   const [resetting, setResetting] = useState(false);
   const [resetSuccess, setResetSuccess] = useState(false);
+  const [view, setView] = useState<"unlocks" | "analytics">("unlocks");
+  const [analytics, setAnalytics] = useState<{
+    sessions: { sessionId: string; teamName: string; archivedAt: string; results: { userName: string; avatar: string; score: number }[] }[];
+    live: { userName: string; avatar: string; score: number }[];
+  } | null>(null);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const [timerDurations, setTimerDurations] = useState<Record<string, number>>({});
   const [timers, setTimers] = useState<Record<string, { startTime: number; duration: number; isRunning: boolean; isPaused: boolean; remaining?: number }>>({});
   const [timeLefts, setTimeLefts] = useState<Record<string, number>>({});
@@ -336,13 +342,62 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
     return timeLefts[challengeId] || 0;
   };
 
+  const fetchAnalytics = async () => {
+    setAnalyticsLoading(true);
+    const res = await fetch('/api/admin/analytics');
+    if (res.ok) setAnalytics(await res.json());
+    setAnalyticsLoading(false);
+  };
+
+  useEffect(() => {
+    if (view === 'analytics') fetchAnalytics();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [view]);
+
+  const downloadCsv = (filename: string, header: string[], rows: (string | number)[][]) => {
+    const esc = (v: string | number) => {
+      const s = String(v);
+      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    const csv = [header, ...rows].map((r) => r.map(esc).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   const handleReset = async () => {
-    if (!window.confirm('Are you sure you want to reset everything? This cannot be undone.')) return;
+    // Sessions run one product team at a time. Archive the current leaderboard
+    // under that team's name BEFORE wiping it, so nothing is lost when the
+    // next team starts with a clean slate.
+    const teamName = window.prompt('Team name for this session (archived before reset):');
+    if (teamName === null) return; // cancelled
+    if (!window.confirm(`Archive the current leaderboard as "${teamName.trim() || '(unnamed)'}" and then reset everything? This cannot be undone.`)) return;
     setResetting(true);
     setResetSuccess(false);
+    if (teamName.trim()) {
+      const archiveRes = await fetch('/api/admin/archive-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teamName: teamName.trim() }),
+      });
+      if (!archiveRes.ok) {
+        setResetting(false);
+        alert('Could not archive the session - reset cancelled so nothing is lost. Try again.');
+        return;
+      }
+    }
     const res = await fetch('/api/admin-reset', { method: 'POST' });
     setResetting(false);
-    if (res.ok) setResetSuccess(true);
+    if (res.ok) {
+      setResetSuccess(true);
+      if (view === 'analytics') fetchAnalytics();
+    }
   };
 
   const handlePauseTimer = (challengeId: string) => {
@@ -396,11 +451,28 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
   return (
     <div className="max-w-4xl mx-auto mt-10 bg-white rounded-lg shadow p-10">
       <h2 className="text-xl font-bold mb-4 flex items-center gap-2"><Unlock className="h-5 w-5 text-green-600" /> Admin Challenge Unlocks</h2>
+      <div className="flex gap-2 mb-6 border-b">
+        <button
+          className={`px-4 py-2 font-medium ${view === 'unlocks' ? 'border-b-2 border-blue-600 text-blue-700' : 'text-gray-500'}`}
+          onClick={() => setView('unlocks')}
+        >
+          Unlocks
+        </button>
+        <button
+          className={`px-4 py-2 font-medium ${view === 'analytics' ? 'border-b-2 border-blue-600 text-blue-700' : 'text-gray-500'}`}
+          onClick={() => setView('analytics')}
+        >
+          Analytics / Export
+        </button>
+      </div>
+      {view === 'unlocks' && (
+      <>
       <div className="mb-6">
         <Button variant="destructive" onClick={handleReset} disabled={resetting}>
           {resetting ? 'Resetting...' : 'Reset Everything'}
         </Button>
         {resetSuccess && <span className="ml-4 text-green-700 font-semibold">Database reset!</span>}
+        <p className="text-xs text-gray-500 mt-2">Resetting asks for a team name first and archives the current leaderboard - see the Analytics tab to export it any time.</p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {!challenges || challenges.length === 0 ? (
@@ -420,6 +492,16 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
                     {challenge.title}
                   </CardTitle>
                   <CardDescription>{challenge.description}</CardDescription>
+                  {challenge.productOrigin && (
+                    <CardDescription className="text-xs italic text-blue-700 mt-1">
+                      {challenge.productOrigin}
+                    </CardDescription>
+                  )}
+                  {challenge.flag && (
+                    <CardDescription className="text-xs font-mono text-gray-500 mt-1">
+                      Flag: {challenge.flag}
+                    </CardDescription>
+                  )}
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-col gap-2">
@@ -481,6 +563,86 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
           })
         )}
       </div>
+      </>
+      )}
+      {view === 'analytics' && (
+        <div className="space-y-6">
+          {analyticsLoading ? (
+            <div className="text-gray-500 py-8 text-center">Loading analytics...</div>
+          ) : !analytics ? (
+            <div className="text-gray-500 py-8 text-center">Could not load analytics.</div>
+          ) : (
+            <>
+              <div className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div>
+                  <h3 className="font-semibold">Current leaderboard (live, not yet archived)</h3>
+                  <p className="text-sm text-gray-600">{analytics.live.length} player(s). You can export this any time - it doesn&apos;t require a reset.</p>
+                </div>
+                <Button
+                  disabled={analytics.live.length === 0}
+                  onClick={() => downloadCsv('live-leaderboard.csv', ['Name', 'Score'], analytics.live.map((u) => [u.userName, u.score]))}
+                >
+                  Export CSV
+                </Button>
+              </div>
+
+              <div className="flex items-center justify-between bg-gray-50 border rounded-lg p-4">
+                <div>
+                  <h3 className="font-semibold">All archived team sessions, combined</h3>
+                  <p className="text-sm text-gray-600">{analytics.sessions.length} session(s) archived so far. One row per player per session.</p>
+                </div>
+                <Button
+                  variant="outline"
+                  disabled={analytics.sessions.length === 0}
+                  onClick={() => {
+                    const rows: (string | number)[][] = [];
+                    analytics.sessions.forEach((s) =>
+                      s.results.forEach((r) => rows.push([s.teamName, new Date(s.archivedAt).toLocaleString(), r.userName, r.score]))
+                    );
+                    downloadCsv('all-teams-combined.csv', ['Team', 'Session Date', 'Name', 'Score'], rows);
+                  }}
+                >
+                  Export All Teams CSV
+                </Button>
+              </div>
+
+              <h3 className="font-semibold mt-6">Past sessions</h3>
+              {analytics.sessions.length === 0 ? (
+                <p className="text-gray-500 text-sm">No sessions archived yet - archiving happens automatically the next time you click Reset Everything.</p>
+              ) : (
+                analytics.sessions.map((s) => (
+                  <div key={s.sessionId} className="border rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <span className="font-semibold">{s.teamName}</span>
+                        <span className="text-xs text-gray-500 ml-2">{new Date(s.archivedAt).toLocaleString()}</span>
+                        <span className="text-xs text-gray-500 ml-2">({s.results.length} player(s))</span>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => downloadCsv(`${s.teamName.replace(/[^a-z0-9]+/gi, '-')}-${s.sessionId.slice(0, 8)}.csv`, ['Team', 'Name', 'Score'], s.results.map((r) => [s.teamName, r.userName, r.score]))}
+                      >
+                        Export CSV
+                      </Button>
+                    </div>
+                    <table className="w-full text-sm">
+                      <tbody>
+                        {s.results.sort((a, b) => b.score - a.score).map((r) => (
+                          <tr key={r.userName} className="border-t">
+                            <td className="py-1">{r.avatar} {r.userName}</td>
+                            <td className="py-1 text-right font-mono">{r.score}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ))
+              )}
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -836,11 +998,18 @@ export default function CodeReviewChallenge() {
     setShowAdminModal(true);
     setAdminError("");
   };
-  const handleAdminLogout = () => {
+  const handleAdminLogout = async () => {
+    await fetch("/api/admin-login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ logout: true }) });
     setIsAdmin(false);
   };
-  const handleAdminModalSubmit = (password: string) => {
-    if (password === "admin123") {
+  const handleAdminModalSubmit = async (password: string) => {
+    // Checked server-side only now - no password is shipped in client code.
+    const res = await fetch("/api/admin-login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password }),
+    });
+    if (res.ok) {
       setIsAdmin(true);
       setShowAdminModal(false);
       setAdminError("");
@@ -1119,7 +1288,12 @@ export default function CodeReviewChallenge() {
                   <div className="text-gray-500 mb-4">No challenges found.</div>
                 </div>
               ) : (
-                challenges.map((challenge) => {
+                challenges
+                  // Hide from the dev-facing list entirely unless an admin has explicitly
+                  // unlocked it (DEMO is the tutorial and always stays visible). The admin's
+                  // own view (isAdmin) is a separate panel above and is unaffected.
+                  .filter((challenge) => challenge.id === "DEMO" || locks[challenge.id] === false)
+                  .map((challenge) => {
                   // By default, all challenges are locked unless explicitly unlocked
                   const locked = locks[challenge.id] !== false;
                   const timer = allTimers[challenge.id];

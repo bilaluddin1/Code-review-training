@@ -20,10 +20,9 @@ export async function GET() {
 // POST: Update lock state for a challenge
 export async function POST(req: NextRequest) {
   try {
-    // Temporarily bypass session check for development
-    // if (!(await isAdminSession(req))) {
-    //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    // }
+    if (!(await isAdminSession(req))) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
     const { id, locked } = await req.json();
     if (typeof id !== 'string' || typeof locked !== 'boolean') {

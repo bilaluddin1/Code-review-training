@@ -7,10 +7,12 @@ import { vulnerableOrderSearch } from "@/lib/labsSandbox";
 export async function GET(req: NextRequest) {
   const input = req.nextUrl.searchParams.get("type") ?? "Appraisal";
   const { whereClauseBuilt, rows } = vulnerableOrderSearch(input, "ACME");
+  const leaked = rows.some((r) => r.ClientID !== "ACME");
   return NextResponse.json({
     whereClauseBuilt,
     rowsReturned: rows.length,
     rows,
     hint: "You are tenant ACME. Try: Appraisal' OR '1'='1' --",
+    ...(leaked ? { flag: "FLAG{99fb5ff84f}" } : {}),
   });
 }

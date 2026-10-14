@@ -7,5 +7,10 @@ export async function GET(req: NextRequest) {
   const id = Number(req.nextUrl.searchParams.get("id") ?? "101");
   const note = NOTES.find((n) => n.id === id);
   if (!note) return NextResponse.json({ error: "No note with that id" }, { status: 404 });
-  return NextResponse.json({ note, hint: "You are logged in as alice. Nothing here checks that note.owner === 'alice'." });
+  const exploited = note.owner !== "alice";
+  return NextResponse.json({
+    note,
+    hint: "You are logged in as alice. Nothing here checks that note.owner === 'alice'.",
+    ...(exploited ? { flag: "FLAG{f6de2f2645}" } : {}),
+  });
 }

@@ -126,7 +126,8 @@ exports.Prisma.LeaderboardUserScalarFieldEnum = {
   id: 'id',
   name: 'name',
   avatar: 'avatar',
-  score: 'score'
+  score: 'score',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.ChallengeSubmissionScalarFieldEnum = {
@@ -147,6 +148,16 @@ exports.Prisma.FlagSubmissionScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.SessionArchiveScalarFieldEnum = {
+  id: 'id',
+  sessionId: 'sessionId',
+  teamName: 'teamName',
+  archivedAt: 'archivedAt',
+  userName: 'userName',
+  avatar: 'avatar',
+  score: 'score'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -157,7 +168,8 @@ exports.Prisma.ModelName = {
   ChallengeLock: 'ChallengeLock',
   LeaderboardUser: 'LeaderboardUser',
   ChallengeSubmission: 'ChallengeSubmission',
-  FlagSubmission: 'FlagSubmission'
+  FlagSubmission: 'FlagSubmission',
+  SessionArchive: 'SessionArchive'
 };
 
 /**

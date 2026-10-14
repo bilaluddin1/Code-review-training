@@ -33,6 +33,11 @@ export type ChallengeSubmission = $Result.DefaultSelection<Prisma.$ChallengeSubm
  * 
  */
 export type FlagSubmission = $Result.DefaultSelection<Prisma.$FlagSubmissionPayload>
+/**
+ * Model SessionArchive
+ * 
+ */
+export type SessionArchive = $Result.DefaultSelection<Prisma.$SessionArchivePayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -198,6 +203,16 @@ export class PrismaClient<
     * ```
     */
   get flagSubmission(): Prisma.FlagSubmissionDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.sessionArchive`: Exposes CRUD operations for the **SessionArchive** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more SessionArchives
+    * const sessionArchives = await prisma.sessionArchive.findMany()
+    * ```
+    */
+  get sessionArchive(): Prisma.SessionArchiveDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -641,7 +656,8 @@ export namespace Prisma {
     ChallengeLock: 'ChallengeLock',
     LeaderboardUser: 'LeaderboardUser',
     ChallengeSubmission: 'ChallengeSubmission',
-    FlagSubmission: 'FlagSubmission'
+    FlagSubmission: 'FlagSubmission',
+    SessionArchive: 'SessionArchive'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -660,7 +676,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "challengeLock" | "leaderboardUser" | "challengeSubmission" | "flagSubmission"
+      modelProps: "challengeLock" | "leaderboardUser" | "challengeSubmission" | "flagSubmission" | "sessionArchive"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -960,6 +976,80 @@ export namespace Prisma {
           }
         }
       }
+      SessionArchive: {
+        payload: Prisma.$SessionArchivePayload<ExtArgs>
+        fields: Prisma.SessionArchiveFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.SessionArchiveFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SessionArchivePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.SessionArchiveFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SessionArchivePayload>
+          }
+          findFirst: {
+            args: Prisma.SessionArchiveFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SessionArchivePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.SessionArchiveFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SessionArchivePayload>
+          }
+          findMany: {
+            args: Prisma.SessionArchiveFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SessionArchivePayload>[]
+          }
+          create: {
+            args: Prisma.SessionArchiveCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SessionArchivePayload>
+          }
+          createMany: {
+            args: Prisma.SessionArchiveCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.SessionArchiveCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SessionArchivePayload>[]
+          }
+          delete: {
+            args: Prisma.SessionArchiveDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SessionArchivePayload>
+          }
+          update: {
+            args: Prisma.SessionArchiveUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SessionArchivePayload>
+          }
+          deleteMany: {
+            args: Prisma.SessionArchiveDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.SessionArchiveUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.SessionArchiveUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SessionArchivePayload>[]
+          }
+          upsert: {
+            args: Prisma.SessionArchiveUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SessionArchivePayload>
+          }
+          aggregate: {
+            args: Prisma.SessionArchiveAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateSessionArchive>
+          }
+          groupBy: {
+            args: Prisma.SessionArchiveGroupByArgs<ExtArgs>
+            result: $Utils.Optional<SessionArchiveGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.SessionArchiveCountArgs<ExtArgs>
+            result: $Utils.Optional<SessionArchiveCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -1048,6 +1138,7 @@ export namespace Prisma {
     leaderboardUser?: LeaderboardUserOmit
     challengeSubmission?: ChallengeSubmissionOmit
     flagSubmission?: FlagSubmissionOmit
+    sessionArchive?: SessionArchiveOmit
   }
 
   /* Types for Logging */
@@ -2121,6 +2212,7 @@ export namespace Prisma {
     name: string | null
     avatar: string | null
     score: number | null
+    updatedAt: Date | null
   }
 
   export type LeaderboardUserMaxAggregateOutputType = {
@@ -2128,6 +2220,7 @@ export namespace Prisma {
     name: string | null
     avatar: string | null
     score: number | null
+    updatedAt: Date | null
   }
 
   export type LeaderboardUserCountAggregateOutputType = {
@@ -2135,6 +2228,7 @@ export namespace Prisma {
     name: number
     avatar: number
     score: number
+    updatedAt: number
     _all: number
   }
 
@@ -2152,6 +2246,7 @@ export namespace Prisma {
     name?: true
     avatar?: true
     score?: true
+    updatedAt?: true
   }
 
   export type LeaderboardUserMaxAggregateInputType = {
@@ -2159,6 +2254,7 @@ export namespace Prisma {
     name?: true
     avatar?: true
     score?: true
+    updatedAt?: true
   }
 
   export type LeaderboardUserCountAggregateInputType = {
@@ -2166,6 +2262,7 @@ export namespace Prisma {
     name?: true
     avatar?: true
     score?: true
+    updatedAt?: true
     _all?: true
   }
 
@@ -2260,6 +2357,7 @@ export namespace Prisma {
     name: string
     avatar: string
     score: number
+    updatedAt: Date
     _count: LeaderboardUserCountAggregateOutputType | null
     _avg: LeaderboardUserAvgAggregateOutputType | null
     _sum: LeaderboardUserSumAggregateOutputType | null
@@ -2286,6 +2384,7 @@ export namespace Prisma {
     name?: boolean
     avatar?: boolean
     score?: boolean
+    updatedAt?: boolean
   }, ExtArgs["result"]["leaderboardUser"]>
 
   export type LeaderboardUserSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -2293,6 +2392,7 @@ export namespace Prisma {
     name?: boolean
     avatar?: boolean
     score?: boolean
+    updatedAt?: boolean
   }, ExtArgs["result"]["leaderboardUser"]>
 
   export type LeaderboardUserSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -2300,6 +2400,7 @@ export namespace Prisma {
     name?: boolean
     avatar?: boolean
     score?: boolean
+    updatedAt?: boolean
   }, ExtArgs["result"]["leaderboardUser"]>
 
   export type LeaderboardUserSelectScalar = {
@@ -2307,9 +2408,10 @@ export namespace Prisma {
     name?: boolean
     avatar?: boolean
     score?: boolean
+    updatedAt?: boolean
   }
 
-  export type LeaderboardUserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "avatar" | "score", ExtArgs["result"]["leaderboardUser"]>
+  export type LeaderboardUserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "avatar" | "score" | "updatedAt", ExtArgs["result"]["leaderboardUser"]>
 
   export type $LeaderboardUserPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "LeaderboardUser"
@@ -2319,6 +2421,7 @@ export namespace Prisma {
       name: string
       avatar: string
       score: number
+      updatedAt: Date
     }, ExtArgs["result"]["leaderboardUser"]>
     composites: {}
   }
@@ -2746,6 +2849,7 @@ export namespace Prisma {
     readonly name: FieldRef<"LeaderboardUser", 'String'>
     readonly avatar: FieldRef<"LeaderboardUser", 'String'>
     readonly score: FieldRef<"LeaderboardUser", 'Int'>
+    readonly updatedAt: FieldRef<"LeaderboardUser", 'DateTime'>
   }
     
 
@@ -5123,6 +5227,1059 @@ export namespace Prisma {
 
 
   /**
+   * Model SessionArchive
+   */
+
+  export type AggregateSessionArchive = {
+    _count: SessionArchiveCountAggregateOutputType | null
+    _avg: SessionArchiveAvgAggregateOutputType | null
+    _sum: SessionArchiveSumAggregateOutputType | null
+    _min: SessionArchiveMinAggregateOutputType | null
+    _max: SessionArchiveMaxAggregateOutputType | null
+  }
+
+  export type SessionArchiveAvgAggregateOutputType = {
+    score: number | null
+  }
+
+  export type SessionArchiveSumAggregateOutputType = {
+    score: number | null
+  }
+
+  export type SessionArchiveMinAggregateOutputType = {
+    id: string | null
+    sessionId: string | null
+    teamName: string | null
+    archivedAt: Date | null
+    userName: string | null
+    avatar: string | null
+    score: number | null
+  }
+
+  export type SessionArchiveMaxAggregateOutputType = {
+    id: string | null
+    sessionId: string | null
+    teamName: string | null
+    archivedAt: Date | null
+    userName: string | null
+    avatar: string | null
+    score: number | null
+  }
+
+  export type SessionArchiveCountAggregateOutputType = {
+    id: number
+    sessionId: number
+    teamName: number
+    archivedAt: number
+    userName: number
+    avatar: number
+    score: number
+    _all: number
+  }
+
+
+  export type SessionArchiveAvgAggregateInputType = {
+    score?: true
+  }
+
+  export type SessionArchiveSumAggregateInputType = {
+    score?: true
+  }
+
+  export type SessionArchiveMinAggregateInputType = {
+    id?: true
+    sessionId?: true
+    teamName?: true
+    archivedAt?: true
+    userName?: true
+    avatar?: true
+    score?: true
+  }
+
+  export type SessionArchiveMaxAggregateInputType = {
+    id?: true
+    sessionId?: true
+    teamName?: true
+    archivedAt?: true
+    userName?: true
+    avatar?: true
+    score?: true
+  }
+
+  export type SessionArchiveCountAggregateInputType = {
+    id?: true
+    sessionId?: true
+    teamName?: true
+    archivedAt?: true
+    userName?: true
+    avatar?: true
+    score?: true
+    _all?: true
+  }
+
+  export type SessionArchiveAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which SessionArchive to aggregate.
+     */
+    where?: SessionArchiveWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SessionArchives to fetch.
+     */
+    orderBy?: SessionArchiveOrderByWithRelationInput | SessionArchiveOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: SessionArchiveWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SessionArchives from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SessionArchives.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned SessionArchives
+    **/
+    _count?: true | SessionArchiveCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: SessionArchiveAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: SessionArchiveSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: SessionArchiveMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: SessionArchiveMaxAggregateInputType
+  }
+
+  export type GetSessionArchiveAggregateType<T extends SessionArchiveAggregateArgs> = {
+        [P in keyof T & keyof AggregateSessionArchive]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateSessionArchive[P]>
+      : GetScalarType<T[P], AggregateSessionArchive[P]>
+  }
+
+
+
+
+  export type SessionArchiveGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: SessionArchiveWhereInput
+    orderBy?: SessionArchiveOrderByWithAggregationInput | SessionArchiveOrderByWithAggregationInput[]
+    by: SessionArchiveScalarFieldEnum[] | SessionArchiveScalarFieldEnum
+    having?: SessionArchiveScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: SessionArchiveCountAggregateInputType | true
+    _avg?: SessionArchiveAvgAggregateInputType
+    _sum?: SessionArchiveSumAggregateInputType
+    _min?: SessionArchiveMinAggregateInputType
+    _max?: SessionArchiveMaxAggregateInputType
+  }
+
+  export type SessionArchiveGroupByOutputType = {
+    id: string
+    sessionId: string
+    teamName: string
+    archivedAt: Date
+    userName: string
+    avatar: string
+    score: number
+    _count: SessionArchiveCountAggregateOutputType | null
+    _avg: SessionArchiveAvgAggregateOutputType | null
+    _sum: SessionArchiveSumAggregateOutputType | null
+    _min: SessionArchiveMinAggregateOutputType | null
+    _max: SessionArchiveMaxAggregateOutputType | null
+  }
+
+  type GetSessionArchiveGroupByPayload<T extends SessionArchiveGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<SessionArchiveGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof SessionArchiveGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], SessionArchiveGroupByOutputType[P]>
+            : GetScalarType<T[P], SessionArchiveGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type SessionArchiveSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    sessionId?: boolean
+    teamName?: boolean
+    archivedAt?: boolean
+    userName?: boolean
+    avatar?: boolean
+    score?: boolean
+  }, ExtArgs["result"]["sessionArchive"]>
+
+  export type SessionArchiveSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    sessionId?: boolean
+    teamName?: boolean
+    archivedAt?: boolean
+    userName?: boolean
+    avatar?: boolean
+    score?: boolean
+  }, ExtArgs["result"]["sessionArchive"]>
+
+  export type SessionArchiveSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    sessionId?: boolean
+    teamName?: boolean
+    archivedAt?: boolean
+    userName?: boolean
+    avatar?: boolean
+    score?: boolean
+  }, ExtArgs["result"]["sessionArchive"]>
+
+  export type SessionArchiveSelectScalar = {
+    id?: boolean
+    sessionId?: boolean
+    teamName?: boolean
+    archivedAt?: boolean
+    userName?: boolean
+    avatar?: boolean
+    score?: boolean
+  }
+
+  export type SessionArchiveOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "sessionId" | "teamName" | "archivedAt" | "userName" | "avatar" | "score", ExtArgs["result"]["sessionArchive"]>
+
+  export type $SessionArchivePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "SessionArchive"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      sessionId: string
+      teamName: string
+      archivedAt: Date
+      userName: string
+      avatar: string
+      score: number
+    }, ExtArgs["result"]["sessionArchive"]>
+    composites: {}
+  }
+
+  type SessionArchiveGetPayload<S extends boolean | null | undefined | SessionArchiveDefaultArgs> = $Result.GetResult<Prisma.$SessionArchivePayload, S>
+
+  type SessionArchiveCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<SessionArchiveFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: SessionArchiveCountAggregateInputType | true
+    }
+
+  export interface SessionArchiveDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['SessionArchive'], meta: { name: 'SessionArchive' } }
+    /**
+     * Find zero or one SessionArchive that matches the filter.
+     * @param {SessionArchiveFindUniqueArgs} args - Arguments to find a SessionArchive
+     * @example
+     * // Get one SessionArchive
+     * const sessionArchive = await prisma.sessionArchive.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends SessionArchiveFindUniqueArgs>(args: SelectSubset<T, SessionArchiveFindUniqueArgs<ExtArgs>>): Prisma__SessionArchiveClient<$Result.GetResult<Prisma.$SessionArchivePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one SessionArchive that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {SessionArchiveFindUniqueOrThrowArgs} args - Arguments to find a SessionArchive
+     * @example
+     * // Get one SessionArchive
+     * const sessionArchive = await prisma.sessionArchive.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends SessionArchiveFindUniqueOrThrowArgs>(args: SelectSubset<T, SessionArchiveFindUniqueOrThrowArgs<ExtArgs>>): Prisma__SessionArchiveClient<$Result.GetResult<Prisma.$SessionArchivePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first SessionArchive that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SessionArchiveFindFirstArgs} args - Arguments to find a SessionArchive
+     * @example
+     * // Get one SessionArchive
+     * const sessionArchive = await prisma.sessionArchive.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends SessionArchiveFindFirstArgs>(args?: SelectSubset<T, SessionArchiveFindFirstArgs<ExtArgs>>): Prisma__SessionArchiveClient<$Result.GetResult<Prisma.$SessionArchivePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first SessionArchive that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SessionArchiveFindFirstOrThrowArgs} args - Arguments to find a SessionArchive
+     * @example
+     * // Get one SessionArchive
+     * const sessionArchive = await prisma.sessionArchive.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends SessionArchiveFindFirstOrThrowArgs>(args?: SelectSubset<T, SessionArchiveFindFirstOrThrowArgs<ExtArgs>>): Prisma__SessionArchiveClient<$Result.GetResult<Prisma.$SessionArchivePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more SessionArchives that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SessionArchiveFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all SessionArchives
+     * const sessionArchives = await prisma.sessionArchive.findMany()
+     * 
+     * // Get first 10 SessionArchives
+     * const sessionArchives = await prisma.sessionArchive.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const sessionArchiveWithIdOnly = await prisma.sessionArchive.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends SessionArchiveFindManyArgs>(args?: SelectSubset<T, SessionArchiveFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SessionArchivePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a SessionArchive.
+     * @param {SessionArchiveCreateArgs} args - Arguments to create a SessionArchive.
+     * @example
+     * // Create one SessionArchive
+     * const SessionArchive = await prisma.sessionArchive.create({
+     *   data: {
+     *     // ... data to create a SessionArchive
+     *   }
+     * })
+     * 
+     */
+    create<T extends SessionArchiveCreateArgs>(args: SelectSubset<T, SessionArchiveCreateArgs<ExtArgs>>): Prisma__SessionArchiveClient<$Result.GetResult<Prisma.$SessionArchivePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many SessionArchives.
+     * @param {SessionArchiveCreateManyArgs} args - Arguments to create many SessionArchives.
+     * @example
+     * // Create many SessionArchives
+     * const sessionArchive = await prisma.sessionArchive.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends SessionArchiveCreateManyArgs>(args?: SelectSubset<T, SessionArchiveCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many SessionArchives and returns the data saved in the database.
+     * @param {SessionArchiveCreateManyAndReturnArgs} args - Arguments to create many SessionArchives.
+     * @example
+     * // Create many SessionArchives
+     * const sessionArchive = await prisma.sessionArchive.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many SessionArchives and only return the `id`
+     * const sessionArchiveWithIdOnly = await prisma.sessionArchive.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends SessionArchiveCreateManyAndReturnArgs>(args?: SelectSubset<T, SessionArchiveCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SessionArchivePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a SessionArchive.
+     * @param {SessionArchiveDeleteArgs} args - Arguments to delete one SessionArchive.
+     * @example
+     * // Delete one SessionArchive
+     * const SessionArchive = await prisma.sessionArchive.delete({
+     *   where: {
+     *     // ... filter to delete one SessionArchive
+     *   }
+     * })
+     * 
+     */
+    delete<T extends SessionArchiveDeleteArgs>(args: SelectSubset<T, SessionArchiveDeleteArgs<ExtArgs>>): Prisma__SessionArchiveClient<$Result.GetResult<Prisma.$SessionArchivePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one SessionArchive.
+     * @param {SessionArchiveUpdateArgs} args - Arguments to update one SessionArchive.
+     * @example
+     * // Update one SessionArchive
+     * const sessionArchive = await prisma.sessionArchive.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends SessionArchiveUpdateArgs>(args: SelectSubset<T, SessionArchiveUpdateArgs<ExtArgs>>): Prisma__SessionArchiveClient<$Result.GetResult<Prisma.$SessionArchivePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more SessionArchives.
+     * @param {SessionArchiveDeleteManyArgs} args - Arguments to filter SessionArchives to delete.
+     * @example
+     * // Delete a few SessionArchives
+     * const { count } = await prisma.sessionArchive.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends SessionArchiveDeleteManyArgs>(args?: SelectSubset<T, SessionArchiveDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more SessionArchives.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SessionArchiveUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many SessionArchives
+     * const sessionArchive = await prisma.sessionArchive.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends SessionArchiveUpdateManyArgs>(args: SelectSubset<T, SessionArchiveUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more SessionArchives and returns the data updated in the database.
+     * @param {SessionArchiveUpdateManyAndReturnArgs} args - Arguments to update many SessionArchives.
+     * @example
+     * // Update many SessionArchives
+     * const sessionArchive = await prisma.sessionArchive.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more SessionArchives and only return the `id`
+     * const sessionArchiveWithIdOnly = await prisma.sessionArchive.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends SessionArchiveUpdateManyAndReturnArgs>(args: SelectSubset<T, SessionArchiveUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SessionArchivePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one SessionArchive.
+     * @param {SessionArchiveUpsertArgs} args - Arguments to update or create a SessionArchive.
+     * @example
+     * // Update or create a SessionArchive
+     * const sessionArchive = await prisma.sessionArchive.upsert({
+     *   create: {
+     *     // ... data to create a SessionArchive
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the SessionArchive we want to update
+     *   }
+     * })
+     */
+    upsert<T extends SessionArchiveUpsertArgs>(args: SelectSubset<T, SessionArchiveUpsertArgs<ExtArgs>>): Prisma__SessionArchiveClient<$Result.GetResult<Prisma.$SessionArchivePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of SessionArchives.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SessionArchiveCountArgs} args - Arguments to filter SessionArchives to count.
+     * @example
+     * // Count the number of SessionArchives
+     * const count = await prisma.sessionArchive.count({
+     *   where: {
+     *     // ... the filter for the SessionArchives we want to count
+     *   }
+     * })
+    **/
+    count<T extends SessionArchiveCountArgs>(
+      args?: Subset<T, SessionArchiveCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], SessionArchiveCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a SessionArchive.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SessionArchiveAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends SessionArchiveAggregateArgs>(args: Subset<T, SessionArchiveAggregateArgs>): Prisma.PrismaPromise<GetSessionArchiveAggregateType<T>>
+
+    /**
+     * Group by SessionArchive.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SessionArchiveGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends SessionArchiveGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: SessionArchiveGroupByArgs['orderBy'] }
+        : { orderBy?: SessionArchiveGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, SessionArchiveGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetSessionArchiveGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the SessionArchive model
+   */
+  readonly fields: SessionArchiveFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for SessionArchive.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__SessionArchiveClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the SessionArchive model
+   */
+  interface SessionArchiveFieldRefs {
+    readonly id: FieldRef<"SessionArchive", 'String'>
+    readonly sessionId: FieldRef<"SessionArchive", 'String'>
+    readonly teamName: FieldRef<"SessionArchive", 'String'>
+    readonly archivedAt: FieldRef<"SessionArchive", 'DateTime'>
+    readonly userName: FieldRef<"SessionArchive", 'String'>
+    readonly avatar: FieldRef<"SessionArchive", 'String'>
+    readonly score: FieldRef<"SessionArchive", 'Int'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * SessionArchive findUnique
+   */
+  export type SessionArchiveFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SessionArchive
+     */
+    select?: SessionArchiveSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SessionArchive
+     */
+    omit?: SessionArchiveOmit<ExtArgs> | null
+    /**
+     * Filter, which SessionArchive to fetch.
+     */
+    where: SessionArchiveWhereUniqueInput
+  }
+
+  /**
+   * SessionArchive findUniqueOrThrow
+   */
+  export type SessionArchiveFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SessionArchive
+     */
+    select?: SessionArchiveSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SessionArchive
+     */
+    omit?: SessionArchiveOmit<ExtArgs> | null
+    /**
+     * Filter, which SessionArchive to fetch.
+     */
+    where: SessionArchiveWhereUniqueInput
+  }
+
+  /**
+   * SessionArchive findFirst
+   */
+  export type SessionArchiveFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SessionArchive
+     */
+    select?: SessionArchiveSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SessionArchive
+     */
+    omit?: SessionArchiveOmit<ExtArgs> | null
+    /**
+     * Filter, which SessionArchive to fetch.
+     */
+    where?: SessionArchiveWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SessionArchives to fetch.
+     */
+    orderBy?: SessionArchiveOrderByWithRelationInput | SessionArchiveOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for SessionArchives.
+     */
+    cursor?: SessionArchiveWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SessionArchives from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SessionArchives.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of SessionArchives.
+     */
+    distinct?: SessionArchiveScalarFieldEnum | SessionArchiveScalarFieldEnum[]
+  }
+
+  /**
+   * SessionArchive findFirstOrThrow
+   */
+  export type SessionArchiveFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SessionArchive
+     */
+    select?: SessionArchiveSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SessionArchive
+     */
+    omit?: SessionArchiveOmit<ExtArgs> | null
+    /**
+     * Filter, which SessionArchive to fetch.
+     */
+    where?: SessionArchiveWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SessionArchives to fetch.
+     */
+    orderBy?: SessionArchiveOrderByWithRelationInput | SessionArchiveOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for SessionArchives.
+     */
+    cursor?: SessionArchiveWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SessionArchives from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SessionArchives.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of SessionArchives.
+     */
+    distinct?: SessionArchiveScalarFieldEnum | SessionArchiveScalarFieldEnum[]
+  }
+
+  /**
+   * SessionArchive findMany
+   */
+  export type SessionArchiveFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SessionArchive
+     */
+    select?: SessionArchiveSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SessionArchive
+     */
+    omit?: SessionArchiveOmit<ExtArgs> | null
+    /**
+     * Filter, which SessionArchives to fetch.
+     */
+    where?: SessionArchiveWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SessionArchives to fetch.
+     */
+    orderBy?: SessionArchiveOrderByWithRelationInput | SessionArchiveOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing SessionArchives.
+     */
+    cursor?: SessionArchiveWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SessionArchives from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SessionArchives.
+     */
+    skip?: number
+    distinct?: SessionArchiveScalarFieldEnum | SessionArchiveScalarFieldEnum[]
+  }
+
+  /**
+   * SessionArchive create
+   */
+  export type SessionArchiveCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SessionArchive
+     */
+    select?: SessionArchiveSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SessionArchive
+     */
+    omit?: SessionArchiveOmit<ExtArgs> | null
+    /**
+     * The data needed to create a SessionArchive.
+     */
+    data: XOR<SessionArchiveCreateInput, SessionArchiveUncheckedCreateInput>
+  }
+
+  /**
+   * SessionArchive createMany
+   */
+  export type SessionArchiveCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many SessionArchives.
+     */
+    data: SessionArchiveCreateManyInput | SessionArchiveCreateManyInput[]
+  }
+
+  /**
+   * SessionArchive createManyAndReturn
+   */
+  export type SessionArchiveCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SessionArchive
+     */
+    select?: SessionArchiveSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the SessionArchive
+     */
+    omit?: SessionArchiveOmit<ExtArgs> | null
+    /**
+     * The data used to create many SessionArchives.
+     */
+    data: SessionArchiveCreateManyInput | SessionArchiveCreateManyInput[]
+  }
+
+  /**
+   * SessionArchive update
+   */
+  export type SessionArchiveUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SessionArchive
+     */
+    select?: SessionArchiveSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SessionArchive
+     */
+    omit?: SessionArchiveOmit<ExtArgs> | null
+    /**
+     * The data needed to update a SessionArchive.
+     */
+    data: XOR<SessionArchiveUpdateInput, SessionArchiveUncheckedUpdateInput>
+    /**
+     * Choose, which SessionArchive to update.
+     */
+    where: SessionArchiveWhereUniqueInput
+  }
+
+  /**
+   * SessionArchive updateMany
+   */
+  export type SessionArchiveUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update SessionArchives.
+     */
+    data: XOR<SessionArchiveUpdateManyMutationInput, SessionArchiveUncheckedUpdateManyInput>
+    /**
+     * Filter which SessionArchives to update
+     */
+    where?: SessionArchiveWhereInput
+    /**
+     * Limit how many SessionArchives to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * SessionArchive updateManyAndReturn
+   */
+  export type SessionArchiveUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SessionArchive
+     */
+    select?: SessionArchiveSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the SessionArchive
+     */
+    omit?: SessionArchiveOmit<ExtArgs> | null
+    /**
+     * The data used to update SessionArchives.
+     */
+    data: XOR<SessionArchiveUpdateManyMutationInput, SessionArchiveUncheckedUpdateManyInput>
+    /**
+     * Filter which SessionArchives to update
+     */
+    where?: SessionArchiveWhereInput
+    /**
+     * Limit how many SessionArchives to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * SessionArchive upsert
+   */
+  export type SessionArchiveUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SessionArchive
+     */
+    select?: SessionArchiveSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SessionArchive
+     */
+    omit?: SessionArchiveOmit<ExtArgs> | null
+    /**
+     * The filter to search for the SessionArchive to update in case it exists.
+     */
+    where: SessionArchiveWhereUniqueInput
+    /**
+     * In case the SessionArchive found by the `where` argument doesn't exist, create a new SessionArchive with this data.
+     */
+    create: XOR<SessionArchiveCreateInput, SessionArchiveUncheckedCreateInput>
+    /**
+     * In case the SessionArchive was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<SessionArchiveUpdateInput, SessionArchiveUncheckedUpdateInput>
+  }
+
+  /**
+   * SessionArchive delete
+   */
+  export type SessionArchiveDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SessionArchive
+     */
+    select?: SessionArchiveSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SessionArchive
+     */
+    omit?: SessionArchiveOmit<ExtArgs> | null
+    /**
+     * Filter which SessionArchive to delete.
+     */
+    where: SessionArchiveWhereUniqueInput
+  }
+
+  /**
+   * SessionArchive deleteMany
+   */
+  export type SessionArchiveDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which SessionArchives to delete
+     */
+    where?: SessionArchiveWhereInput
+    /**
+     * Limit how many SessionArchives to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * SessionArchive without action
+   */
+  export type SessionArchiveDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SessionArchive
+     */
+    select?: SessionArchiveSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SessionArchive
+     */
+    omit?: SessionArchiveOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -5145,7 +6302,8 @@ export namespace Prisma {
     id: 'id',
     name: 'name',
     avatar: 'avatar',
-    score: 'score'
+    score: 'score',
+    updatedAt: 'updatedAt'
   };
 
   export type LeaderboardUserScalarFieldEnum = (typeof LeaderboardUserScalarFieldEnum)[keyof typeof LeaderboardUserScalarFieldEnum]
@@ -5173,6 +6331,19 @@ export namespace Prisma {
   };
 
   export type FlagSubmissionScalarFieldEnum = (typeof FlagSubmissionScalarFieldEnum)[keyof typeof FlagSubmissionScalarFieldEnum]
+
+
+  export const SessionArchiveScalarFieldEnum: {
+    id: 'id',
+    sessionId: 'sessionId',
+    teamName: 'teamName',
+    archivedAt: 'archivedAt',
+    userName: 'userName',
+    avatar: 'avatar',
+    score: 'score'
+  };
+
+  export type SessionArchiveScalarFieldEnum = (typeof SessionArchiveScalarFieldEnum)[keyof typeof SessionArchiveScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -5271,6 +6442,7 @@ export namespace Prisma {
     name?: StringFilter<"LeaderboardUser"> | string
     avatar?: StringFilter<"LeaderboardUser"> | string
     score?: IntFilter<"LeaderboardUser"> | number
+    updatedAt?: DateTimeFilter<"LeaderboardUser"> | Date | string
   }
 
   export type LeaderboardUserOrderByWithRelationInput = {
@@ -5278,6 +6450,7 @@ export namespace Prisma {
     name?: SortOrder
     avatar?: SortOrder
     score?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type LeaderboardUserWhereUniqueInput = Prisma.AtLeast<{
@@ -5288,6 +6461,7 @@ export namespace Prisma {
     NOT?: LeaderboardUserWhereInput | LeaderboardUserWhereInput[]
     avatar?: StringFilter<"LeaderboardUser"> | string
     score?: IntFilter<"LeaderboardUser"> | number
+    updatedAt?: DateTimeFilter<"LeaderboardUser"> | Date | string
   }, "id" | "name">
 
   export type LeaderboardUserOrderByWithAggregationInput = {
@@ -5295,6 +6469,7 @@ export namespace Prisma {
     name?: SortOrder
     avatar?: SortOrder
     score?: SortOrder
+    updatedAt?: SortOrder
     _count?: LeaderboardUserCountOrderByAggregateInput
     _avg?: LeaderboardUserAvgOrderByAggregateInput
     _max?: LeaderboardUserMaxOrderByAggregateInput
@@ -5310,6 +6485,7 @@ export namespace Prisma {
     name?: StringWithAggregatesFilter<"LeaderboardUser"> | string
     avatar?: StringWithAggregatesFilter<"LeaderboardUser"> | string
     score?: IntWithAggregatesFilter<"LeaderboardUser"> | number
+    updatedAt?: DateTimeWithAggregatesFilter<"LeaderboardUser"> | Date | string
   }
 
   export type ChallengeSubmissionWhereInput = {
@@ -5426,6 +6602,70 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"FlagSubmission"> | Date | string
   }
 
+  export type SessionArchiveWhereInput = {
+    AND?: SessionArchiveWhereInput | SessionArchiveWhereInput[]
+    OR?: SessionArchiveWhereInput[]
+    NOT?: SessionArchiveWhereInput | SessionArchiveWhereInput[]
+    id?: StringFilter<"SessionArchive"> | string
+    sessionId?: StringFilter<"SessionArchive"> | string
+    teamName?: StringFilter<"SessionArchive"> | string
+    archivedAt?: DateTimeFilter<"SessionArchive"> | Date | string
+    userName?: StringFilter<"SessionArchive"> | string
+    avatar?: StringFilter<"SessionArchive"> | string
+    score?: IntFilter<"SessionArchive"> | number
+  }
+
+  export type SessionArchiveOrderByWithRelationInput = {
+    id?: SortOrder
+    sessionId?: SortOrder
+    teamName?: SortOrder
+    archivedAt?: SortOrder
+    userName?: SortOrder
+    avatar?: SortOrder
+    score?: SortOrder
+  }
+
+  export type SessionArchiveWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: SessionArchiveWhereInput | SessionArchiveWhereInput[]
+    OR?: SessionArchiveWhereInput[]
+    NOT?: SessionArchiveWhereInput | SessionArchiveWhereInput[]
+    sessionId?: StringFilter<"SessionArchive"> | string
+    teamName?: StringFilter<"SessionArchive"> | string
+    archivedAt?: DateTimeFilter<"SessionArchive"> | Date | string
+    userName?: StringFilter<"SessionArchive"> | string
+    avatar?: StringFilter<"SessionArchive"> | string
+    score?: IntFilter<"SessionArchive"> | number
+  }, "id">
+
+  export type SessionArchiveOrderByWithAggregationInput = {
+    id?: SortOrder
+    sessionId?: SortOrder
+    teamName?: SortOrder
+    archivedAt?: SortOrder
+    userName?: SortOrder
+    avatar?: SortOrder
+    score?: SortOrder
+    _count?: SessionArchiveCountOrderByAggregateInput
+    _avg?: SessionArchiveAvgOrderByAggregateInput
+    _max?: SessionArchiveMaxOrderByAggregateInput
+    _min?: SessionArchiveMinOrderByAggregateInput
+    _sum?: SessionArchiveSumOrderByAggregateInput
+  }
+
+  export type SessionArchiveScalarWhereWithAggregatesInput = {
+    AND?: SessionArchiveScalarWhereWithAggregatesInput | SessionArchiveScalarWhereWithAggregatesInput[]
+    OR?: SessionArchiveScalarWhereWithAggregatesInput[]
+    NOT?: SessionArchiveScalarWhereWithAggregatesInput | SessionArchiveScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"SessionArchive"> | string
+    sessionId?: StringWithAggregatesFilter<"SessionArchive"> | string
+    teamName?: StringWithAggregatesFilter<"SessionArchive"> | string
+    archivedAt?: DateTimeWithAggregatesFilter<"SessionArchive"> | Date | string
+    userName?: StringWithAggregatesFilter<"SessionArchive"> | string
+    avatar?: StringWithAggregatesFilter<"SessionArchive"> | string
+    score?: IntWithAggregatesFilter<"SessionArchive"> | number
+  }
+
   export type ChallengeLockCreateInput = {
     id: string
     locked: boolean
@@ -5466,6 +6706,7 @@ export namespace Prisma {
     name: string
     avatar: string
     score: number
+    updatedAt?: Date | string
   }
 
   export type LeaderboardUserUncheckedCreateInput = {
@@ -5473,6 +6714,7 @@ export namespace Prisma {
     name: string
     avatar: string
     score: number
+    updatedAt?: Date | string
   }
 
   export type LeaderboardUserUpdateInput = {
@@ -5480,6 +6722,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     avatar?: StringFieldUpdateOperationsInput | string
     score?: IntFieldUpdateOperationsInput | number
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type LeaderboardUserUncheckedUpdateInput = {
@@ -5487,6 +6730,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     avatar?: StringFieldUpdateOperationsInput | string
     score?: IntFieldUpdateOperationsInput | number
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type LeaderboardUserCreateManyInput = {
@@ -5494,6 +6738,7 @@ export namespace Prisma {
     name: string
     avatar: string
     score: number
+    updatedAt?: Date | string
   }
 
   export type LeaderboardUserUpdateManyMutationInput = {
@@ -5501,6 +6746,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     avatar?: StringFieldUpdateOperationsInput | string
     score?: IntFieldUpdateOperationsInput | number
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type LeaderboardUserUncheckedUpdateManyInput = {
@@ -5508,6 +6754,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     avatar?: StringFieldUpdateOperationsInput | string
     score?: IntFieldUpdateOperationsInput | number
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ChallengeSubmissionCreateInput = {
@@ -5636,6 +6883,76 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type SessionArchiveCreateInput = {
+    id?: string
+    sessionId: string
+    teamName: string
+    archivedAt?: Date | string
+    userName: string
+    avatar: string
+    score: number
+  }
+
+  export type SessionArchiveUncheckedCreateInput = {
+    id?: string
+    sessionId: string
+    teamName: string
+    archivedAt?: Date | string
+    userName: string
+    avatar: string
+    score: number
+  }
+
+  export type SessionArchiveUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sessionId?: StringFieldUpdateOperationsInput | string
+    teamName?: StringFieldUpdateOperationsInput | string
+    archivedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    userName?: StringFieldUpdateOperationsInput | string
+    avatar?: StringFieldUpdateOperationsInput | string
+    score?: IntFieldUpdateOperationsInput | number
+  }
+
+  export type SessionArchiveUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sessionId?: StringFieldUpdateOperationsInput | string
+    teamName?: StringFieldUpdateOperationsInput | string
+    archivedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    userName?: StringFieldUpdateOperationsInput | string
+    avatar?: StringFieldUpdateOperationsInput | string
+    score?: IntFieldUpdateOperationsInput | number
+  }
+
+  export type SessionArchiveCreateManyInput = {
+    id?: string
+    sessionId: string
+    teamName: string
+    archivedAt?: Date | string
+    userName: string
+    avatar: string
+    score: number
+  }
+
+  export type SessionArchiveUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sessionId?: StringFieldUpdateOperationsInput | string
+    teamName?: StringFieldUpdateOperationsInput | string
+    archivedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    userName?: StringFieldUpdateOperationsInput | string
+    avatar?: StringFieldUpdateOperationsInput | string
+    score?: IntFieldUpdateOperationsInput | number
+  }
+
+  export type SessionArchiveUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sessionId?: StringFieldUpdateOperationsInput | string
+    teamName?: StringFieldUpdateOperationsInput | string
+    archivedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    userName?: StringFieldUpdateOperationsInput | string
+    avatar?: StringFieldUpdateOperationsInput | string
+    score?: IntFieldUpdateOperationsInput | number
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[]
@@ -5706,11 +7023,23 @@ export namespace Prisma {
     not?: NestedIntFilter<$PrismaModel> | number
   }
 
+  export type DateTimeFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    in?: Date[] | string[]
+    notIn?: Date[] | string[]
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeFilter<$PrismaModel> | Date | string
+  }
+
   export type LeaderboardUserCountOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
     avatar?: SortOrder
     score?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type LeaderboardUserAvgOrderByAggregateInput = {
@@ -5722,6 +7051,7 @@ export namespace Prisma {
     name?: SortOrder
     avatar?: SortOrder
     score?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type LeaderboardUserMinOrderByAggregateInput = {
@@ -5729,6 +7059,7 @@ export namespace Prisma {
     name?: SortOrder
     avatar?: SortOrder
     score?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type LeaderboardUserSumOrderByAggregateInput = {
@@ -5751,7 +7082,7 @@ export namespace Prisma {
     _max?: NestedIntFilter<$PrismaModel>
   }
 
-  export type DateTimeFilter<$PrismaModel = never> = {
+  export type DateTimeWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[]
     notIn?: Date[] | string[]
@@ -5759,7 +7090,10 @@ export namespace Prisma {
     lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeFilter<$PrismaModel> | Date | string
+    not?: NestedDateTimeWithAggregatesFilter<$PrismaModel> | Date | string
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedDateTimeFilter<$PrismaModel>
+    _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
   export type ChallengeSubmissionCountOrderByAggregateInput = {
@@ -5789,20 +7123,6 @@ export namespace Prisma {
     createdAt?: SortOrder
   }
 
-  export type DateTimeWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    in?: Date[] | string[]
-    notIn?: Date[] | string[]
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeWithAggregatesFilter<$PrismaModel> | Date | string
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedDateTimeFilter<$PrismaModel>
-    _max?: NestedDateTimeFilter<$PrismaModel>
-  }
-
   export type FlagSubmissionCountOrderByAggregateInput = {
     id?: SortOrder
     userName?: SortOrder
@@ -5828,6 +7148,44 @@ export namespace Prisma {
     flag?: SortOrder
     correct?: SortOrder
     createdAt?: SortOrder
+  }
+
+  export type SessionArchiveCountOrderByAggregateInput = {
+    id?: SortOrder
+    sessionId?: SortOrder
+    teamName?: SortOrder
+    archivedAt?: SortOrder
+    userName?: SortOrder
+    avatar?: SortOrder
+    score?: SortOrder
+  }
+
+  export type SessionArchiveAvgOrderByAggregateInput = {
+    score?: SortOrder
+  }
+
+  export type SessionArchiveMaxOrderByAggregateInput = {
+    id?: SortOrder
+    sessionId?: SortOrder
+    teamName?: SortOrder
+    archivedAt?: SortOrder
+    userName?: SortOrder
+    avatar?: SortOrder
+    score?: SortOrder
+  }
+
+  export type SessionArchiveMinOrderByAggregateInput = {
+    id?: SortOrder
+    sessionId?: SortOrder
+    teamName?: SortOrder
+    archivedAt?: SortOrder
+    userName?: SortOrder
+    avatar?: SortOrder
+    score?: SortOrder
+  }
+
+  export type SessionArchiveSumOrderByAggregateInput = {
+    score?: SortOrder
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -5905,6 +7263,17 @@ export namespace Prisma {
     _max?: NestedBoolFilter<$PrismaModel>
   }
 
+  export type NestedDateTimeFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    in?: Date[] | string[]
+    notIn?: Date[] | string[]
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeFilter<$PrismaModel> | Date | string
+  }
+
   export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>
     in?: number[]
@@ -5930,17 +7299,6 @@ export namespace Prisma {
     gt?: number | FloatFieldRefInput<$PrismaModel>
     gte?: number | FloatFieldRefInput<$PrismaModel>
     not?: NestedFloatFilter<$PrismaModel> | number
-  }
-
-  export type NestedDateTimeFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    in?: Date[] | string[]
-    notIn?: Date[] | string[]
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeFilter<$PrismaModel> | Date | string
   }
 
   export type NestedDateTimeWithAggregatesFilter<$PrismaModel = never> = {

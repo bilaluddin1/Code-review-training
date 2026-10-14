@@ -17,7 +17,11 @@ export async function GET(req: NextRequest) {
   } catch (err) {
     const e = err as Error;
     return NextResponse.json(
-      { error: e.message, stack: "at vulnerableOrderLookup (labsSandbox.ts:line) <- leaked to the client" },
+      {
+        error: e.message,
+        stack: "at vulnerableOrderLookup (labsSandbox.ts:line) <- leaked to the client",
+        flag: "FLAG{530b775212}",
+      },
       { status: 500, headers: { "Access-Control-Allow-Origin": demoOrigin, "Access-Control-Allow-Credentials": "true" } }
     );
   }

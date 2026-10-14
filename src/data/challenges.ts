@@ -4,7 +4,7 @@ export const challenges: Challenge[] = [
   {
     "id": "DEMO",
     "title": "How to Play: Demo Challenge",
-    "description": "Use it to practice how to view code, check hints, read explanations, and submit answers in this lab environment.",
+    "description": "Use it to practice how to view code, check hints, read explanations, and submit answers in this lab environment. For this walkthrough, the flag is FLAG{getting_started} - try pasting it into Submit Flag to see how that works too.",
     "difficulty": "beginner",
     "vulnerableLines": [
       3
@@ -19,7 +19,8 @@ export const challenges: Challenge[] = [
     },
     "code": "@GetMapping(\"/hello-world\")\npublic ResponseEntity<String> helloWorld() {\n    return ResponseEntity.ok(\"I am vulnerable line!\");\n}",
     "labUrl": "/demo",
-    "maxSelectableLines": 1
+    "maxSelectableLines": 1,
+    "flag": "FLAG{getting_started}"
   },
   {
     "id": "CHALLENGE1",
@@ -177,13 +178,16 @@ export const challenges: Challenge[] = [
     ],
     "difficulty": "intermediate",
     "hints": [
-      "The order's tenant was checked on line 7. Is docId ever tied back to that order?"
+      "The order's tenant was checked on line 7. Is docId ever tied back to that order?",
+      "A successful exploit response from the live lab includes a flag - paste it into Submit Flag. (The flag format gives nothing away - it's the same opaque pattern on every lab.)"
     ],
     "explanations": {
       "10": "The document is loaded by its own id with no check that it belongs to orderId (or that order belongs to clientId). Any authenticated user can read any tenant's document by guessing/incrementing docId. Fix: load with GetByIdForOrder(docId, orderId) so the WHERE clause itself enforces the link, and return 404 (not 403) either way."
     },
     "labUrl": "/labs/bac-01",
-    "maxSelectableLines": 1
+    "maxSelectableLines": 1,
+    "flag": "FLAG{f6de2f2645}",
+    "productOrigin": "Pattern based on confirmed findings in: OmniValVMS, Knoccs, VL-Core (IDOR/missing tenant scoping)"
   },
   {
     "id": "LAB-INJ-01",
@@ -195,13 +199,16 @@ export const challenges: Challenge[] = [
     ],
     "difficulty": "intermediate",
     "hints": [
-      "What happens if 'type' contains a single quote and a SQL comment marker?"
+      "What happens if 'type' contains a single quote and a SQL comment marker?",
+      "A successful exploit response from the live lab includes a flag - paste it into Submit Flag. (The flag format gives nothing away - it's the same opaque pattern on every lab.)"
     ],
     "explanations": {
       "3": "User input is concatenated directly into the query. A payload like Appraisal' OR '1'='1' -- comments out the rest of the clause, including the ClientId filter on line 4, returning every tenant's orders. Fix: use a parameterized query (SqlParameter / Dapper named params), never string concatenation."
     },
     "labUrl": "/labs/inj-01",
-    "maxSelectableLines": 1
+    "maxSelectableLines": 1,
+    "flag": "FLAG{99fb5ff84f}",
+    "productOrigin": "Pattern based on confirmed findings in: Valuelink-CrossCheck, VL-Core, VL-Direct (concatenated SQL, tenant filter appended after the injectable part)"
   },
   {
     "id": "LAB-INJ-02",
@@ -213,13 +220,16 @@ export const challenges: Challenge[] = [
     ],
     "difficulty": "intermediate",
     "hints": [
-      "bypassSecurityTrustHtml does exactly what its name says - bypasses Angular's own XSS protection."
+      "bypassSecurityTrustHtml does exactly what its name says - bypasses Angular's own XSS protection.",
+      "A successful exploit response from the live lab includes a flag - paste it into Submit Flag. (The flag format gives nothing away - it's the same opaque pattern on every lab.)"
     ],
     "explanations": {
       "3": "bypassSecurityTrustHtml() is called on content written by another party with no sanitizing step first. Anything they write, including <script>/onerror handlers, executes in the viewer's session. Fix: sanitize with DOMPurify before the bypass call (or better, don't bypass at all and let Angular's default [innerHTML] sanitizer handle it)."
     },
     "labUrl": "/labs/inj-02",
-    "maxSelectableLines": 1
+    "maxSelectableLines": 1,
+    "flag": "FLAG{3f6daa1cd6}",
+    "productOrigin": "Pattern based on confirmed findings in: AppraiserLinkConnect (bypassSecurityTrustHtml with no sanitizer)"
   },
   {
     "id": "LAB-CRYPTO-01",
@@ -231,13 +241,16 @@ export const challenges: Challenge[] = [
     ],
     "difficulty": "intermediate",
     "hints": [
-      "If you can read this source file, you can read StaticKey too. What stops you building your own cookie?"
+      "If you can read this source file, you can read StaticKey too. What stops you building your own cookie?",
+      "A successful exploit response from the live lab includes a flag - paste it into Submit Flag. (The flag format gives nothing away - it's the same opaque pattern on every lab.)"
     ],
     "explanations": {
       "3": "The key used to build every user's cookie is a string literal committed to source. Anyone with read access to the repo can reproduce Encrypt() and forge a cookie for any username, including 'admin'. Fix: never derive an auth token from a value only the source code holds - use a server-issued, random, single-use session token stored server-side, with the key itself in Key Vault, not source."
     },
     "labUrl": "/labs/crypto-01",
-    "maxSelectableLines": 1
+    "maxSelectableLines": 1,
+    "flag": "FLAG{43141c521f}",
+    "productOrigin": "Pattern based on confirmed findings in: VL-Core, AppraiserLinkConnect, Valuelink-CrossCheck, ValueLinkEPC (shared EncryptorDecryptorEngine helper, hardcoded key)"
   },
   {
     "id": "LAB-AUTH-01",
@@ -249,13 +262,16 @@ export const challenges: Challenge[] = [
     ],
     "difficulty": "intermediate",
     "hints": [
-      "What does this function return if the token is garbage and ValidateToken throws?"
+      "What does this function return if the token is garbage and ValidateToken throws?",
+      "A successful exploit response from the live lab includes a flag - paste it into Submit Flag. (The flag format gives nothing away - it's the same opaque pattern on every lab.)"
     ],
     "explanations": {
       "10": "If validation throws for any reason (malformed token, bad signature, wrong algorithm), the catch block returns false - meaning 'not expired' - instead of denying the request. A caller sending a broken token gets treated as if they had a valid one. Fix: an exception during validation must deny access (return true from IsTokenExpired, or better, make the caller fail closed on any exception)."
     },
     "labUrl": "/labs/auth-01",
-    "maxSelectableLines": 1
+    "maxSelectableLines": 1,
+    "flag": "FLAG{842139d233}",
+    "productOrigin": "Pattern based on confirmed findings in: VL-Core, Knoccs, OmniValVMS, ValueLinkEPC (shared JWTBuilder helper, fail-open IsTokenExpired)"
   },
   {
     "id": "LAB-CONFIG-01",
@@ -268,13 +284,16 @@ export const challenges: Challenge[] = [
     ],
     "difficulty": "intermediate",
     "hints": [
-      "One line is about who is allowed to call this. The other is about what gets sent back when something goes wrong."
+      "One line is about who is allowed to call this. The other is about what gets sent back when something goes wrong.",
+      "A successful exploit response from the live lab includes a flag - paste it into Submit Flag. (The flag format gives nothing away - it's the same opaque pattern on every lab.)"
     ],
     "explanations": {
       "2": "SetIsOriginAllowed(origin => true) combined with AllowCredentials() lets ANY website make authenticated requests to this API on a victim's behalf. Fix: use WithOrigins(...) with an explicit allow-list, never reflect-any-origin with credentials.",
       "15": "The raw exception message is returned to the client. Sending id=abc reveals internal type/parsing details an attacker can use to fingerprint the stack. Fix: log ex internally, return a generic error to the client."
     },
     "labUrl": "/labs/config-01",
-    "maxSelectableLines": 2
+    "maxSelectableLines": 2,
+    "flag": "FLAG{530b775212}",
+    "productOrigin": "Pattern based on confirmed findings in: Knoccs (CORS allow-any+credentials), multiple repos (exception message returned to client)"
   }
 ]
