@@ -45,7 +45,8 @@ export function ChallengeEditor({ challenges, onSave, onDelete, onRefresh }: Cha
         explanations: {} as Record<number, string>,
         labUrl: "",
         maxSelectableLines: 1,
-        flag: ""
+        flag: "",
+        productOrigin: ""
     })
 
     const [hintInput, setHintInput] = useState("")
@@ -63,7 +64,8 @@ export function ChallengeEditor({ challenges, onSave, onDelete, onRefresh }: Cha
                 explanations: editingChallenge.explanations,
                 labUrl: editingChallenge.labUrl || "",
                 maxSelectableLines: editingChallenge.maxSelectableLines || 1,
-                flag: editingChallenge.flag || ""
+                flag: editingChallenge.flag || "",
+                productOrigin: editingChallenge.productOrigin || ""
             })
             setSelectedLines(editingChallenge.vulnerableLines)
         }
@@ -82,7 +84,8 @@ export function ChallengeEditor({ challenges, onSave, onDelete, onRefresh }: Cha
             explanations: {},
             labUrl: "",
             maxSelectableLines: 1,
-            flag: ""
+            flag: "",
+            productOrigin: ""
         })
         setSelectedLines([])
     }
@@ -111,7 +114,11 @@ export function ChallengeEditor({ challenges, onSave, onDelete, onRefresh }: Cha
 
         setSaving(true);
         try {
+            // Preserve any field this form doesn't manage (e.g. productOrigin)
+            // instead of rebuilding the object from scratch and silently
+            // dropping it.
             const challenge: Challenge = {
+                ...(editingChallenge ?? {}),
                 id: formData.id,
                 title: formData.title,
                 description: formData.description,
@@ -122,7 +129,8 @@ export function ChallengeEditor({ challenges, onSave, onDelete, onRefresh }: Cha
                 explanations: formData.explanations,
                 labUrl: formData.labUrl || undefined,
                 maxSelectableLines: formData.maxSelectableLines,
-                flag: formData.flag || undefined
+                flag: formData.flag || undefined,
+                productOrigin: formData.productOrigin || undefined
             };
 
             console.log('Saving challenge:', challenge);
@@ -438,6 +446,15 @@ export function ChallengeEditor({ challenges, onSave, onDelete, onRefresh }: Cha
                                 value={formData.flag}
                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData(prev => ({ ...prev, flag: e.target.value }))}
                                 placeholder="flag{your-flag-here}"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium mb-2">Product Origin (admin-only, never shown to players)</label>
+                            <Input
+                                value={formData.productOrigin}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData(prev => ({ ...prev, productOrigin: e.target.value }))}
+                                placeholder="e.g. Pattern based on confirmed findings in: VL-Core, Knoccs"
                             />
                         </div>
 

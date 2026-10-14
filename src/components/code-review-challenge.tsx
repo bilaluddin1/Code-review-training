@@ -9,7 +9,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import { io, Socket } from 'socket.io-client'
 import { getSocketUrl } from '@/lib/get-socket-url'
-import { FEEDBACK_QUESTIONS, type FeedbackQuestionKey } from '@/lib/feedbackQuestions'
+import { FEEDBACK_QUESTIONS, type FeedbackQuestionKey, type EffectiveQuestion } from '@/lib/feedbackQuestions'
 
 // Simple avatar generator: pick a random emoji
 const AVATARS = ["🦊", "🐻", "🐼", "🐸", "🐵", "🐶", "🐱", "🦁", "🐯", "🐨", "🐰", "🦄", "🐙", "🐧", "🐢", "🐦", "🐝", "🐬", "🦋", "🐞"];
@@ -157,26 +157,31 @@ function AdminModal({ open, onSubmit, onClose, error }: { open: boolean, onSubmi
   );
 }
 
-type FeedbackValues = Record<FeedbackQuestionKey, number> & { teamName: string; comments: string };
+// Team is NOT part of this - it's set once by the admin (FeedbackToggle.currentTeam)
+// and attached server-side, so every dev's submission is tagged consistently
+// instead of each person typing (and misspelling) their own team name.
+type FeedbackValues = Record<FeedbackQuestionKey, number> & { comments: string };
 const EMPTY_FEEDBACK_VALUES: FeedbackValues = {
   ...(Object.fromEntries(FEEDBACK_QUESTIONS.map((q) => [q.key, 0])) as Record<FeedbackQuestionKey, number>),
-  teamName: "",
   comments: "",
 };
+
+// 1-5 under the hood (storage, averages, CSV), but devs pick a word, not a digit.
+const RATING_LABELS: Record<number, string> = { 1: "Poor", 2: "Fair", 3: "Neutral", 4: "Good", 5: "Excellent" };
 
 function RatingRow({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
   return (
     <div className="w-full">
       <div className="text-sm font-medium mb-1">{label}</div>
-      <div className="flex gap-2">
+      <div className="flex gap-2 flex-wrap">
         {[1, 2, 3, 4, 5].map((n) => (
           <button
             key={n}
             type="button"
             onClick={() => onChange(n)}
-            className={`h-9 w-9 rounded-full border text-sm font-semibold transition-colors ${value === n ? "bg-blue-600 text-white border-blue-600" : "bg-white text-gray-600 border-gray-300 hover:border-blue-400"}`}
+            className={`px-3 h-9 rounded-full border text-sm font-semibold transition-colors ${value === n ? "bg-blue-600 text-white border-blue-600" : "bg-white text-gray-600 border-gray-300 hover:border-blue-400"}`}
           >
-            {n}
+            {RATING_LABELS[n]}
           </button>
         ))}
       </div>
@@ -184,21 +189,16 @@ function RatingRow({ label, value, onChange }: { label: string; value: number; o
   );
 }
 
-function FeedbackModal({ open, onSubmit, onClose }: { open: boolean; onSubmit: (v: FeedbackValues) => Promise<boolean>; onClose: () => void }) {
+function FeedbackModal({ open, onSubmit, onClose, currentTeam, questions }: { open: boolean; onSubmit: (v: FeedbackValues) => Promise<boolean>; onClose: () => void; currentTeam: string | null; questions: EffectiveQuestion[] }) {
   const [values, setValues] = useState<FeedbackValues>(EMPTY_FEEDBACK_VALUES);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
   if (!open) return null;
 
-  const allRated = FEEDBACK_QUESTIONS.every((q) => values[q.key] > 0);
-  const teamFilled = values.teamName.trim().length > 0;
+  const allRated = questions.every((q) => values[q.key] > 0);
 
   const submit = async () => {
-    if (!teamFilled) {
-      setError("Team is required.");
-      return;
-    }
     if (!allRated) {
       setError("Please rate every question.");
       return;
@@ -208,7 +208,7 @@ function FeedbackModal({ open, onSubmit, onClose }: { open: boolean; onSubmit: (
     const ok = await onSubmit(values);
     setSubmitting(false);
     if (ok) setSubmitted(true);
-    else setError("Could not submit feedback - please try again.");
+    else setError("Could not submit feedback - ask your trainer to confirm the session team is set, then try again.");
   };
 
   return (
@@ -227,17 +227,11 @@ function FeedbackModal({ open, onSubmit, onClose }: { open: boolean; onSubmit: (
         ) : (
           <>
             <h2 className="text-xl font-bold">Session Feedback</h2>
-            <p className="text-gray-600 text-sm -mt-2">Rate 1 (poor) to 5 (excellent). Available any time - you don't need to finish every lab first.</p>
-            <div>
-              <div className="text-sm font-medium mb-1">Team <span className="text-red-600">*</span></div>
-              <input
-                className="border rounded px-3 py-2 w-full focus:outline-none focus:ring"
-                placeholder="e.g. VLCore"
-                value={values.teamName}
-                onChange={(e) => setValues((s) => ({ ...s, teamName: e.target.value }))}
-              />
-            </div>
-            {FEEDBACK_QUESTIONS.map((q) => (
+            <p className="text-gray-600 text-sm -mt-2">Rate 1 (poor) to 5 (excellent).</p>
+            {currentTeam && (
+              <p className="text-xs text-gray-500 -mt-2">Submitting for team: <span className="font-semibold">{currentTeam}</span></p>
+            )}
+            {questions.map((q) => (
               <RatingRow key={q.key} label={q.label} value={values[q.key]} onChange={(v) => setValues((s) => ({ ...s, [q.key]: v }))} />
             ))}
             <div>
@@ -341,11 +335,18 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const [feedback, setFeedback] = useState<{
     count: number;
+    questions: EffectiveQuestion[];
     averages: Record<FeedbackQuestionKey, number | null>;
     responses: (Record<FeedbackQuestionKey, number> & { userName: string; teamName: string | null; comments: string | null; createdAt: string })[];
   } | null>(null);
   const [feedbackToggle, setFeedbackToggle] = useState(false);
   const [feedbackToggleLoading, setFeedbackToggleLoading] = useState(false);
+  const [currentTeam, setCurrentTeam] = useState<string | null>(null);
+  const [teamInput, setTeamInput] = useState("");
+  const [teamSaving, setTeamSaving] = useState(false);
+  const [editingQuestions, setEditingQuestions] = useState(false);
+  const [draftQuestions, setDraftQuestions] = useState<EffectiveQuestion[]>([]);
+  const [questionsSaving, setQuestionsSaving] = useState(false);
   const [timerDurations, setTimerDurations] = useState<Record<string, number>>({});
   const [timers, setTimers] = useState<Record<string, { startTime: number; duration: number; isRunning: boolean; isPaused: boolean; remaining?: number }>>({});
   const [timeLefts, setTimeLefts] = useState<Record<string, number>>({});
@@ -470,8 +471,17 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
       fetch('/api/feedback-enabled'),
     ]);
     if (analyticsRes.ok) setAnalytics(await analyticsRes.json());
-    if (feedbackRes.ok) setFeedback(await feedbackRes.json());
-    if (toggleRes.ok) setFeedbackToggle((await toggleRes.json()).enabled);
+    if (feedbackRes.ok) {
+      const f = await feedbackRes.json();
+      setFeedback(f);
+      setDraftQuestions(f.questions);
+    }
+    if (toggleRes.ok) {
+      const t = await toggleRes.json();
+      setFeedbackToggle(t.enabled);
+      setCurrentTeam(t.currentTeam ?? null);
+      setTeamInput(t.currentTeam ?? "");
+    }
     setAnalyticsLoading(false);
   };
 
@@ -484,6 +494,47 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
     });
     if (res.ok) setFeedbackToggle((await res.json()).enabled);
     setFeedbackToggleLoading(false);
+  };
+
+  const saveTeam = async () => {
+    setTeamSaving(true);
+    const res = await fetch('/api/admin/feedback-enabled', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ currentTeam: teamInput }),
+    });
+    if (res.ok) setCurrentTeam((await res.json()).currentTeam ?? null);
+    setTeamSaving(false);
+  };
+
+  const moveQuestion = (index: number, dir: -1 | 1) => {
+    setDraftQuestions((prev) => {
+      const next = [...prev];
+      const target = index + dir;
+      if (target < 0 || target >= next.length) return prev;
+      [next[index], next[target]] = [next[target], next[index]];
+      return next;
+    });
+  };
+
+  const saveQuestions = async () => {
+    setQuestionsSaving(true);
+    const res = await fetch('/api/admin/feedback-questions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ questions: draftQuestions }),
+    });
+    if (res.ok) {
+      await fetchAnalytics();
+      setEditingQuestions(false);
+    } else {
+      alert('Could not save - ' + ((await res.json().catch(() => ({})))?.error ?? 'unknown error'));
+    }
+    setQuestionsSaving(false);
+  };
+
+  const resetQuestionsToDefault = () => {
+    setDraftQuestions(FEEDBACK_QUESTIONS.map((q) => ({ key: q.key, label: q.label })));
   };
 
   useEffect(() => {
@@ -511,8 +562,12 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
   const handleReset = async () => {
     // Sessions run one product team at a time. Archive the current leaderboard
     // under that team's name BEFORE wiping it, so nothing is lost when the
-    // next team starts with a clean slate.
-    const teamName = window.prompt('Team name for this session (archived before reset):');
+    // next team starts with a clean slate. Pre-filled from the same "session
+    // team" setting the feedback form uses - fetched fresh here so this works
+    // correctly even if the Analytics tab was never opened this visit.
+    const liveTeamRes = await fetch('/api/feedback-enabled');
+    const liveTeam = liveTeamRes.ok ? ((await liveTeamRes.json()).currentTeam ?? '') : '';
+    const teamName = window.prompt('Team name for this session (archived before reset):', liveTeam);
     if (teamName === null) return; // cancelled
     if (!window.confirm(`Archive the current leaderboard as "${teamName.trim() || '(unnamed)'}" and then reset everything? This cannot be undone.`)) return;
     setResetting(true);
@@ -527,6 +582,16 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
         setResetting(false);
         alert('Could not archive the session - reset cancelled so nothing is lost. Try again.');
         return;
+      }
+      // Keep the session-team setting (used by feedback) in sync with whatever was just archived
+      if (teamName.trim() !== liveTeam) {
+        await fetch('/api/admin/feedback-enabled', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ currentTeam: teamName.trim() }),
+        });
+        setCurrentTeam(teamName.trim());
+        setTeamInput(teamName.trim());
       }
     }
     const res = await fetch('/api/admin-reset', { method: 'POST' });
@@ -744,13 +809,28 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
               </div>
 
               <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-3 pb-3 border-b border-green-200">
+                  <span className="text-sm font-medium shrink-0">Session Team:</span>
+                  <input
+                    className="border rounded px-2 py-1 text-sm flex-1 min-w-0"
+                    placeholder="e.g. VLCore"
+                    value={teamInput}
+                    onChange={(e) => setTeamInput(e.target.value)}
+                  />
+                  <Button size="sm" disabled={teamSaving || teamInput.trim() === (currentTeam ?? '')} onClick={saveTeam}>
+                    {teamSaving ? '...' : 'Save'}
+                  </Button>
+                  <span className="text-xs text-gray-500 shrink-0">
+                    {currentTeam ? `Feedback is tagged "${currentTeam}"` : 'Not set - feedback submissions will fail until set'}
+                  </span>
+                </div>
                 <div className="flex items-center justify-between mb-3 gap-3">
                   <div>
                     <h3 className="font-semibold">Dev Feedback ({feedback?.count ?? 0} response{feedback?.count === 1 ? '' : 's'})</h3>
                     {feedback && feedback.count > 0 && (
                       <p className="text-sm text-gray-600">
                         Avg overall {feedback.averages.overall} · relevant to role {feedback.averages.relevantToRole} · pace {feedback.averages.paceAndStructure} · more confident {feedback.averages.moreConfident}
-                        <span className="text-xs text-gray-400"> (full breakdown of all {FEEDBACK_QUESTIONS.length} questions in the CSV)</span>
+                        <span className="text-xs text-gray-400"> (full breakdown of all {(feedback?.questions ?? FEEDBACK_QUESTIONS).length} questions in the CSV)</span>
                       </p>
                     )}
                   </div>
@@ -762,6 +842,9 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
                     >
                       {feedbackToggleLoading ? "..." : feedbackToggle ? "Feedback: ON (click to disable)" : "Feedback: OFF (click to enable)"}
                     </Button>
+                    <Button variant="outline" onClick={() => setEditingQuestions((v) => !v)}>
+                      {editingQuestions ? "Close Editor" : "Edit Questions"}
+                    </Button>
                   <Button
                     variant="outline"
                     disabled={!feedback || feedback.count === 0}
@@ -769,11 +852,11 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
                       feedback &&
                       downloadCsv(
                         'feedback.csv',
-                        ['Name', 'Team', ...FEEDBACK_QUESTIONS.map((q) => q.label), 'Comments', 'Submitted At'],
+                        ['Name', 'Team', ...feedback.questions.map((q) => q.label), 'Comments', 'Submitted At'],
                         feedback.responses.map((r) => [
                           r.userName,
                           r.teamName ?? '',
-                          ...FEEDBACK_QUESTIONS.map((q) => r[q.key]),
+                          ...feedback.questions.map((q) => r[q.key]),
                           r.comments ?? '',
                           new Date(r.createdAt).toLocaleString(),
                         ])
@@ -784,6 +867,38 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
                   </Button>
                   </div>
                 </div>
+
+                {editingQuestions && (
+                  <div className="bg-white border rounded-lg p-3 mb-3 space-y-2">
+                    <p className="text-xs text-gray-500">
+                      Rename wording or reorder with the arrows. The set of 13 questions is fixed (each is its own database
+                      column) - adding or removing questions needs a code change, not this editor.
+                    </p>
+                    {draftQuestions.map((q, i) => (
+                      <div key={q.key} className="flex items-center gap-2">
+                        <div className="flex flex-col">
+                          <button type="button" className="text-gray-400 hover:text-gray-700 disabled:opacity-20" disabled={i === 0}
+                            onClick={() => moveQuestion(i, -1)}>▲</button>
+                          <button type="button" className="text-gray-400 hover:text-gray-700 disabled:opacity-20" disabled={i === draftQuestions.length - 1}
+                            onClick={() => moveQuestion(i, 1)}>▼</button>
+                        </div>
+                        <input
+                          className="border rounded px-2 py-1 text-sm flex-1"
+                          value={q.label}
+                          onChange={(e) => setDraftQuestions((prev) => prev.map((p, idx) => idx === i ? { ...p, label: e.target.value } : p))}
+                        />
+                      </div>
+                    ))}
+                    <div className="flex gap-2 pt-2">
+                      <Button size="sm" onClick={saveQuestions} disabled={questionsSaving}>
+                        {questionsSaving ? 'Saving...' : 'Save'}
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={resetQuestionsToDefault}>Reset to Defaults</Button>
+                      <Button size="sm" variant="outline" onClick={() => setEditingQuestions(false)}>Cancel</Button>
+                    </div>
+                  </div>
+                )}
+
                 {feedback && feedback.responses.length > 0 && (
                   <div className="space-y-2 max-h-64 overflow-y-auto">
                     {feedback.responses.map((r, i) => (
@@ -793,7 +908,7 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
                           <span className="text-gray-500">{new Date(r.createdAt).toLocaleString()}</span>
                         </div>
                         <div className="text-xs text-gray-600">
-                          {FEEDBACK_QUESTIONS.map((q) => `${q.label}: ${r[q.key]}`).join(' · ')}
+                          {feedback.questions.map((q) => `${q.label}: ${r[q.key]}`).join(' · ')}
                         </div>
                         {r.comments && <div className="text-gray-700 mt-1 italic">&quot;{r.comments}&quot;</div>}
                       </div>
@@ -1070,6 +1185,10 @@ export default function CodeReviewChallenge() {
   // Feedback state - available any time, not gated on finishing every lab
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [feedbackEnabled, setFeedbackEnabled] = useState(false);
+  const [currentTeam, setCurrentTeam] = useState<string | null>(null);
+  const [feedbackQuestions, setFeedbackQuestions] = useState<EffectiveQuestion[]>(
+    FEEDBACK_QUESTIONS.map((q) => ({ key: q.key, label: q.label }))
+  );
   const handleFeedbackSubmit = async (v: FeedbackValues): Promise<boolean> => {
     const res = await fetch("/api/feedback", {
       method: "POST",
@@ -1158,10 +1277,19 @@ export default function CodeReviewChallenge() {
       .then(res => res.json())
       .then(data => setLocks(data));
 
-    // Whether the "Give Feedback" button is live yet (admin-controlled)
+    // Whether the "Give Feedback" button is live yet, and which team this
+    // session is currently set to (admin-controlled, never typed by a dev)
     fetch('/api/feedback-enabled')
       .then(res => res.json())
-      .then(data => setFeedbackEnabled(!!data.enabled));
+      .then(data => {
+        setFeedbackEnabled(!!data.enabled);
+        setCurrentTeam(data.currentTeam ?? null);
+      });
+
+    // The feedback form's wording/order - reflects any admin customization
+    fetch('/api/feedback-questions')
+      .then(res => res.json())
+      .then(data => { if (Array.isArray(data.questions)) setFeedbackQuestions(data.questions); });
 
     // Fetch challenges from API
     const fetchChallenges = async () => {
@@ -1482,7 +1610,7 @@ export default function CodeReviewChallenge() {
     return (
       <>
         <UserBar name={user.name} avatar={user.avatar} score={user.score} isAdmin={isAdmin} onAdminLogout={handleAdminLogout} onGiveFeedback={() => setShowFeedbackModal(true)} feedbackEnabled={feedbackEnabled} />
-        <FeedbackModal open={showFeedbackModal} onSubmit={handleFeedbackSubmit} onClose={() => setShowFeedbackModal(false)} />
+        <FeedbackModal open={showFeedbackModal} onSubmit={handleFeedbackSubmit} onClose={() => setShowFeedbackModal(false)} currentTeam={currentTeam} questions={feedbackQuestions} />
         <div className="min-h-screen bg-gray-50 p-4">
           <div className="max-w-4xl mx-auto space-y-6">
             <div className="text-center mb-8">
@@ -1591,7 +1719,7 @@ export default function CodeReviewChallenge() {
   return (
     <>
       <UserBar name={user.name} avatar={user.avatar} score={user.score} isAdmin={isAdmin} onAdminLogout={handleAdminLogout} onGiveFeedback={() => setShowFeedbackModal(true)} feedbackEnabled={feedbackEnabled} />
-      <FeedbackModal open={showFeedbackModal} onSubmit={handleFeedbackSubmit} onClose={() => setShowFeedbackModal(false)} />
+      <FeedbackModal open={showFeedbackModal} onSubmit={handleFeedbackSubmit} onClose={() => setShowFeedbackModal(false)} currentTeam={currentTeam} questions={feedbackQuestions} />
       <div className="min-h-screen bg-gray-50 p-4">
         <div className="max-w-6xl mx-auto space-y-6">
           <div className="flex flex-col md:flex-row md:items-start md:gap-6">

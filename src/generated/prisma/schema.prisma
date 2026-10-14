@@ -86,9 +86,19 @@ model FeedbackResponse {
   createdAt              DateTime @default(now())
 }
 
-// Single-row switch: the "Give Feedback" button stays greyed out for
-// everyone until an admin turns it on (e.g. near the end of a session).
+// Single-row session settings. Three jobs:
+// 1) "Give Feedback" stays greyed out for everyone until an admin turns it
+//    on (e.g. near the end of a session).
+// 2) currentTeam is the ONE place a team name gets typed, by the admin -
+//    not re-typed by every dev. Every feedback submission is tagged with
+//    this value server-side, and "Reset Everything" pre-fills its archive
+//    prompt from it, so the same name is used everywhere without retyping.
+// 3) questionsJson: admin-editable wording/order for the fixed 13 feedback
+//    questions (JSON array of {key,label}, same keys as FEEDBACK_QUESTIONS,
+//    just reordered/relabeled). Null means "use the built-in defaults".
 model FeedbackToggle {
-  id      Int     @id @default(1)
-  enabled Boolean @default(false)
+  id            Int     @id @default(1)
+  enabled       Boolean @default(false)
+  currentTeam   String?
+  questionsJson String?
 }

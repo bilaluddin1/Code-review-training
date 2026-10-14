@@ -25,21 +25,121 @@ export const challenges: Challenge[] = [
   },
   {
     "id": "CHALLENGE1",
-    "title": "New challenge",
-    "description": "this is for sql injection",
-    "code": "@GetMapping(\"/open-door\")\n    public ResponseEntity<String> fetchUrl(@RequestParam String url) {\n        try {\n            HttpClient client = HttpClient.newHttpClient();\n            HttpRequest request = HttpRequest.newBuilder()\n                    .uri(URI.create(url))\n                    .GET()\n                    .build();\n            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());\n            return ResponseEntity.status(response.statusCode()).body(response.body());\n        } catch (Exception e) {\n            return ResponseEntity.badRequest().body(\"Error: \" + e.getMessage());\n        }\n    }",
+    "title": "LAB: 01 User Search Vulnerability",
+    "description": "Identify where user input is used and find improper error handling",
+    "code": "using System;\nusing System.Collections.Generic;\nusing System.Data;\nusing System.Data.SqlClient;\nusing System.Threading.Tasks;\nusing Microsoft.AspNetCore.Mvc;\n{\n    [Route(\"api/lab1/users\")]\n    [ApiController]\n    public class Lab1_UserSearchController : ControllerBase\n    {\n        private readonly string _connectionString;\n        public Lab1_UserSearchController(IConfiguration config)\n        {\n            _connectionString = config.GetConnectionString(\"DefaultConnection\");\n        }\n        [HttpGet(\"search\")]\n        public async Task<IActionResult> SearchUsers([FromQuery] string username)\n        {\n            if (string.IsNullOrWhiteSpace(username))\n            {\n                return BadRequest(new { message = \"Username is required\" });\n            }\n            try\n            {\n                using (SqlConnection conn = new SqlConnection(_connectionString))\n                {\n                    await conn.OpenAsync();\n                    string query = \"SELECT User_Id, Username, Email, Role FROM tbl_Users WHERE Username = '\" + username + \"'\";\n                    SqlCommand cmd = new SqlCommand(query, conn);\n                    SqlDataReader reader = await cmd.ExecuteReaderAsync();\n                    List<dynamic> users = new List<dynamic>();\n                    while (await reader.ReadAsync())\n                    {\n                        users.Add(new\n                        {\n                            userId = reader.GetInt32(0),\n                            username = reader.GetString(1),\n                            email = reader.GetString(2),\n                            role = reader.GetString(3)\n                        });\n                    }\n                    return Ok(new { success = true, data = users });\n                }\n            }\n            catch (Exception ex)\n            {\n                return StatusCode(500, new { error = ex.Message });\n            }\n        }\n    }\n}\n",
     "vulnerableLines": [
-      9
+      29,
+      48
     ],
     "difficulty": "beginner",
     "hints": [
       "Look for places where user input is passed directly without sanitization"
     ],
     "explanations": {
-      "9": "Sends server-side request to attacker-controlled URL."
+      "29": "User-controlled input (username) is directly concatenated into a SQL query.",
+      "48": "The information is returned directly to the client."
     },
     "labUrl": "https://musabkhan.me/lab/1",
     "maxSelectableLines": 2
+  },
+  {
+    "id": "LAB: 02",
+    "title": "LAB: 02 Stored Procedure with Dynamic SQL",
+    "description": "This lab demonstrates the EXACT vulnerability pattern found in our products",
+    "code": "CREATE PROCEDURE [dbo].[Lab2_GetClientDocuments_Vulnerable]\n(\n    @ClientId INT,\n    @DocumentType NVARCHAR(50),\n    @SearchKeyword NVARCHAR(MAX),\n    @SortColumn NVARCHAR(50),\n    @SortOrder NVARCHAR(10),\n    @Offset INT,\n    @Limit INT,\n    @TotalRecords INT OUTPUT\n)\nAS\nBEGIN\n    \n    DECLARE @SQL NVARCHAR(MAX)\n    DECLARE @WhereClause NVARCHAR(MAX) = ' WHERE Client_Id = ' + CAST(@ClientId AS NVARCHAR(10))\n    \n    IF @DocumentType IS NOT NULL AND @DocumentType != ''\n    BEGIN\n        SET @WhereClause = @WhereClause + ' AND Document_Type = ''' + @DocumentType + ''''\n    END\n    \n    IF @SearchKeyword IS NOT NULL AND @SearchKeyword != ''\n    BEGIN\n        SET @WhereClause = @WhereClause + ' AND (Document_Name LIKE ''%' + @SearchKeyword + '%'' OR Document_Description LIKE ''%' + @SearchKeyword + '%'')'\n    END\n    \n    DECLARE @OrderClause NVARCHAR(200) = ' ORDER BY ' + @SortColumn + ' ' + @SortOrder\n    \n    -- Build the complete query\n    SET @SQL = 'SELECT Document_Id, Document_Name, Document_Type, Document_Description, Created_On, Created_By ' +\n               'FROM tbl_Client_Documents ' + \n               @WhereClause + \n               @OrderClause;\n    \n    EXEC(@SQL)\n    \nEND\nGO\n",
+    "vulnerableLines": [
+      20,
+      25,
+      28
+    ],
+    "difficulty": "intermediate",
+    "hints": [
+      "Any line where user input is concatenated into an SQL string"
+    ],
+    "explanations": {
+      "20": "Unsensitized string concatenation",
+      "25": "Classic SQL injection vector using LIKE",
+      "28": "cannot be parameterized \u2192 must be whitelisted"
+    },
+    "maxSelectableLines": 3
+  },
+  {
+    "id": "LAB: 03",
+    "title": "LAB: 03 Authentication Bypass",
+    "description": "Authentication queries are the MOST DANGEROUS place for SQL injection!",
+    "code": "{\n    [Route(\"api/lab3/auth\")]\n    [ApiController]\n    public class Lab3_AuthenticationController : ControllerBase\n    {\n        private readonly string _connectionString;\n        public Lab3_AuthenticationController(IConfiguration config)\n        {\n            _connectionString = config.GetConnectionString(\"DefaultConnection\");\n        }\n      \n        [HttpPost(\"login\")]\n        public async Task<IActionResult> Login([FromBody] LoginRequest request)\n        {\n            if (string.IsNullOrWhiteSpace(request.Username) || \n                string.IsNullOrWhiteSpace(request.Password))\n            {\n                return BadRequest(new { message = \"Username and password are required\" });\n            }\n            try\n            {\n                using (SqlConnection conn = new SqlConnection(_connectionString))\n                {\n                    await conn.OpenAsync();\n                    string query = \"SELECT User_Id, Username, Email, Role, Client_Id \" +\n                                  \"FROM tbl_Users \" +\n                                  \"WHERE Username = '\" + request.Username + \"' \" +\n                                  \"AND Password = '\" + request.Password + \"' \" +\n                                  \"AND Active = 1\";\n                    SqlCommand cmd = new SqlCommand(query, conn);\n                    SqlDataReader reader = await cmd.ExecuteReaderAsync();\n                    if (await reader.ReadAsync())\n                    {\n                        var user = new\n                        {\n                            userId = reader.GetInt32(0),\n                            username = reader.GetString(1),\n                            email = reader.GetString(2),\n                            role = reader.GetString(3),\n                            clientId = reader.IsDBNull(4) ? (int?)null : reader.GetInt32(4)\n                        };\n                        // Generate JWT token \n                        string token = GenerateFakeJwtToken(user.userId, user.username, user.role);\n                        return Ok(new\n                        {\n                            success = true,\n                            message = \"Login successful\",\n                            token = token,\n                            user = user\n                        });\n                    }\n                    return Unauthorized(new { message = \"Invalid username or password\" });\n                }\n            }\n            catch (Exception ex)\n            {\n               \n                return StatusCode(500, new { error = ex.Message });\n            }\n        }\n        private string GenerateFakeJwtToken(int userId, string username, string role)\n        {\n            return $\"fake-jwt-token-{userId}-{username}-{role}\";\n        }\n    }\n    public class LoginRequest\n    {\n        public string Username { get; set; }\n        public string Password { get; set; }\n    }\n}\n",
+    "vulnerableLines": [
+      27,
+      28
+    ],
+    "difficulty": "beginner",
+    "hints": [
+      "What happens if we can manipulate the WHERE clause to always be TRUE"
+    ],
+    "explanations": {
+      "27": "They are directly concatenated into an SQL query",
+      "28": "request.Username and request.Password are user-controlled."
+    },
+    "maxSelectableLines": 2
+  },
+  {
+    "id": "LAB: 04",
+    "title": "LAB: 04 Blind Sql Six Sense",
+    "description": "This is more difficult than regular SQL injection but still very dangerous!",
+    "code": "{\n    [Route(\"api/lab4/reports\")]\n    [ApiController]\n    public class Lab4_BlindSQLInjectionController : ControllerBase\n    {\n        private readonly string _connectionString;\n        public Lab4_BlindSQLInjectionController(IConfiguration config)\n        {\n            _connectionString = config.GetConnectionString(\"DefaultConnection\");\n        }\n       \n        [HttpGet(\"client/{clientId}/orders\")]\n        public async Task<IActionResult> GetClientOrders(\n            int clientId,\n            [FromQuery] string sortBy = \"order_date\",\n            [FromQuery] string sortOrder = \"DESC\")\n        {\n            try\n            {\n                using (SqlConnection conn = new SqlConnection(_connectionString))\n                {\n                    await conn.OpenAsync();\n                   \n                    string query = $@\"\n                        SELECT \n                            Order_Id, \n                            Order_Number, \n                            Product_Name, \n                            Order_Status, \n                            Order_Date,\n                            Total_Fee\n                        FROM tbl_Orders\n                        WHERE Client_Id = @ClientId\n                        AND Active = 1\n                        ORDER BY {sortBy} {sortOrder}\";\n                    SqlCommand cmd = new SqlCommand(query, conn);\n                    cmd.Parameters.AddWithValue(\"@ClientId\", clientId);\n                    SqlDataReader reader = await cmd.ExecuteReaderAsync();\n                    List<dynamic> orders = new List<dynamic>();\n                    while (await reader.ReadAsync())\n                    {\n                        orders.Add(new\n                        {\n                            orderId = reader.GetInt32(0),\n                            orderNumber = reader.GetString(1),\n                            productName = reader.GetString(2),\n                            status = reader.GetString(3),\n                            orderDate = reader.GetDateTime(4),\n                            totalFee = reader.GetDecimal(5)\n                        });\n                    }\n                    return Ok(new { data = orders, count = orders.Count });\n                }\n            }\n           \n        }\n    }\n}\n",
+    "vulnerableLines": [
+      35
+    ],
+    "difficulty": "intermediate",
+    "hints": [
+      "Find where parameterization is not used."
+    ],
+    "explanations": {
+      "35": "The sortBy and sortOrder are directly interpolated into the ORDER BY clause."
+    },
+    "maxSelectableLines": 1
+  },
+  {
+    "id": "Lab: 05",
+    "title": "Lab: 05 Flask SQL Injection",
+    "description": "",
+    "code": "from flask import Flask, request, render_template\nimport psycopg2\nimport os\n\napp = Flask(__name__)\n\n\n# --- Flask Routes ---\n\n@app.route('/')\ndef index():\n    return render_template('index.html')\n\n@app.route('/products')\ndef products():\n    category = request.args.get('category', '')\n    \n    if not category:\n        return 'Please provide a product category.'\n    \n    query = f\"SELECT name, price FROM products WHERE category = '{category}' AND published = true\"\n    \n    try:\n        conn = get_db_connection()\n        cur = conn.cursor()\n        cur.execute(query)\n        results = cur.fetchall()\n        cur.close()\n        conn.close()\n        \n        return \"Search completed successfully.\"\n        \n    except Exception as e:\n        return \"Search completed successfully.\"\n\n\n@app.route('/search', methods=['GET', 'POST'])\ndef search():\n    if request.method == 'GET':\n        return render_template('search.html')\n    \n    product_name = request.form.get('name', '')\n    conn = get_db_connection()\n    cur = conn.cursor()\n    cur.execute(\"SELECT name, category, price FROM products WHERE name = %s AND published = true\", \n                [product_name])\n    products = cur.fetchall()\n    cur.close()\n    conn.close()\n    \n    return render_template('search_results.html', products=products)\n\n@app.route('/users')\ndef users():\n    conn = get_db_connection()\n    cur = conn.cursor()\n    cur.execute(\"SELECT username FROM users\")\n    users = cur.fetchall()\n    cur.close()\n    conn.close()\n    \n    return render_template('users.html', users=users)\n\nif __name__ == '__main__':\n    app.run(host='0.0.0.0', port=80, debug=False)",
+    "vulnerableLines": [
+      21
+    ],
+    "difficulty": "intermediate",
+    "hints": [
+      "The endpoint uses an f-string"
+    ],
+    "explanations": {
+      "21": "The {category} variable is injected directly and raw into the SQL string."
+    },
+    "maxSelectableLines": 1
+  },
+  {
+    "id": "SQL_INPUT_VALIDATION",
+    "title": "SQL Input Validation",
+    "description": "A stored procedure uses NVARCHAR(30) to enforce length \u2014 but does that really protect against bad input? Identify the lines that give a false sense of security.",
+    "code": "CREATE PROCEDURE dbo.SelectAllCustomers\n    @City       NVARCHAR(30),\n    @PostalCode NVARCHAR(10)\nAS BEGIN\n    -- Redundant: data type already\n    --    enforces max length.\n    --    This adds zero protection.\n    IF LEN(@City) > 30\n       OR LEN(@PostalCode) > 10\n        RETURN;\n\n    -- All of these pass silently:\n    -- @City = ''     (empty)\n    -- @City = NULL   (null)\n    -- @City = '   '  (whitespace)\n    -- @PostalCode = '???' (garbage)\n\n    SELECT CustomerId, Name,\n           City, PostalCode\n    FROM   dbo.Customers\n    WHERE  City       = @City\n      AND  PostalCode = @PostalCode;\nEND;\nGO",
+    "vulnerableLines": [
+      8,
+      9,
+      10
+    ],
+    "difficulty": "beginner",
+    "hints": [
+      "NVARCHAR(30) already enforces a max length of 30 characters \u2014 so what does LEN(@City) > 30 actually catch?",
+      "What happens if @City is NULL, empty, or just whitespace?",
+      "The procedure silently RETURNs with no error message \u2014 is that helpful for the caller?"
+    ],
+    "explanations": {
+      "8": "This check is redundant \u2014 SQL Server already truncates or rejects values longer than NVARCHAR(30). It provides zero additional protection and creates a false sense of security.",
+      "9": "Same redundancy for @PostalCode. More importantly, it does not validate format \u2014 '???' or '!@#$%' would pass just fine.",
+      "10": "Silent RETURN gives the caller no feedback about what went wrong. Use THROW with a meaningful error number and message instead."
+    },
+    "labUrl": "/labs/secure-coding-lab.html",
+    "maxSelectableLines": 3
   },
   {
     "id": "CHALLENGE2",
@@ -155,23 +255,8 @@ export const challenges: Challenge[] = [
     "flag": "flat{xss_demo_1}"
   },
   {
-    "id": "9",
-    "title": "data should be persist",
-    "description": "",
-    "code": "testing",
-    "vulnerableLines": [
-      1
-    ],
-    "difficulty": "beginner",
-    "hints": [],
-    "explanations": {
-      "1": "sdsd"
-    },
-    "maxSelectableLines": 1
-  },
-  {
     "id": "LAB-BAC-01",
-    "title": "LAB: Order Document Access (Broken Access Control)",
+    "title": "LAB:01 Order Document Access (Broken Access Control)",
     "description": "A document is loaded by its own id after the parent order's tenant was already checked. Select the vulnerable line(s), then try the live exploit.",
     "code": "[Authorization]\n[HttpGet]\n[Route(\"clients/{clientId}/orders/{orderId}/documents/{docId}\")]\npublic IActionResult GetDocument(int clientId, int orderId, int docId)\n{\n    var order = _orderService.GetById(orderId);\n    if (order == null || order.ClientId != clientId)\n        return NotFound();\n\n    var doc = _documentService.GetById(docId);\n    if (doc == null)\n        return NotFound();\n\n    return Ok(doc);\n}",
     "vulnerableLines": [

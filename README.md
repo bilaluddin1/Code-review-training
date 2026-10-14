@@ -107,11 +107,15 @@ npm run dev
 
 ## Tech Stack
 
-- **Frontend**: Next.js 15, React 19, TypeScript, Tailwind CSS
-- **Backend**: Next.js API Routes, Prisma ORM, SQLite
-- **Real-time**: Socket.IO
-- **Authentication**: Iron Session (admin)
-- **Styling**: Radix UI components
+- **Frontend**: Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS
+- **Backend**: Next.js API Routes, Prisma ORM, SQLite (`prisma/prisma/dev.db` at runtime - see note below)
+- **Real-time**: Socket.IO (admin-controlled per-challenge timers)
+- **Authentication**: iron-session, cookie-based admin sessions (`ADMIN_PASSWORD` env var, falls back to a default if unset)
+- **UI components**: Radix UI, lucide-react (icons), react-syntax-highlighter (code display)
+- **Package manager**: npm, with `npm-run-all` running the Next.js server and the Socket.IO server together
+- **Deployment**: Docker (multi-stage build, `node:18-alpine`), docker-compose; production adds nginx in front for TLS
+
+> **Note:** `DATABASE_URL="file:./prisma/dev.db"` resolves relative to `schema.prisma`'s own folder, not the app's working directory - so the real SQLite file lives at `prisma/prisma/dev.db`, not `prisma/dev.db`. Easy to miss when debugging a "my data didn't persist" issue locally.
 
 
 
@@ -160,9 +164,9 @@ docker rm code_review_training
 
 ## Admin Access
 
-- **URL**: http://localhost:3000/admin
-- **Username**: admin
-- **Password**: admin123
+- **URL**: http://localhost:3000/admin (or click "Admin Login" from the main page)
+- Password is checked server-side against the `ADMIN_PASSWORD` env var (set this in your deployment - it defaults to `admin123` if unset, which is fine for local dev only).
+- Once logged in, the Analytics tab has controls for: turning the "Give Feedback" button on/off, setting the session's team name (used to tag every feedback submission and pre-fill the reset-archive prompt), editing feedback question wording/order, and exporting leaderboard/feedback data to CSV.
 
 ## License
 

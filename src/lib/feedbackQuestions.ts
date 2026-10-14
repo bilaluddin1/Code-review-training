@@ -18,3 +18,7 @@ export const FEEDBACK_QUESTIONS = [
 ] as const;
 
 export type FeedbackQuestionKey = (typeof FEEDBACK_QUESTIONS)[number]["key"];
+
+// An admin-customized (or default) {key,label} pair - same shape whether it
+// came from the hardcoded defaults above or a saved customization.
+export type EffectiveQuestion = { key: FeedbackQuestionKey; label: string };

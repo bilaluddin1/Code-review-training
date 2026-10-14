@@ -181,7 +181,9 @@ exports.Prisma.FeedbackResponseScalarFieldEnum = {
 
 exports.Prisma.FeedbackToggleScalarFieldEnum = {
   id: 'id',
-  enabled: 'enabled'
+  enabled: 'enabled',
+  currentTeam: 'currentTeam',
+  questionsJson: 'questionsJson'
 };
 
 exports.Prisma.SortOrder = {

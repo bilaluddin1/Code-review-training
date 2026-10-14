@@ -7728,16 +7728,22 @@ export namespace Prisma {
   export type FeedbackToggleMinAggregateOutputType = {
     id: number | null
     enabled: boolean | null
+    currentTeam: string | null
+    questionsJson: string | null
   }
 
   export type FeedbackToggleMaxAggregateOutputType = {
     id: number | null
     enabled: boolean | null
+    currentTeam: string | null
+    questionsJson: string | null
   }
 
   export type FeedbackToggleCountAggregateOutputType = {
     id: number
     enabled: number
+    currentTeam: number
+    questionsJson: number
     _all: number
   }
 
@@ -7753,16 +7759,22 @@ export namespace Prisma {
   export type FeedbackToggleMinAggregateInputType = {
     id?: true
     enabled?: true
+    currentTeam?: true
+    questionsJson?: true
   }
 
   export type FeedbackToggleMaxAggregateInputType = {
     id?: true
     enabled?: true
+    currentTeam?: true
+    questionsJson?: true
   }
 
   export type FeedbackToggleCountAggregateInputType = {
     id?: true
     enabled?: true
+    currentTeam?: true
+    questionsJson?: true
     _all?: true
   }
 
@@ -7855,6 +7867,8 @@ export namespace Prisma {
   export type FeedbackToggleGroupByOutputType = {
     id: number
     enabled: boolean
+    currentTeam: string | null
+    questionsJson: string | null
     _count: FeedbackToggleCountAggregateOutputType | null
     _avg: FeedbackToggleAvgAggregateOutputType | null
     _sum: FeedbackToggleSumAggregateOutputType | null
@@ -7879,24 +7893,32 @@ export namespace Prisma {
   export type FeedbackToggleSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     enabled?: boolean
+    currentTeam?: boolean
+    questionsJson?: boolean
   }, ExtArgs["result"]["feedbackToggle"]>
 
   export type FeedbackToggleSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     enabled?: boolean
+    currentTeam?: boolean
+    questionsJson?: boolean
   }, ExtArgs["result"]["feedbackToggle"]>
 
   export type FeedbackToggleSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     enabled?: boolean
+    currentTeam?: boolean
+    questionsJson?: boolean
   }, ExtArgs["result"]["feedbackToggle"]>
 
   export type FeedbackToggleSelectScalar = {
     id?: boolean
     enabled?: boolean
+    currentTeam?: boolean
+    questionsJson?: boolean
   }
 
-  export type FeedbackToggleOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "enabled", ExtArgs["result"]["feedbackToggle"]>
+  export type FeedbackToggleOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "enabled" | "currentTeam" | "questionsJson", ExtArgs["result"]["feedbackToggle"]>
 
   export type $FeedbackTogglePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "FeedbackToggle"
@@ -7904,6 +7926,8 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: number
       enabled: boolean
+      currentTeam: string | null
+      questionsJson: string | null
     }, ExtArgs["result"]["feedbackToggle"]>
     composites: {}
   }
@@ -8329,6 +8353,8 @@ export namespace Prisma {
   interface FeedbackToggleFieldRefs {
     readonly id: FieldRef<"FeedbackToggle", 'Int'>
     readonly enabled: FieldRef<"FeedbackToggle", 'Boolean'>
+    readonly currentTeam: FieldRef<"FeedbackToggle", 'String'>
+    readonly questionsJson: FieldRef<"FeedbackToggle", 'String'>
   }
     
 
@@ -8786,7 +8812,9 @@ export namespace Prisma {
 
   export const FeedbackToggleScalarFieldEnum: {
     id: 'id',
-    enabled: 'enabled'
+    enabled: 'enabled',
+    currentTeam: 'currentTeam',
+    questionsJson: 'questionsJson'
   };
 
   export type FeedbackToggleScalarFieldEnum = (typeof FeedbackToggleScalarFieldEnum)[keyof typeof FeedbackToggleScalarFieldEnum]
@@ -9245,11 +9273,15 @@ export namespace Prisma {
     NOT?: FeedbackToggleWhereInput | FeedbackToggleWhereInput[]
     id?: IntFilter<"FeedbackToggle"> | number
     enabled?: BoolFilter<"FeedbackToggle"> | boolean
+    currentTeam?: StringNullableFilter<"FeedbackToggle"> | string | null
+    questionsJson?: StringNullableFilter<"FeedbackToggle"> | string | null
   }
 
   export type FeedbackToggleOrderByWithRelationInput = {
     id?: SortOrder
     enabled?: SortOrder
+    currentTeam?: SortOrderInput | SortOrder
+    questionsJson?: SortOrderInput | SortOrder
   }
 
   export type FeedbackToggleWhereUniqueInput = Prisma.AtLeast<{
@@ -9258,11 +9290,15 @@ export namespace Prisma {
     OR?: FeedbackToggleWhereInput[]
     NOT?: FeedbackToggleWhereInput | FeedbackToggleWhereInput[]
     enabled?: BoolFilter<"FeedbackToggle"> | boolean
+    currentTeam?: StringNullableFilter<"FeedbackToggle"> | string | null
+    questionsJson?: StringNullableFilter<"FeedbackToggle"> | string | null
   }, "id">
 
   export type FeedbackToggleOrderByWithAggregationInput = {
     id?: SortOrder
     enabled?: SortOrder
+    currentTeam?: SortOrderInput | SortOrder
+    questionsJson?: SortOrderInput | SortOrder
     _count?: FeedbackToggleCountOrderByAggregateInput
     _avg?: FeedbackToggleAvgOrderByAggregateInput
     _max?: FeedbackToggleMaxOrderByAggregateInput
@@ -9276,6 +9312,8 @@ export namespace Prisma {
     NOT?: FeedbackToggleScalarWhereWithAggregatesInput | FeedbackToggleScalarWhereWithAggregatesInput[]
     id?: IntWithAggregatesFilter<"FeedbackToggle"> | number
     enabled?: BoolWithAggregatesFilter<"FeedbackToggle"> | boolean
+    currentTeam?: StringNullableWithAggregatesFilter<"FeedbackToggle"> | string | null
+    questionsJson?: StringNullableWithAggregatesFilter<"FeedbackToggle"> | string | null
   }
 
   export type ChallengeLockCreateInput = {
@@ -9715,36 +9753,50 @@ export namespace Prisma {
   export type FeedbackToggleCreateInput = {
     id?: number
     enabled?: boolean
+    currentTeam?: string | null
+    questionsJson?: string | null
   }
 
   export type FeedbackToggleUncheckedCreateInput = {
     id?: number
     enabled?: boolean
+    currentTeam?: string | null
+    questionsJson?: string | null
   }
 
   export type FeedbackToggleUpdateInput = {
     id?: IntFieldUpdateOperationsInput | number
     enabled?: BoolFieldUpdateOperationsInput | boolean
+    currentTeam?: NullableStringFieldUpdateOperationsInput | string | null
+    questionsJson?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type FeedbackToggleUncheckedUpdateInput = {
     id?: IntFieldUpdateOperationsInput | number
     enabled?: BoolFieldUpdateOperationsInput | boolean
+    currentTeam?: NullableStringFieldUpdateOperationsInput | string | null
+    questionsJson?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type FeedbackToggleCreateManyInput = {
     id?: number
     enabled?: boolean
+    currentTeam?: string | null
+    questionsJson?: string | null
   }
 
   export type FeedbackToggleUpdateManyMutationInput = {
     id?: IntFieldUpdateOperationsInput | number
     enabled?: BoolFieldUpdateOperationsInput | boolean
+    currentTeam?: NullableStringFieldUpdateOperationsInput | string | null
+    questionsJson?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type FeedbackToggleUncheckedUpdateManyInput = {
     id?: IntFieldUpdateOperationsInput | number
     enabled?: BoolFieldUpdateOperationsInput | boolean
+    currentTeam?: NullableStringFieldUpdateOperationsInput | string | null
+    questionsJson?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type StringFilter<$PrismaModel = never> = {
@@ -10116,6 +10168,8 @@ export namespace Prisma {
   export type FeedbackToggleCountOrderByAggregateInput = {
     id?: SortOrder
     enabled?: SortOrder
+    currentTeam?: SortOrder
+    questionsJson?: SortOrder
   }
 
   export type FeedbackToggleAvgOrderByAggregateInput = {
@@ -10125,11 +10179,15 @@ export namespace Prisma {
   export type FeedbackToggleMaxOrderByAggregateInput = {
     id?: SortOrder
     enabled?: SortOrder
+    currentTeam?: SortOrder
+    questionsJson?: SortOrder
   }
 
   export type FeedbackToggleMinOrderByAggregateInput = {
     id?: SortOrder
     enabled?: SortOrder
+    currentTeam?: SortOrder
+    questionsJson?: SortOrder
   }
 
   export type FeedbackToggleSumOrderByAggregateInput = {
