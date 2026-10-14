@@ -17,14 +17,22 @@ function getRandomAvatar() {
 }
 
 
-function UserBar({ name, avatar, score, isAdmin, onAdminLogout, onGiveFeedback }: { name: string; avatar: string; score: number; isAdmin: boolean; onAdminLogout: () => void; onGiveFeedback?: () => void }) {
+function UserBar({ name, avatar, score, isAdmin, onAdminLogout, onGiveFeedback, feedbackEnabled }: { name: string; avatar: string; score: number; isAdmin: boolean; onAdminLogout: () => void; onGiveFeedback?: () => void; feedbackEnabled?: boolean }) {
   return (
     <div className="fixed top-4 right-4 z-50 flex items-center gap-3 bg-white/80 shadow rounded-full px-4 py-2 border border-gray-200">
       <span className="text-2xl select-none" aria-label="avatar">{avatar}</span>
       <span className="font-medium text-gray-800">{name}</span>
       <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-semibold">Score: {score}</span>
       {!isAdmin && onGiveFeedback && (
-        <Button size="sm" variant="outline" onClick={onGiveFeedback}>Give Feedback</Button>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={feedbackEnabled ? onGiveFeedback : undefined}
+          disabled={!feedbackEnabled}
+          title={feedbackEnabled ? undefined : "Feedback isn't open yet - ask your trainer"}
+        >
+          Give Feedback
+        </Button>
       )}
       {isAdmin && (
         <Button size="sm" variant="outline" onClick={onAdminLogout}>Logout Admin</Button>
@@ -326,6 +334,8 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
     averages: { overall: number | null; relevantToRole: number | null; realWorld: number | null; paceAndStructure: number | null };
     responses: { userName: string; teamName: string | null; overall: number; relevantToRole: number; realWorld: number; paceAndStructure: number; comments: string | null; createdAt: string }[];
   } | null>(null);
+  const [feedbackToggle, setFeedbackToggle] = useState(false);
+  const [feedbackToggleLoading, setFeedbackToggleLoading] = useState(false);
   const [timerDurations, setTimerDurations] = useState<Record<string, number>>({});
   const [timers, setTimers] = useState<Record<string, { startTime: number; duration: number; isRunning: boolean; isPaused: boolean; remaining?: number }>>({});
   const [timeLefts, setTimeLefts] = useState<Record<string, number>>({});
@@ -444,13 +454,26 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
 
   const fetchAnalytics = async () => {
     setAnalyticsLoading(true);
-    const [analyticsRes, feedbackRes] = await Promise.all([
+    const [analyticsRes, feedbackRes, toggleRes] = await Promise.all([
       fetch('/api/admin/analytics'),
       fetch('/api/admin/feedback'),
+      fetch('/api/feedback-enabled'),
     ]);
     if (analyticsRes.ok) setAnalytics(await analyticsRes.json());
     if (feedbackRes.ok) setFeedback(await feedbackRes.json());
+    if (toggleRes.ok) setFeedbackToggle((await toggleRes.json()).enabled);
     setAnalyticsLoading(false);
+  };
+
+  const toggleFeedbackEnabled = async () => {
+    setFeedbackToggleLoading(true);
+    const res = await fetch('/api/admin/feedback-enabled', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ enabled: !feedbackToggle }),
+    });
+    if (res.ok) setFeedbackToggle((await res.json()).enabled);
+    setFeedbackToggleLoading(false);
   };
 
   useEffect(() => {
@@ -711,7 +734,7 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
               </div>
 
               <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center justify-between mb-3 gap-3">
                   <div>
                     <h3 className="font-semibold">Dev Feedback ({feedback?.count ?? 0} response{feedback?.count === 1 ? '' : 's'})</h3>
                     {feedback && feedback.count > 0 && (
@@ -720,6 +743,14 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
                       </p>
                     )}
                   </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Button
+                      variant={feedbackToggle ? "destructive" : "default"}
+                      disabled={feedbackToggleLoading}
+                      onClick={toggleFeedbackEnabled}
+                    >
+                      {feedbackToggleLoading ? "..." : feedbackToggle ? "Feedback: ON (click to disable)" : "Feedback: OFF (click to enable)"}
+                    </Button>
                   <Button
                     variant="outline"
                     disabled={!feedback || feedback.count === 0}
@@ -734,6 +765,7 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
                   >
                     Export CSV
                   </Button>
+                  </div>
                 </div>
                 {feedback && feedback.responses.length > 0 && (
                   <div className="space-y-2 max-h-64 overflow-y-auto">
@@ -1018,6 +1050,7 @@ export default function CodeReviewChallenge() {
 
   // Feedback state - available any time, not gated on finishing every lab
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [feedbackEnabled, setFeedbackEnabled] = useState(false);
   const handleFeedbackSubmit = async (v: FeedbackValues): Promise<boolean> => {
     const res = await fetch("/api/feedback", {
       method: "POST",
@@ -1105,6 +1138,11 @@ export default function CodeReviewChallenge() {
     fetch('/api/challenge-locks')
       .then(res => res.json())
       .then(data => setLocks(data));
+
+    // Whether the "Give Feedback" button is live yet (admin-controlled)
+    fetch('/api/feedback-enabled')
+      .then(res => res.json())
+      .then(data => setFeedbackEnabled(!!data.enabled));
 
     // Fetch challenges from API
     const fetchChallenges = async () => {
@@ -1408,7 +1446,7 @@ export default function CodeReviewChallenge() {
     });
     return (
       <>
-        <UserBar name={user.name} avatar={user.avatar} score={user.score} isAdmin={isAdmin} onAdminLogout={handleAdminLogout} onGiveFeedback={() => setShowFeedbackModal(true)} />
+        <UserBar name={user.name} avatar={user.avatar} score={user.score} isAdmin={isAdmin} onAdminLogout={handleAdminLogout} onGiveFeedback={() => setShowFeedbackModal(true)} feedbackEnabled={feedbackEnabled} />
         {challengesLoading ? (
           <div className="min-h-screen bg-gray-50 p-4 flex items-center justify-center">
             <div className="text-gray-500">Loading admin panel...</div>
@@ -1424,7 +1462,7 @@ export default function CodeReviewChallenge() {
   if (!selectedChallenge) {
     return (
       <>
-        <UserBar name={user.name} avatar={user.avatar} score={user.score} isAdmin={isAdmin} onAdminLogout={handleAdminLogout} onGiveFeedback={() => setShowFeedbackModal(true)} />
+        <UserBar name={user.name} avatar={user.avatar} score={user.score} isAdmin={isAdmin} onAdminLogout={handleAdminLogout} onGiveFeedback={() => setShowFeedbackModal(true)} feedbackEnabled={feedbackEnabled} />
         <FeedbackModal open={showFeedbackModal} onSubmit={handleFeedbackSubmit} onClose={() => setShowFeedbackModal(false)} />
         <div className="min-h-screen bg-gray-50 p-4">
           <div className="max-w-4xl mx-auto space-y-6">
@@ -1434,9 +1472,15 @@ export default function CodeReviewChallenge() {
               <div className="mt-2 text-sm text-gray-500">
                 💡 <strong>Timer Info:</strong> Timers can be started from the admin panel. When active, they appear in the bottom-right corner of challenge cards.
               </div>
-              <div className="mt-4 flex items-center justify-center gap-3 bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 text-sm text-blue-800">
-                <span>Finished (or finishing up)? Tell us how the session went.</span>
-                <Button size="sm" onClick={() => setShowFeedbackModal(true)}>Give Feedback</Button>
+              <div className={`mt-4 flex items-center justify-center gap-3 rounded-lg px-4 py-3 text-sm ${feedbackEnabled ? "bg-blue-50 border border-blue-200 text-blue-800" : "bg-gray-50 border border-gray-200 text-gray-500"}`}>
+                <span>{feedbackEnabled ? "Finished (or finishing up)? Tell us how the session went." : "Feedback isn't open yet - your trainer will enable it."}</span>
+                <Button
+                  size="sm"
+                  onClick={feedbackEnabled ? () => setShowFeedbackModal(true) : undefined}
+                  disabled={!feedbackEnabled}
+                >
+                  Give Feedback
+                </Button>
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1527,7 +1571,7 @@ export default function CodeReviewChallenge() {
 
   return (
     <>
-      <UserBar name={user.name} avatar={user.avatar} score={user.score} isAdmin={isAdmin} onAdminLogout={handleAdminLogout} onGiveFeedback={() => setShowFeedbackModal(true)} />
+      <UserBar name={user.name} avatar={user.avatar} score={user.score} isAdmin={isAdmin} onAdminLogout={handleAdminLogout} onGiveFeedback={() => setShowFeedbackModal(true)} feedbackEnabled={feedbackEnabled} />
       <FeedbackModal open={showFeedbackModal} onSubmit={handleFeedbackSubmit} onClose={() => setShowFeedbackModal(false)} />
       <div className="min-h-screen bg-gray-50 p-4">
         <div className="max-w-6xl mx-auto space-y-6">

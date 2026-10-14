@@ -43,6 +43,11 @@ export type SessionArchive = $Result.DefaultSelection<Prisma.$SessionArchivePayl
  * 
  */
 export type FeedbackResponse = $Result.DefaultSelection<Prisma.$FeedbackResponsePayload>
+/**
+ * Model FeedbackToggle
+ * 
+ */
+export type FeedbackToggle = $Result.DefaultSelection<Prisma.$FeedbackTogglePayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -228,6 +233,16 @@ export class PrismaClient<
     * ```
     */
   get feedbackResponse(): Prisma.FeedbackResponseDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.feedbackToggle`: Exposes CRUD operations for the **FeedbackToggle** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more FeedbackToggles
+    * const feedbackToggles = await prisma.feedbackToggle.findMany()
+    * ```
+    */
+  get feedbackToggle(): Prisma.FeedbackToggleDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -673,7 +688,8 @@ export namespace Prisma {
     ChallengeSubmission: 'ChallengeSubmission',
     FlagSubmission: 'FlagSubmission',
     SessionArchive: 'SessionArchive',
-    FeedbackResponse: 'FeedbackResponse'
+    FeedbackResponse: 'FeedbackResponse',
+    FeedbackToggle: 'FeedbackToggle'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -692,7 +708,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "challengeLock" | "leaderboardUser" | "challengeSubmission" | "flagSubmission" | "sessionArchive" | "feedbackResponse"
+      modelProps: "challengeLock" | "leaderboardUser" | "challengeSubmission" | "flagSubmission" | "sessionArchive" | "feedbackResponse" | "feedbackToggle"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1140,6 +1156,80 @@ export namespace Prisma {
           }
         }
       }
+      FeedbackToggle: {
+        payload: Prisma.$FeedbackTogglePayload<ExtArgs>
+        fields: Prisma.FeedbackToggleFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.FeedbackToggleFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FeedbackTogglePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.FeedbackToggleFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FeedbackTogglePayload>
+          }
+          findFirst: {
+            args: Prisma.FeedbackToggleFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FeedbackTogglePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.FeedbackToggleFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FeedbackTogglePayload>
+          }
+          findMany: {
+            args: Prisma.FeedbackToggleFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FeedbackTogglePayload>[]
+          }
+          create: {
+            args: Prisma.FeedbackToggleCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FeedbackTogglePayload>
+          }
+          createMany: {
+            args: Prisma.FeedbackToggleCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.FeedbackToggleCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FeedbackTogglePayload>[]
+          }
+          delete: {
+            args: Prisma.FeedbackToggleDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FeedbackTogglePayload>
+          }
+          update: {
+            args: Prisma.FeedbackToggleUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FeedbackTogglePayload>
+          }
+          deleteMany: {
+            args: Prisma.FeedbackToggleDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.FeedbackToggleUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.FeedbackToggleUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FeedbackTogglePayload>[]
+          }
+          upsert: {
+            args: Prisma.FeedbackToggleUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FeedbackTogglePayload>
+          }
+          aggregate: {
+            args: Prisma.FeedbackToggleAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateFeedbackToggle>
+          }
+          groupBy: {
+            args: Prisma.FeedbackToggleGroupByArgs<ExtArgs>
+            result: $Utils.Optional<FeedbackToggleGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.FeedbackToggleCountArgs<ExtArgs>
+            result: $Utils.Optional<FeedbackToggleCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -1230,6 +1320,7 @@ export namespace Prisma {
     flagSubmission?: FlagSubmissionOmit
     sessionArchive?: SessionArchiveOmit
     feedbackResponse?: FeedbackResponseOmit
+    feedbackToggle?: FeedbackToggleOmit
   }
 
   /* Types for Logging */
@@ -7462,6 +7553,994 @@ export namespace Prisma {
 
 
   /**
+   * Model FeedbackToggle
+   */
+
+  export type AggregateFeedbackToggle = {
+    _count: FeedbackToggleCountAggregateOutputType | null
+    _avg: FeedbackToggleAvgAggregateOutputType | null
+    _sum: FeedbackToggleSumAggregateOutputType | null
+    _min: FeedbackToggleMinAggregateOutputType | null
+    _max: FeedbackToggleMaxAggregateOutputType | null
+  }
+
+  export type FeedbackToggleAvgAggregateOutputType = {
+    id: number | null
+  }
+
+  export type FeedbackToggleSumAggregateOutputType = {
+    id: number | null
+  }
+
+  export type FeedbackToggleMinAggregateOutputType = {
+    id: number | null
+    enabled: boolean | null
+  }
+
+  export type FeedbackToggleMaxAggregateOutputType = {
+    id: number | null
+    enabled: boolean | null
+  }
+
+  export type FeedbackToggleCountAggregateOutputType = {
+    id: number
+    enabled: number
+    _all: number
+  }
+
+
+  export type FeedbackToggleAvgAggregateInputType = {
+    id?: true
+  }
+
+  export type FeedbackToggleSumAggregateInputType = {
+    id?: true
+  }
+
+  export type FeedbackToggleMinAggregateInputType = {
+    id?: true
+    enabled?: true
+  }
+
+  export type FeedbackToggleMaxAggregateInputType = {
+    id?: true
+    enabled?: true
+  }
+
+  export type FeedbackToggleCountAggregateInputType = {
+    id?: true
+    enabled?: true
+    _all?: true
+  }
+
+  export type FeedbackToggleAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which FeedbackToggle to aggregate.
+     */
+    where?: FeedbackToggleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FeedbackToggles to fetch.
+     */
+    orderBy?: FeedbackToggleOrderByWithRelationInput | FeedbackToggleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: FeedbackToggleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FeedbackToggles from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FeedbackToggles.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned FeedbackToggles
+    **/
+    _count?: true | FeedbackToggleCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: FeedbackToggleAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: FeedbackToggleSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: FeedbackToggleMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: FeedbackToggleMaxAggregateInputType
+  }
+
+  export type GetFeedbackToggleAggregateType<T extends FeedbackToggleAggregateArgs> = {
+        [P in keyof T & keyof AggregateFeedbackToggle]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateFeedbackToggle[P]>
+      : GetScalarType<T[P], AggregateFeedbackToggle[P]>
+  }
+
+
+
+
+  export type FeedbackToggleGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: FeedbackToggleWhereInput
+    orderBy?: FeedbackToggleOrderByWithAggregationInput | FeedbackToggleOrderByWithAggregationInput[]
+    by: FeedbackToggleScalarFieldEnum[] | FeedbackToggleScalarFieldEnum
+    having?: FeedbackToggleScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: FeedbackToggleCountAggregateInputType | true
+    _avg?: FeedbackToggleAvgAggregateInputType
+    _sum?: FeedbackToggleSumAggregateInputType
+    _min?: FeedbackToggleMinAggregateInputType
+    _max?: FeedbackToggleMaxAggregateInputType
+  }
+
+  export type FeedbackToggleGroupByOutputType = {
+    id: number
+    enabled: boolean
+    _count: FeedbackToggleCountAggregateOutputType | null
+    _avg: FeedbackToggleAvgAggregateOutputType | null
+    _sum: FeedbackToggleSumAggregateOutputType | null
+    _min: FeedbackToggleMinAggregateOutputType | null
+    _max: FeedbackToggleMaxAggregateOutputType | null
+  }
+
+  type GetFeedbackToggleGroupByPayload<T extends FeedbackToggleGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<FeedbackToggleGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof FeedbackToggleGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], FeedbackToggleGroupByOutputType[P]>
+            : GetScalarType<T[P], FeedbackToggleGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type FeedbackToggleSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    enabled?: boolean
+  }, ExtArgs["result"]["feedbackToggle"]>
+
+  export type FeedbackToggleSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    enabled?: boolean
+  }, ExtArgs["result"]["feedbackToggle"]>
+
+  export type FeedbackToggleSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    enabled?: boolean
+  }, ExtArgs["result"]["feedbackToggle"]>
+
+  export type FeedbackToggleSelectScalar = {
+    id?: boolean
+    enabled?: boolean
+  }
+
+  export type FeedbackToggleOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "enabled", ExtArgs["result"]["feedbackToggle"]>
+
+  export type $FeedbackTogglePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "FeedbackToggle"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: number
+      enabled: boolean
+    }, ExtArgs["result"]["feedbackToggle"]>
+    composites: {}
+  }
+
+  type FeedbackToggleGetPayload<S extends boolean | null | undefined | FeedbackToggleDefaultArgs> = $Result.GetResult<Prisma.$FeedbackTogglePayload, S>
+
+  type FeedbackToggleCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<FeedbackToggleFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: FeedbackToggleCountAggregateInputType | true
+    }
+
+  export interface FeedbackToggleDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['FeedbackToggle'], meta: { name: 'FeedbackToggle' } }
+    /**
+     * Find zero or one FeedbackToggle that matches the filter.
+     * @param {FeedbackToggleFindUniqueArgs} args - Arguments to find a FeedbackToggle
+     * @example
+     * // Get one FeedbackToggle
+     * const feedbackToggle = await prisma.feedbackToggle.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends FeedbackToggleFindUniqueArgs>(args: SelectSubset<T, FeedbackToggleFindUniqueArgs<ExtArgs>>): Prisma__FeedbackToggleClient<$Result.GetResult<Prisma.$FeedbackTogglePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one FeedbackToggle that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {FeedbackToggleFindUniqueOrThrowArgs} args - Arguments to find a FeedbackToggle
+     * @example
+     * // Get one FeedbackToggle
+     * const feedbackToggle = await prisma.feedbackToggle.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends FeedbackToggleFindUniqueOrThrowArgs>(args: SelectSubset<T, FeedbackToggleFindUniqueOrThrowArgs<ExtArgs>>): Prisma__FeedbackToggleClient<$Result.GetResult<Prisma.$FeedbackTogglePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first FeedbackToggle that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FeedbackToggleFindFirstArgs} args - Arguments to find a FeedbackToggle
+     * @example
+     * // Get one FeedbackToggle
+     * const feedbackToggle = await prisma.feedbackToggle.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends FeedbackToggleFindFirstArgs>(args?: SelectSubset<T, FeedbackToggleFindFirstArgs<ExtArgs>>): Prisma__FeedbackToggleClient<$Result.GetResult<Prisma.$FeedbackTogglePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first FeedbackToggle that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FeedbackToggleFindFirstOrThrowArgs} args - Arguments to find a FeedbackToggle
+     * @example
+     * // Get one FeedbackToggle
+     * const feedbackToggle = await prisma.feedbackToggle.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends FeedbackToggleFindFirstOrThrowArgs>(args?: SelectSubset<T, FeedbackToggleFindFirstOrThrowArgs<ExtArgs>>): Prisma__FeedbackToggleClient<$Result.GetResult<Prisma.$FeedbackTogglePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more FeedbackToggles that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FeedbackToggleFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all FeedbackToggles
+     * const feedbackToggles = await prisma.feedbackToggle.findMany()
+     * 
+     * // Get first 10 FeedbackToggles
+     * const feedbackToggles = await prisma.feedbackToggle.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const feedbackToggleWithIdOnly = await prisma.feedbackToggle.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends FeedbackToggleFindManyArgs>(args?: SelectSubset<T, FeedbackToggleFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FeedbackTogglePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a FeedbackToggle.
+     * @param {FeedbackToggleCreateArgs} args - Arguments to create a FeedbackToggle.
+     * @example
+     * // Create one FeedbackToggle
+     * const FeedbackToggle = await prisma.feedbackToggle.create({
+     *   data: {
+     *     // ... data to create a FeedbackToggle
+     *   }
+     * })
+     * 
+     */
+    create<T extends FeedbackToggleCreateArgs>(args: SelectSubset<T, FeedbackToggleCreateArgs<ExtArgs>>): Prisma__FeedbackToggleClient<$Result.GetResult<Prisma.$FeedbackTogglePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many FeedbackToggles.
+     * @param {FeedbackToggleCreateManyArgs} args - Arguments to create many FeedbackToggles.
+     * @example
+     * // Create many FeedbackToggles
+     * const feedbackToggle = await prisma.feedbackToggle.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends FeedbackToggleCreateManyArgs>(args?: SelectSubset<T, FeedbackToggleCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many FeedbackToggles and returns the data saved in the database.
+     * @param {FeedbackToggleCreateManyAndReturnArgs} args - Arguments to create many FeedbackToggles.
+     * @example
+     * // Create many FeedbackToggles
+     * const feedbackToggle = await prisma.feedbackToggle.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many FeedbackToggles and only return the `id`
+     * const feedbackToggleWithIdOnly = await prisma.feedbackToggle.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends FeedbackToggleCreateManyAndReturnArgs>(args?: SelectSubset<T, FeedbackToggleCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FeedbackTogglePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a FeedbackToggle.
+     * @param {FeedbackToggleDeleteArgs} args - Arguments to delete one FeedbackToggle.
+     * @example
+     * // Delete one FeedbackToggle
+     * const FeedbackToggle = await prisma.feedbackToggle.delete({
+     *   where: {
+     *     // ... filter to delete one FeedbackToggle
+     *   }
+     * })
+     * 
+     */
+    delete<T extends FeedbackToggleDeleteArgs>(args: SelectSubset<T, FeedbackToggleDeleteArgs<ExtArgs>>): Prisma__FeedbackToggleClient<$Result.GetResult<Prisma.$FeedbackTogglePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one FeedbackToggle.
+     * @param {FeedbackToggleUpdateArgs} args - Arguments to update one FeedbackToggle.
+     * @example
+     * // Update one FeedbackToggle
+     * const feedbackToggle = await prisma.feedbackToggle.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends FeedbackToggleUpdateArgs>(args: SelectSubset<T, FeedbackToggleUpdateArgs<ExtArgs>>): Prisma__FeedbackToggleClient<$Result.GetResult<Prisma.$FeedbackTogglePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more FeedbackToggles.
+     * @param {FeedbackToggleDeleteManyArgs} args - Arguments to filter FeedbackToggles to delete.
+     * @example
+     * // Delete a few FeedbackToggles
+     * const { count } = await prisma.feedbackToggle.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends FeedbackToggleDeleteManyArgs>(args?: SelectSubset<T, FeedbackToggleDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more FeedbackToggles.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FeedbackToggleUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many FeedbackToggles
+     * const feedbackToggle = await prisma.feedbackToggle.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends FeedbackToggleUpdateManyArgs>(args: SelectSubset<T, FeedbackToggleUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more FeedbackToggles and returns the data updated in the database.
+     * @param {FeedbackToggleUpdateManyAndReturnArgs} args - Arguments to update many FeedbackToggles.
+     * @example
+     * // Update many FeedbackToggles
+     * const feedbackToggle = await prisma.feedbackToggle.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more FeedbackToggles and only return the `id`
+     * const feedbackToggleWithIdOnly = await prisma.feedbackToggle.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends FeedbackToggleUpdateManyAndReturnArgs>(args: SelectSubset<T, FeedbackToggleUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FeedbackTogglePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one FeedbackToggle.
+     * @param {FeedbackToggleUpsertArgs} args - Arguments to update or create a FeedbackToggle.
+     * @example
+     * // Update or create a FeedbackToggle
+     * const feedbackToggle = await prisma.feedbackToggle.upsert({
+     *   create: {
+     *     // ... data to create a FeedbackToggle
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the FeedbackToggle we want to update
+     *   }
+     * })
+     */
+    upsert<T extends FeedbackToggleUpsertArgs>(args: SelectSubset<T, FeedbackToggleUpsertArgs<ExtArgs>>): Prisma__FeedbackToggleClient<$Result.GetResult<Prisma.$FeedbackTogglePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of FeedbackToggles.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FeedbackToggleCountArgs} args - Arguments to filter FeedbackToggles to count.
+     * @example
+     * // Count the number of FeedbackToggles
+     * const count = await prisma.feedbackToggle.count({
+     *   where: {
+     *     // ... the filter for the FeedbackToggles we want to count
+     *   }
+     * })
+    **/
+    count<T extends FeedbackToggleCountArgs>(
+      args?: Subset<T, FeedbackToggleCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], FeedbackToggleCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a FeedbackToggle.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FeedbackToggleAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends FeedbackToggleAggregateArgs>(args: Subset<T, FeedbackToggleAggregateArgs>): Prisma.PrismaPromise<GetFeedbackToggleAggregateType<T>>
+
+    /**
+     * Group by FeedbackToggle.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FeedbackToggleGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends FeedbackToggleGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: FeedbackToggleGroupByArgs['orderBy'] }
+        : { orderBy?: FeedbackToggleGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, FeedbackToggleGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetFeedbackToggleGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the FeedbackToggle model
+   */
+  readonly fields: FeedbackToggleFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for FeedbackToggle.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__FeedbackToggleClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the FeedbackToggle model
+   */
+  interface FeedbackToggleFieldRefs {
+    readonly id: FieldRef<"FeedbackToggle", 'Int'>
+    readonly enabled: FieldRef<"FeedbackToggle", 'Boolean'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * FeedbackToggle findUnique
+   */
+  export type FeedbackToggleFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FeedbackToggle
+     */
+    select?: FeedbackToggleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FeedbackToggle
+     */
+    omit?: FeedbackToggleOmit<ExtArgs> | null
+    /**
+     * Filter, which FeedbackToggle to fetch.
+     */
+    where: FeedbackToggleWhereUniqueInput
+  }
+
+  /**
+   * FeedbackToggle findUniqueOrThrow
+   */
+  export type FeedbackToggleFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FeedbackToggle
+     */
+    select?: FeedbackToggleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FeedbackToggle
+     */
+    omit?: FeedbackToggleOmit<ExtArgs> | null
+    /**
+     * Filter, which FeedbackToggle to fetch.
+     */
+    where: FeedbackToggleWhereUniqueInput
+  }
+
+  /**
+   * FeedbackToggle findFirst
+   */
+  export type FeedbackToggleFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FeedbackToggle
+     */
+    select?: FeedbackToggleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FeedbackToggle
+     */
+    omit?: FeedbackToggleOmit<ExtArgs> | null
+    /**
+     * Filter, which FeedbackToggle to fetch.
+     */
+    where?: FeedbackToggleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FeedbackToggles to fetch.
+     */
+    orderBy?: FeedbackToggleOrderByWithRelationInput | FeedbackToggleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for FeedbackToggles.
+     */
+    cursor?: FeedbackToggleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FeedbackToggles from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FeedbackToggles.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of FeedbackToggles.
+     */
+    distinct?: FeedbackToggleScalarFieldEnum | FeedbackToggleScalarFieldEnum[]
+  }
+
+  /**
+   * FeedbackToggle findFirstOrThrow
+   */
+  export type FeedbackToggleFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FeedbackToggle
+     */
+    select?: FeedbackToggleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FeedbackToggle
+     */
+    omit?: FeedbackToggleOmit<ExtArgs> | null
+    /**
+     * Filter, which FeedbackToggle to fetch.
+     */
+    where?: FeedbackToggleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FeedbackToggles to fetch.
+     */
+    orderBy?: FeedbackToggleOrderByWithRelationInput | FeedbackToggleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for FeedbackToggles.
+     */
+    cursor?: FeedbackToggleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FeedbackToggles from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FeedbackToggles.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of FeedbackToggles.
+     */
+    distinct?: FeedbackToggleScalarFieldEnum | FeedbackToggleScalarFieldEnum[]
+  }
+
+  /**
+   * FeedbackToggle findMany
+   */
+  export type FeedbackToggleFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FeedbackToggle
+     */
+    select?: FeedbackToggleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FeedbackToggle
+     */
+    omit?: FeedbackToggleOmit<ExtArgs> | null
+    /**
+     * Filter, which FeedbackToggles to fetch.
+     */
+    where?: FeedbackToggleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FeedbackToggles to fetch.
+     */
+    orderBy?: FeedbackToggleOrderByWithRelationInput | FeedbackToggleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing FeedbackToggles.
+     */
+    cursor?: FeedbackToggleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FeedbackToggles from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FeedbackToggles.
+     */
+    skip?: number
+    distinct?: FeedbackToggleScalarFieldEnum | FeedbackToggleScalarFieldEnum[]
+  }
+
+  /**
+   * FeedbackToggle create
+   */
+  export type FeedbackToggleCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FeedbackToggle
+     */
+    select?: FeedbackToggleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FeedbackToggle
+     */
+    omit?: FeedbackToggleOmit<ExtArgs> | null
+    /**
+     * The data needed to create a FeedbackToggle.
+     */
+    data?: XOR<FeedbackToggleCreateInput, FeedbackToggleUncheckedCreateInput>
+  }
+
+  /**
+   * FeedbackToggle createMany
+   */
+  export type FeedbackToggleCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many FeedbackToggles.
+     */
+    data: FeedbackToggleCreateManyInput | FeedbackToggleCreateManyInput[]
+  }
+
+  /**
+   * FeedbackToggle createManyAndReturn
+   */
+  export type FeedbackToggleCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FeedbackToggle
+     */
+    select?: FeedbackToggleSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the FeedbackToggle
+     */
+    omit?: FeedbackToggleOmit<ExtArgs> | null
+    /**
+     * The data used to create many FeedbackToggles.
+     */
+    data: FeedbackToggleCreateManyInput | FeedbackToggleCreateManyInput[]
+  }
+
+  /**
+   * FeedbackToggle update
+   */
+  export type FeedbackToggleUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FeedbackToggle
+     */
+    select?: FeedbackToggleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FeedbackToggle
+     */
+    omit?: FeedbackToggleOmit<ExtArgs> | null
+    /**
+     * The data needed to update a FeedbackToggle.
+     */
+    data: XOR<FeedbackToggleUpdateInput, FeedbackToggleUncheckedUpdateInput>
+    /**
+     * Choose, which FeedbackToggle to update.
+     */
+    where: FeedbackToggleWhereUniqueInput
+  }
+
+  /**
+   * FeedbackToggle updateMany
+   */
+  export type FeedbackToggleUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update FeedbackToggles.
+     */
+    data: XOR<FeedbackToggleUpdateManyMutationInput, FeedbackToggleUncheckedUpdateManyInput>
+    /**
+     * Filter which FeedbackToggles to update
+     */
+    where?: FeedbackToggleWhereInput
+    /**
+     * Limit how many FeedbackToggles to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * FeedbackToggle updateManyAndReturn
+   */
+  export type FeedbackToggleUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FeedbackToggle
+     */
+    select?: FeedbackToggleSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the FeedbackToggle
+     */
+    omit?: FeedbackToggleOmit<ExtArgs> | null
+    /**
+     * The data used to update FeedbackToggles.
+     */
+    data: XOR<FeedbackToggleUpdateManyMutationInput, FeedbackToggleUncheckedUpdateManyInput>
+    /**
+     * Filter which FeedbackToggles to update
+     */
+    where?: FeedbackToggleWhereInput
+    /**
+     * Limit how many FeedbackToggles to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * FeedbackToggle upsert
+   */
+  export type FeedbackToggleUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FeedbackToggle
+     */
+    select?: FeedbackToggleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FeedbackToggle
+     */
+    omit?: FeedbackToggleOmit<ExtArgs> | null
+    /**
+     * The filter to search for the FeedbackToggle to update in case it exists.
+     */
+    where: FeedbackToggleWhereUniqueInput
+    /**
+     * In case the FeedbackToggle found by the `where` argument doesn't exist, create a new FeedbackToggle with this data.
+     */
+    create: XOR<FeedbackToggleCreateInput, FeedbackToggleUncheckedCreateInput>
+    /**
+     * In case the FeedbackToggle was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<FeedbackToggleUpdateInput, FeedbackToggleUncheckedUpdateInput>
+  }
+
+  /**
+   * FeedbackToggle delete
+   */
+  export type FeedbackToggleDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FeedbackToggle
+     */
+    select?: FeedbackToggleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FeedbackToggle
+     */
+    omit?: FeedbackToggleOmit<ExtArgs> | null
+    /**
+     * Filter which FeedbackToggle to delete.
+     */
+    where: FeedbackToggleWhereUniqueInput
+  }
+
+  /**
+   * FeedbackToggle deleteMany
+   */
+  export type FeedbackToggleDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which FeedbackToggles to delete
+     */
+    where?: FeedbackToggleWhereInput
+    /**
+     * Limit how many FeedbackToggles to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * FeedbackToggle without action
+   */
+  export type FeedbackToggleDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FeedbackToggle
+     */
+    select?: FeedbackToggleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FeedbackToggle
+     */
+    omit?: FeedbackToggleOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -7541,6 +8620,14 @@ export namespace Prisma {
   };
 
   export type FeedbackResponseScalarFieldEnum = (typeof FeedbackResponseScalarFieldEnum)[keyof typeof FeedbackResponseScalarFieldEnum]
+
+
+  export const FeedbackToggleScalarFieldEnum: {
+    id: 'id',
+    enabled: 'enabled'
+  };
+
+  export type FeedbackToggleScalarFieldEnum = (typeof FeedbackToggleScalarFieldEnum)[keyof typeof FeedbackToggleScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -7945,6 +9032,45 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"FeedbackResponse"> | Date | string
   }
 
+  export type FeedbackToggleWhereInput = {
+    AND?: FeedbackToggleWhereInput | FeedbackToggleWhereInput[]
+    OR?: FeedbackToggleWhereInput[]
+    NOT?: FeedbackToggleWhereInput | FeedbackToggleWhereInput[]
+    id?: IntFilter<"FeedbackToggle"> | number
+    enabled?: BoolFilter<"FeedbackToggle"> | boolean
+  }
+
+  export type FeedbackToggleOrderByWithRelationInput = {
+    id?: SortOrder
+    enabled?: SortOrder
+  }
+
+  export type FeedbackToggleWhereUniqueInput = Prisma.AtLeast<{
+    id?: number
+    AND?: FeedbackToggleWhereInput | FeedbackToggleWhereInput[]
+    OR?: FeedbackToggleWhereInput[]
+    NOT?: FeedbackToggleWhereInput | FeedbackToggleWhereInput[]
+    enabled?: BoolFilter<"FeedbackToggle"> | boolean
+  }, "id">
+
+  export type FeedbackToggleOrderByWithAggregationInput = {
+    id?: SortOrder
+    enabled?: SortOrder
+    _count?: FeedbackToggleCountOrderByAggregateInput
+    _avg?: FeedbackToggleAvgOrderByAggregateInput
+    _max?: FeedbackToggleMaxOrderByAggregateInput
+    _min?: FeedbackToggleMinOrderByAggregateInput
+    _sum?: FeedbackToggleSumOrderByAggregateInput
+  }
+
+  export type FeedbackToggleScalarWhereWithAggregatesInput = {
+    AND?: FeedbackToggleScalarWhereWithAggregatesInput | FeedbackToggleScalarWhereWithAggregatesInput[]
+    OR?: FeedbackToggleScalarWhereWithAggregatesInput[]
+    NOT?: FeedbackToggleScalarWhereWithAggregatesInput | FeedbackToggleScalarWhereWithAggregatesInput[]
+    id?: IntWithAggregatesFilter<"FeedbackToggle"> | number
+    enabled?: BoolWithAggregatesFilter<"FeedbackToggle"> | boolean
+  }
+
   export type ChallengeLockCreateInput = {
     id: string
     locked: boolean
@@ -8316,6 +9442,41 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type FeedbackToggleCreateInput = {
+    id?: number
+    enabled?: boolean
+  }
+
+  export type FeedbackToggleUncheckedCreateInput = {
+    id?: number
+    enabled?: boolean
+  }
+
+  export type FeedbackToggleUpdateInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    enabled?: BoolFieldUpdateOperationsInput | boolean
+  }
+
+  export type FeedbackToggleUncheckedUpdateInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    enabled?: BoolFieldUpdateOperationsInput | boolean
+  }
+
+  export type FeedbackToggleCreateManyInput = {
+    id?: number
+    enabled?: boolean
+  }
+
+  export type FeedbackToggleUpdateManyMutationInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    enabled?: BoolFieldUpdateOperationsInput | boolean
+  }
+
+  export type FeedbackToggleUncheckedUpdateManyInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    enabled?: BoolFieldUpdateOperationsInput | boolean
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[]
@@ -8635,6 +9796,29 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedStringNullableFilter<$PrismaModel>
     _max?: NestedStringNullableFilter<$PrismaModel>
+  }
+
+  export type FeedbackToggleCountOrderByAggregateInput = {
+    id?: SortOrder
+    enabled?: SortOrder
+  }
+
+  export type FeedbackToggleAvgOrderByAggregateInput = {
+    id?: SortOrder
+  }
+
+  export type FeedbackToggleMaxOrderByAggregateInput = {
+    id?: SortOrder
+    enabled?: SortOrder
+  }
+
+  export type FeedbackToggleMinOrderByAggregateInput = {
+    id?: SortOrder
+    enabled?: SortOrder
+  }
+
+  export type FeedbackToggleSumOrderByAggregateInput = {
+    id?: SortOrder
   }
 
   export type StringFieldUpdateOperationsInput = {

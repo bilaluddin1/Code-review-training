@@ -73,3 +73,10 @@ model FeedbackResponse {
   comments        String?
   createdAt       DateTime @default(now())
 }
+
+// Single-row switch: the "Give Feedback" button stays greyed out for
+// everyone until an admin turns it on (e.g. near the end of a session).
+model FeedbackToggle {
+  id      Int     @id @default(1)
+  enabled Boolean @default(false)
+}

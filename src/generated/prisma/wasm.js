@@ -170,6 +170,11 @@ exports.Prisma.FeedbackResponseScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.FeedbackToggleScalarFieldEnum = {
+  id: 'id',
+  enabled: 'enabled'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -187,7 +192,8 @@ exports.Prisma.ModelName = {
   ChallengeSubmission: 'ChallengeSubmission',
   FlagSubmission: 'FlagSubmission',
   SessionArchive: 'SessionArchive',
-  FeedbackResponse: 'FeedbackResponse'
+  FeedbackResponse: 'FeedbackResponse',
+  FeedbackToggle: 'FeedbackToggle'
 };
 
 /**
