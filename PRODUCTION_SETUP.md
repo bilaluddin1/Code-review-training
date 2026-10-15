@@ -66,6 +66,34 @@ Internet → Nginx (Port 3000, HTTPS) → App Container (Port 3000, HTTP)
 - **App Container**: Exposes ports 3000 (Next.js) and 4001 (Socket.IO) internally
 - **External Access**: Only port 3000 is exposed to the internet
 
+## Clean-URL access on the shared VM (no :3000)
+
+This container keeps listening on host port 3000 exactly as above - that
+hasn't changed. But on the actual deployment VM (which also runs DefectDojo
+and Dependency-Track), host port 443 can only belong to one process, and
+DefectDojo's nginx already had it. So `https://warzone.spurplatforms.com`
+(no port) works via a separate, VM-level **edge nginx** that this repo
+does NOT own or contain:
+
+- Lives at `~/edge-nginx/` on the VM, own `docker-compose.yml` (just one
+  `nginx:alpine` container, `network_mode: host`) and `nginx.conf`.
+- Uses nginx's `stream { ssl_preread }` module to read only the hostname
+  from the TLS ClientHello and forward the still-encrypted connection to
+  whichever app's own nginx owns that hostname's cert - it never terminates
+  TLS itself and holds no certs. `warzone.spurplatforms.com` → this
+  container's `127.0.0.1:3000`; `defectdojo.spurams.com` →
+  DefectDojo's existing `127.0.0.1:8443`.
+- DefectDojo's own `docker-compose.override.yml` had its `"443:8443"`
+  binding commented out (freeing host port 443) - DefectDojo itself is
+  otherwise completely untouched and still reachable directly on `:8443`.
+- `warzone.spurplatforms.com:3000` still works too (this container's
+  mapping was never changed) - it's just no longer the primary URL.
+
+If this app ever moves to its own VM, the edge nginx and the DefectDojo
+port change are irrelevant and can be ignored - just point DNS at the new
+host and keep using this file's original (pre-this-section) setup directly
+on port 443.
+
 ## SSL Certificate Requirements
 
 - Certificate file: `nginx.crt`
