@@ -46,14 +46,15 @@ services:
       - code-review-net
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      # TLS cert reused from the DefectDojo stack on the same VM - host-specific
-      # path. nginx.conf expects listen 3000 ssl, so this is NOT optional:
-      # without it, `docker compose up` fails validation (or, on older Compose
-      # versions that tolerate the missing volume line, nginx starts but can't
-      # find the cert and fails). Point this at wherever your TLS cert/key
-      # actually live if deploying to a different host.
-      - /home/jamesbond/defectdojo/django-DefectDojo/ssl/nginx.crt:/etc/nginx/ssl/nginx.crt:ro
-      - /home/jamesbond/defectdojo/django-DefectDojo/ssl/nginx.key:/etc/nginx/ssl/nginx.key:ro
+      # Let's Encrypt cert for warzone.spurplatforms.com, issued via certbot on
+      # the host. Mount the WHOLE /etc/letsencrypt tree (not just the two cert
+      # files) - live/<domain>/fullchain.pem is a symlink into archive/, and
+      # renewal replaces what it points to. Mounting only the two files would
+      # freeze them at today's content and silently stop renewing inside the
+      # container. nginx.conf expects listen 3000 ssl, so this is NOT optional.
+      # Point this at wherever your TLS cert/key actually live if deploying to
+      # a different host.
+      - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
       - app
     restart: unless-stopped
