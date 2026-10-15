@@ -17,17 +17,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Challenge not found' }, { status: 404 });
     }
 
-    // Check if challenge has a flag property (for challenges created via admin panel)
-    let expectedFlag = challenge.flag;
+    // Support either a single `flag` or multiple independently-solvable
+    // `flags` (e.g. a lab with two separate bugs, each with its own flag).
+    let expectedFlags: string[] = challenge.flags ?? (challenge.flag ? [challenge.flag] : []);
 
     // If no flag in challenge object, try environment variable
-    if (!expectedFlag) {
+    if (expectedFlags.length === 0) {
       const envVarName = `FLAG_${challengeId}`;
-      expectedFlag = process.env[envVarName];
-      console.log('Looking for flag in env var:', envVarName, 'Found:', expectedFlag ? 'yes' : 'no');
+      const envFlag = process.env[envVarName];
+      if (envFlag) expectedFlags = [envFlag];
+      console.log('Looking for flag in env var:', envVarName, 'Found:', envFlag ? 'yes' : 'no');
     }
 
-    if (!expectedFlag) {
+    if (expectedFlags.length === 0) {
       return NextResponse.json({
         success: false,
         error: `Flag for challenge ${challengeId} not found. Please set FLAG_${challengeId} environment variable or add flag to challenge.`
@@ -40,19 +42,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Challenge is locked' }, { status: 423 });
     }
 
-    // Check if user already solved this flag
-    const existing = await prisma.flagSubmission.findFirst({
-      where: { userName: name, challengeId, correct: true },
-    });
-    if (existing) {
-      // Already solved
-      const user = await prisma.leaderboardUser.findUnique({ where: { name } });
-      return NextResponse.json({ success: true, correct: true, alreadySolved: true, score: user?.score ?? 0 });
-    }
+    const submittedFlag = flag.trim();
 
-    // Check flag
-    const correct = flag.trim() === expectedFlag.trim();
-    console.log('Flag check:', { submitted: flag.trim(), expected: expectedFlag.trim(), correct });
+    // Check the flag FIRST so "already solved" is scoped to this exact
+    // flag string - a multi-flag lab's two flags are solved (and tracked)
+    // independently, so finding one doesn't block submitting the other.
+    const correct = expectedFlags.some((f) => f.trim() === submittedFlag);
+    console.log('Flag check:', { submitted: submittedFlag, correct });
+
+    if (correct) {
+      const existing = await prisma.flagSubmission.findFirst({
+        where: { userName: name, challengeId, flag: submittedFlag, correct: true },
+      });
+      if (existing) {
+        const user = await prisma.leaderboardUser.findUnique({ where: { name } });
+        return NextResponse.json({ success: true, correct: true, alreadySolved: true, score: user?.score ?? 0 });
+      }
+    }
 
     let score = 0;
     if (correct) {

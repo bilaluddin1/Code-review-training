@@ -55,7 +55,7 @@ export const PLAYGROUNDS: Record<string, PlaygroundConfig> = {
     method: "POST",
     endpoint: "/api/labs/inj-02",
     fields: [{ name: "html", label: "Instructions (HTML allowed)", type: "textarea", defaultValue: "Please inspect before 5pm." }],
-    startingHint: "Try submitting an HTML tag that runs script when the page renders it.",
+    startingHint: "Try submitting an HTML tag that runs script when the page renders it - write the result into the page itself (not an alert popup, browsers block those in a sandboxed preview like this one).",
     preview: true,
   },
   "crypto-01": {
@@ -84,6 +84,6 @@ export const PLAYGROUNDS: Record<string, PlaygroundConfig> = {
     endpoint: "/api/labs/config-01",
     fields: [{ name: "id", label: "Order ID", type: "text", defaultValue: "1" }],
     headerFields: [{ name: "x-demo-origin", label: "Pretend caller Origin (X-Demo-Origin header)", placeholder: "https://evil.example" }],
-    startingHint: "Try a non-numeric Order ID to see the error leak, then set a fake Origin and check the response headers below.",
+    startingHint: "Two separate bugs here, two separate flags. Try a non-numeric Order ID to see the error leak, then (separately) set a fake Origin starting with https:// and check the response headers below.",
   },
 };

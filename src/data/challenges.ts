@@ -371,7 +371,7 @@ export const challenges: Challenge[] = [
     "difficulty": "intermediate",
     "hints": [
       "One line is about who is allowed to call this. The other is about what gets sent back when something goes wrong.",
-      "A successful exploit response from the live lab includes a flag - paste it into Submit Flag. (The flag format gives nothing away - it's the same opaque pattern on every lab.)"
+      "This one has TWO separate bugs, and TWO separate flags - triggering the error leak doesn't also prove you found the CORS issue, and vice versa. Submit each one you find."
     ],
     "explanations": {
       "2": "SetIsOriginAllowed(origin => true) combined with AllowCredentials() lets ANY website make authenticated requests to this API on a victim's behalf. Fix: use WithOrigins(...) with an explicit allow-list, never reflect-any-origin with credentials.",
@@ -379,7 +379,7 @@ export const challenges: Challenge[] = [
     },
     "labUrl": "/labs/config-01",
     "maxSelectableLines": 2,
-    "flag": "FLAG{530b775212}",
+    "flags": ["FLAG{530b775212}", "FLAG{a1c9f04e73}"],
     "productOrigin": "Pattern based on confirmed findings in: Knoccs (CORS allow-any+credentials), multiple repos (exception message returned to client)"
   }
 ]
