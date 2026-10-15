@@ -117,25 +117,41 @@ export default function PlaygroundPage() {
             <CardHeader>
               <CardTitle>Rendered as HTML (sandboxed - no cookie/DOM access to the rest of the app)</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-3">
               <iframe
                 sandbox="allow-scripts allow-modals"
-                // allow-modals is ONLY so alert()/confirm()/prompt() aren't
-                // silently swallowed (sandboxed iframes block them by
-                // default) - it grants nothing else. No allow-same-origin,
-                // so this iframe gets its own unique,
+                // No allow-same-origin, so this iframe gets its own unique,
                 // throwaway origin - document.cookie here is a private jar
                 // that shares NOTHING with the real app, any other tab, or
                 // any real user's session. The seed script below plants a
                 // fake session cookie into that isolated jar before the
-                // player's payload runs, so a document.cookie-stealing
-                // payload (e.g. alert(document.cookie)) pops a believable
-                // value - proving real impact without ever touching
-                // anything real. This is the same trick a reflected/stored
-                // XSS demo on a real site would show, just fully contained.
+                // player's payload runs, so a DOM-writing payload (e.g.
+                // document.body.innerHTML = document.cookie) shows a
+                // believable value - proving real impact without ever
+                // touching anything real.
+                //
+                // alert()/confirm()/prompt() will NOT visibly pop here even
+                // though allow-modals is set: Chrome separately blocks
+                // those dialogs from any cross-origin iframe outright, and
+                // this iframe's opaque origin always counts as cross-origin
+                // - no sandbox flag can change that. Use "Pop out" below for
+                // a real alert() popup instead.
                 srcDoc={`<script>document.cookie = "session_id=sess_8f2a91cd4b7e3f06; path=/";<\/script>${(response.body as { html: string }).html}`}
                 className="w-full h-48 border rounded bg-white"
               />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => window.open(`${config.endpoint}/preview`, "_blank", "noopener,noreferrer")}
+              >
+                Pop out in a new tab (for a real alert() popup)
+              </Button>
+              <p className="text-xs text-gray-500">
+                Opens as a real top-level page, not an iframe - that&apos;s what lets alert() actually fire. Opened
+                with &quot;noopener&quot;, so it can never reach back into this tab, even though it shares this
+                domain.
+              </p>
             </CardContent>
           </Card>
         )}
