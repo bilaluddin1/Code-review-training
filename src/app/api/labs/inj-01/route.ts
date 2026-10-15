@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { vulnerableOrderSearch } from "@/lib/labsSandbox";
+import { vulnerableOrderSearch, ORDERS } from "@/lib/labsSandbox";
 
 // Explicit rather than relying on Next's implicit "uses searchParams -> dynamic"
 // detection - see /api/leaderboard for the bug caused by trusting that.
@@ -11,7 +11,13 @@ export const dynamic = 'force-dynamic';
 export async function GET(req: NextRequest) {
   const input = req.nextUrl.searchParams.get("type") ?? "Appraisal";
   const { whereClauseBuilt, rows } = vulnerableOrderSearch(input, "ACME");
-  const leaked = rows.some((r) => r.ClientID !== "ACME");
+  // Require a FULL bypass (every order, every tenant) rather than "any
+  // cross-tenant row" - two of our rows happen to share Type "Appraisal"
+  // across tenants, so a half-finished payload (no comment, dangling quote)
+  // leaked a couple of rows by accident without actually defeating the
+  // tenant filter. Only a real universal condition (e.g. ' OR '1'='1' --)
+  // returns every row, including the other tenants' non-Appraisal orders.
+  const leaked = rows.length === ORDERS.length;
   return NextResponse.json({
     whereClauseBuilt,
     rowsReturned: rows.length,
