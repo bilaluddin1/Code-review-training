@@ -119,8 +119,11 @@ export default function PlaygroundPage() {
             </CardHeader>
             <CardContent>
               <iframe
-                sandbox="allow-scripts"
-                // No allow-same-origin, so this iframe gets its own unique,
+                sandbox="allow-scripts allow-modals"
+                // allow-modals is ONLY so alert()/confirm()/prompt() aren't
+                // silently swallowed (sandboxed iframes block them by
+                // default) - it grants nothing else. No allow-same-origin,
+                // so this iframe gets its own unique,
                 // throwaway origin - document.cookie here is a private jar
                 // that shares NOTHING with the real app, any other tab, or
                 // any real user's session. The seed script below plants a
