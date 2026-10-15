@@ -327,29 +327,59 @@ function useChallengeTimer(selectedChallenge: Challenge | null) {
   return { timer, timeLeft };
 }
 
-// Two-tone beep via Web Audio API when a timer hits 0 - no audio file to
-// ship/host, works offline, and browsers allow it here since by the time a
-// timer naturally expires the player has already interacted with the page.
+// Loud two-tone chime via Web Audio API when a timer hits 0 - no audio file
+// to ship/host, works offline, and browsers allow it here since by the time
+// a timer naturally expires the player has already interacted with the page.
 function playTimerEndSound() {
   try {
     const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     const ctx = new AudioCtx();
     const now = ctx.currentTime;
-    [880, 660].forEach((freq, i) => {
-      const start = now + i * 0.18;
+    [880, 660, 440].forEach((freq, i) => {
+      const start = now + i * 0.16;
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-      osc.type = "sine";
+      osc.type = "square";
       osc.frequency.value = freq;
       gain.gain.setValueAtTime(0.0001, start);
-      gain.gain.exponentialRampToValueAtTime(0.3, start + 0.02);
-      gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.16);
+      gain.gain.exponentialRampToValueAtTime(0.7, start + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.22);
       osc.connect(gain);
       gain.connect(ctx.destination);
       osc.start(start);
-      osc.stop(start + 0.18);
+      osc.stop(start + 0.24);
     });
-    setTimeout(() => ctx.close(), 600);
+    setTimeout(() => ctx.close(), 900);
+  } catch {
+    // Not critical - autoplay restrictions or no Web Audio support just mean silence.
+  }
+}
+
+// Pressure-building tick for the last PRESSURE_TICK_START_SECONDS of a timer -
+// gets louder and higher-pitched as it approaches 0, so the room actually
+// feels the countdown instead of only seeing it.
+const PRESSURE_TICK_START_SECONDS = 20;
+function playPressureTick(secondsLeft: number) {
+  try {
+    const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    const ctx = new AudioCtx();
+    const now = ctx.currentTime;
+    // 0 (at 20s left) -> 1 (at 1s left)
+    const urgency = 1 - Math.max(0, Math.min(PRESSURE_TICK_START_SECONDS, secondsLeft)) / PRESSURE_TICK_START_SECONDS;
+    const freq = 520 + urgency * 480; // 520Hz -> 1000Hz
+    const peakGain = 0.35 + urgency * 0.45; // 0.35 -> 0.8
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "square";
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(peakGain, now + 0.015);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.09);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.1);
+    setTimeout(() => ctx.close(), 300);
   } catch {
     // Not critical - autoplay restrictions or no Web Audio support just mean silence.
   }
@@ -1371,18 +1401,23 @@ export default function CodeReviewChallenge() {
   // Move this hook call here so it's always called, before any early returns
   const { timers: allTimers, timeLefts: allTimeLefts } = useAllChallengeTimers();
 
-  // Beep once per timer when it actually counts down to 0 - kept at this
-  // single top-level spot (rather than inside the timer hooks themselves) so
-  // it fires exactly once regardless of whether the list or a single lab is
-  // currently shown. Only fires for a timer we've actually seen running
-  // (seenPositive), so a timer that's already expired on page load/reconnect
-  // stays silent instead of beeping immediately.
+  // Pressure ticks for the last 20 seconds of every running timer, then a
+  // loud chime at 0 - kept at this single top-level spot (rather than inside
+  // the timer hooks themselves) so each fires exactly once regardless of
+  // whether the list or a single lab is currently shown. The end chime only
+  // fires for a timer we've actually seen running (seenPositive), so a timer
+  // that's already expired on page load/reconnect stays silent instead of
+  // chiming immediately; ticks aren't guarded that way since joining mid-
+  // countdown inside the pressure window should still tick.
   const prevTimeLeftsRef = useRef<Record<string, number>>({});
   const seenPositiveRef = useRef<Record<string, boolean>>({});
   useEffect(() => {
     for (const [challengeId, cur] of Object.entries(allTimeLefts)) {
       const prev = prevTimeLeftsRef.current[challengeId] ?? 0;
       if (cur > 0) seenPositiveRef.current[challengeId] = true;
+      if (cur !== prev && cur >= 1 && cur <= PRESSURE_TICK_START_SECONDS) {
+        playPressureTick(cur);
+      }
       if (prev > 0 && cur === 0 && seenPositiveRef.current[challengeId]) {
         playTimerEndSound();
       }
