@@ -327,6 +327,34 @@ function useChallengeTimer(selectedChallenge: Challenge | null) {
   return { timer, timeLeft };
 }
 
+// Two-tone beep via Web Audio API when a timer hits 0 - no audio file to
+// ship/host, works offline, and browsers allow it here since by the time a
+// timer naturally expires the player has already interacted with the page.
+function playTimerEndSound() {
+  try {
+    const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    const ctx = new AudioCtx();
+    const now = ctx.currentTime;
+    [880, 660].forEach((freq, i) => {
+      const start = now + i * 0.18;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.exponentialRampToValueAtTime(0.3, start + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.16);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(start);
+      osc.stop(start + 0.18);
+    });
+    setTimeout(() => ctx.close(), 600);
+  } catch {
+    // Not critical - autoplay restrictions or no Web Audio support just mean silence.
+  }
+}
+
 // --- Timer Display ---
 function TimerDisplay({ timeLeft }: { timeLeft: number }) {
   const min = Math.floor(timeLeft / 60);
@@ -1342,6 +1370,25 @@ export default function CodeReviewChallenge() {
 
   // Move this hook call here so it's always called, before any early returns
   const { timers: allTimers, timeLefts: allTimeLefts } = useAllChallengeTimers();
+
+  // Beep once per timer when it actually counts down to 0 - kept at this
+  // single top-level spot (rather than inside the timer hooks themselves) so
+  // it fires exactly once regardless of whether the list or a single lab is
+  // currently shown. Only fires for a timer we've actually seen running
+  // (seenPositive), so a timer that's already expired on page load/reconnect
+  // stays silent instead of beeping immediately.
+  const prevTimeLeftsRef = useRef<Record<string, number>>({});
+  const seenPositiveRef = useRef<Record<string, boolean>>({});
+  useEffect(() => {
+    for (const [challengeId, cur] of Object.entries(allTimeLefts)) {
+      const prev = prevTimeLeftsRef.current[challengeId] ?? 0;
+      if (cur > 0) seenPositiveRef.current[challengeId] = true;
+      if (prev > 0 && cur === 0 && seenPositiveRef.current[challengeId]) {
+        playTimerEndSound();
+      }
+    }
+    prevTimeLeftsRef.current = { ...allTimeLefts };
+  }, [allTimeLefts]);
 
   // On mount, load user/admin from localStorage, and fetch locks from API
   useEffect(() => {
