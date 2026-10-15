@@ -279,17 +279,17 @@ export const challenges: Challenge[] = [
     "id": "LAB-INJ-01",
     "title": "LAB: Order Search (SQL Injection)",
     "description": "The search term is concatenated straight into a WHERE clause, and the tenant filter is appended after it. Select the vulnerable line, then try the live exploit.",
-    "code": "public IEnumerable<Order> SearchOrders(string type, int clientId)\n{\n    string sql = \"SELECT * FROM Orders WHERE Type = '\" + type + \"'\";\n    sql += \" AND ClientId = \" + clientId;\n\n    return _db.CustomQuery<Order>(sql);\n}",
+    "code": "public IEnumerable<Order> SearchOrders(string type, int clientId)\n{\n    string tenantCode = GetTenantCode(clientId); // looked up server-side, never from user input\n    string sql = \"SELECT * FROM Orders WHERE Type = '\" + type + \"'\";\n    sql += \" AND ClientId = '\" + tenantCode + \"'\";\n\n    return _db.CustomQuery<Order>(sql);\n}",
     "vulnerableLines": [
-      3
+      4
     ],
     "difficulty": "intermediate",
     "hints": [
-      "What happens if 'type' contains a single quote and a SQL comment marker?",
+      "Both concatenated lines look the same. Where does each value actually come from?",
       "A successful exploit response from the live lab includes a flag - paste it into Submit Flag. (The flag format gives nothing away - it's the same opaque pattern on every lab.)"
     ],
     "explanations": {
-      "3": "User input is concatenated directly into the query. A payload like Appraisal' OR '1'='1' -- comments out the rest of the clause, including the ClientId filter on line 4, returning every tenant's orders. Fix: use a parameterized query (SqlParameter / Dapper named params), never string concatenation."
+      "4": "Both line 4 and line 5 build the query the same way - string concatenation - but that's not what makes line 4 the bug. 'type' comes straight from the caller; 'tenantCode' is looked up server-side and never touches user input. A payload like Appraisal' OR '1'='1' -- comments out the rest of the clause, including the ClientId filter, returning every tenant's orders. Fix: use a parameterized query (SqlParameter / Dapper named params) for 'type' - concatenation isn't automatically safe or unsafe, trusted-vs-untrusted data is what matters."
     },
     "labUrl": "/labs/inj-01",
     "maxSelectableLines": 1,
