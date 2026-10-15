@@ -257,7 +257,7 @@ export const challenges: Challenge[] = [
   {
     "id": "LAB-BAC-01",
     "title": "LAB:01 Order Document Access (Broken Access Control)",
-    "description": "A document is loaded by its own id after the parent order's tenant was already checked. Select the vulnerable line(s), then try the live exploit.",
+    "description": "A document is loaded by its own id after the order's tenant was already checked. Select the vulnerable line(s), then try the live exploit.",
     "code": "[Authorization]\n[HttpGet]\n[Route(\"clients/{clientId}/orders/{orderId}/documents/{docId}\")]\npublic IActionResult GetDocument(int clientId, int orderId, int docId)\n{\n    var order = _orderService.GetById(orderId);\n    if (order == null || order.ClientId != clientId)\n        return NotFound();\n\n    var doc = _documentService.GetById(docId);\n    if (doc == null)\n        return NotFound();\n\n    return Ok(doc);\n}",
     "vulnerableLines": [
       10
