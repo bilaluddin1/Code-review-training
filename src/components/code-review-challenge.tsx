@@ -358,7 +358,7 @@ function playTimerEndSound() {
 // Pressure-building tick for the last PRESSURE_TICK_START_SECONDS of a timer -
 // gets louder and higher-pitched as it approaches 0, so the room actually
 // feels the countdown instead of only seeing it.
-const PRESSURE_TICK_START_SECONDS = 20;
+const PRESSURE_TICK_START_SECONDS = 60;
 function playPressureTick(secondsLeft: number) {
   try {
     const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
