@@ -120,7 +120,17 @@ export default function PlaygroundPage() {
             <CardContent>
               <iframe
                 sandbox="allow-scripts"
-                srcDoc={(response.body as { html: string }).html}
+                // No allow-same-origin, so this iframe gets its own unique,
+                // throwaway origin - document.cookie here is a private jar
+                // that shares NOTHING with the real app, any other tab, or
+                // any real user's session. The seed script below plants a
+                // fake session cookie into that isolated jar before the
+                // player's payload runs, so a document.cookie-stealing
+                // payload (e.g. alert(document.cookie)) pops a believable
+                // value - proving real impact without ever touching
+                // anything real. This is the same trick a reflected/stored
+                // XSS demo on a real site would show, just fully contained.
+                srcDoc={`<script>document.cookie = "session_id=sess_8f2a91cd4b7e3f06; path=/";<\/script>${(response.body as { html: string }).html}`}
                 className="w-full h-48 border rounded bg-white"
               />
             </CardContent>
