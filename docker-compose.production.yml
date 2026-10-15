@@ -39,8 +39,12 @@ services:
     image: nginx:alpine
     container_name: nginx-proxy
     ports:
-      # Expose HTTPS on port 3000
-      - "0.0.0.0:3000:3000"
+      # Localhost-only: the public entry point is the shared edge-nginx on
+      # port 443 (SNI routing to warzone.spurplatforms.com -> here), which
+      # also runs on this VM. This stays bound so the edge nginx can still
+      # reach it via 127.0.0.1:3000, but it's no longer directly reachable
+      # from the internet. See PRODUCTION_SETUP.md for the full picture.
+      - "127.0.0.1:3000:3000"
 
     networks:
       - code-review-net
