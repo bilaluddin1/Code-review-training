@@ -4,18 +4,9 @@
 import crypto from "crypto";
 
 // ---------- LAB-BAC-01: IDOR ("Secure Notes") ----------
-// Two decoys at nearby ids (102, 103) are readable too - the bug lets you
-// read ANY note, not just one specific neighbor - but only the note marked
-// flagNote actually completes the lab. Its id is deliberately not adjacent
-// to 101, so a single "try the next number" guess finds the vulnerability
-// but not the flag - same as a real IDOR target rarely sitting right next
-// to your own id.
-export type Note = { id: number; owner: string; title: string; body: string; flagNote?: boolean };
-export const NOTES: Note[] = [
+export const NOTES = [
   { id: 101, owner: "alice", title: "Alice's note", body: "Password reset backup code: 482913" },
   { id: 102, owner: "bob", title: "Bob's note", body: "Salary review draft: recommend promotion, do not share yet" },
-  { id: 103, owner: "carol", title: "Carol's note", body: "Interview feedback: strong candidate, proceed to final round" },
-  { id: 500, owner: "admin", title: "Admin note", body: "Incident checklist: escalate any confirmed data exposure immediately", flagNote: true },
 ];
 
 // ---------- LAB-INJ-01: SQL injection via tenant-filter-after-input ----------
