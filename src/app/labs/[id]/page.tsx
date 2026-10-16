@@ -115,7 +115,7 @@ export default function PlaygroundPage() {
         {config.preview && response && typeof (response.body as { html?: string })?.html === "string" && (
           <Card>
             <CardHeader>
-              <CardTitle>Rendered as HTML (sandboxed - no cookie/DOM access to the rest of the app)</CardTitle>
+              <CardTitle>Rendered as HTML</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <iframe
@@ -145,13 +145,8 @@ export default function PlaygroundPage() {
                 size="sm"
                 onClick={() => window.open(`${config.endpoint}/preview`, "_blank", "noopener,noreferrer")}
               >
-                Pop out in a new tab (for a real alert() popup)
+                Pop out in a new tab
               </Button>
-              <p className="text-xs text-gray-500">
-                Opens as a real top-level page, not an iframe - that&apos;s what lets alert() actually fire. Opened
-                with &quot;noopener&quot;, so it can never reach back into this tab, even though it shares this
-                domain.
-              </p>
             </CardContent>
           </Card>
         )}
