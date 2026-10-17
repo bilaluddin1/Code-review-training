@@ -16,7 +16,14 @@ export async function GET() {
 }
 export async function POST(req: NextRequest) {
   const { token } = await req.json().catch(() => ({ token: "" }));
-  const { rejected, reason } = isTokenRejected(token ?? "");
+  // An empty/missing token isn't a deliberate attempt at anything - it just
+  // happens to throw in isTokenRejected's destructuring, same shape as the
+  // real bug. Require a real, non-empty submission before treating this as
+  // "found the fail-open path" (same fix as the empty Order ID in LAB-CONFIG-01).
+  if (typeof token !== "string" || !token.trim()) {
+    return NextResponse.json({ error: "Token is required" }, { status: 400 });
+  }
+  const { rejected, reason } = isTokenRejected(token);
   if (rejected) return NextResponse.json({ accessGranted: false, reason }, { status: 401 });
   const exploited = reason.startsWith("FAIL-OPEN"); // only the bug path, not a legitimately-valid token
   return NextResponse.json({
