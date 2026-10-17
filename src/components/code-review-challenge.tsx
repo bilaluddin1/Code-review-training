@@ -1395,8 +1395,20 @@ export default function CodeReviewChallenge() {
   const [flagStatus, setFlagStatus] = useState<{ status: 'idle' | 'loading' | 'success' | 'error' | 'already'; message?: string }>({ status: 'idle' });
 
   // --- Flag submission state for challenge view ---
-  const [flagChallengeLoading, setFlagChallengeLoading] = useState(false);
-  const [flagChallengeStatus, setFlagChallengeStatus] = useState<{ status: 'idle' | 'loading' | 'success' | 'error' | 'already'; message?: string }>({ status: 'idle' });
+  // Array-based so a challenge with more than one independent flag (e.g.
+  // LAB-CONFIG-01's error-leak + CORS flags) gets one box PER flag instead
+  // of forcing both into a single input, which only accepts one value.
+  const [flagInputs, setFlagInputs] = useState<string[]>([""]);
+  const [flagStatuses, setFlagStatuses] = useState<Array<{ status: 'idle' | 'loading' | 'success' | 'error' | 'already'; message?: string }>>([{ status: 'idle' }]);
+
+  // Reset the flag boxes whenever the selected challenge changes - a
+  // different challenge may need a different number of flags, and an old
+  // challenge's in-progress input shouldn't carry over.
+  useEffect(() => {
+    const n = Math.max(1, selectedChallenge?.flagCount ?? 1);
+    setFlagInputs(Array(n).fill(""));
+    setFlagStatuses(Array(n).fill({ status: 'idle' }));
+  }, [selectedChallenge?.id, selectedChallenge?.flagCount]);
 
   // Move this hook call here so it's always called, before any early returns
   const { timers: allTimers, timeLefts: allTimeLefts } = useAllChallengeTimers();
@@ -2007,81 +2019,78 @@ export default function CodeReviewChallenge() {
 
                     {/* --- Flag submission for challenge view --- */}
                     <div className="mt-5">
-                      {/* Only show flag submission form if flag is not already solved */}
-                      {!flagAlreadySolved && (
-                        <form
-                          onSubmit={async (e) => {
-                            e.preventDefault();
-                            if (!flagInput.trim() || flagAlreadySolved || (isLocked && !isAdmin)) return;
-                            setFlagChallengeLoading(true);
-                            setFlagChallengeStatus({ status: 'loading' });
-                            try {
-                              const res = await fetch('/api/submit-flag', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ challengeId: selectedChallenge.id, flag: flagInput.trim(), name: user.name }),
-                              });
-                              const data = await res.json();
-                              if (res.status === 423) {
-                                setFlagChallengeStatus({ status: 'error', message: 'This challenge is currently locked by the admin. You cannot submit flags.' });
-                              } else if (data.success && data.correct) {
-                                setFlagChallengeStatus({ status: 'success', message: data.alreadySolved ? 'Already solved!' : 'Correct flag! +5 points' });
-                                setUser(u => ({ ...u, score: data.score }));
-                                refreshSolvedStates();
-                              } else if (data.success && data.alreadySolved) {
-                                setFlagChallengeStatus({ status: 'already', message: 'Already solved!' });
-                                refreshSolvedStates();
-                              } else {
-                                setFlagChallengeStatus({ status: 'error', message: 'Incorrect flag. Try again.' });
-                              }
-                            } catch {
-                              setFlagChallengeStatus({ status: 'error', message: 'Could not submit flag. Please try again.' });
-                            } finally {
-                              setFlagChallengeLoading(false);
-                            }
-                          }}
-                          className="flex items-center gap-2 mb-6"
-                        >
-                          <input
-                            type="text"
-                            className="border rounded px-3 py-2 w-full focus:outline-none focus:ring"
-                            placeholder="Flag here"
-                            value={flagInput}
-                            onChange={e => setFlagInput(e.target.value)}
-                            disabled={flagChallengeLoading || flagAlreadySolved || (isLocked && !isAdmin)}
-                          />
-                          <Button
-                            type="submit"
-                            className="ml-2 h-full bg-green-100 text-green-700 hover:bg-green-200 border-green-200"
-                            variant="outline"
-                            disabled={flagChallengeLoading || !flagInput.trim() || flagAlreadySolved || (isLocked && !isAdmin)}
-                          >
-                            {flagChallengeLoading ? 'Submitting...' : 'Submit Flag'}
-                          </Button>
-                        </form>
-                      )}
-                      {/* Feedback message/status always shown if not idle */}
-                      {flagChallengeStatus.status !== 'idle' && (
-                        <div className="mt-3">
-                          {flagChallengeStatus.status === 'success' && (
-                            <div className="flex items-center gap-2 bg-green-100 border border-green-300 text-green-800 px-4 py-2 rounded shadow-sm animate-fade-in">
+                      {/* Hide entirely once every flag this challenge needs has been solved */}
+                      {!flagAlreadySolved && flagInputs.map((value, i) => {
+                        const boxSolved = flagStatuses[i]?.status === 'success' || flagStatuses[i]?.status === 'already';
+                        if (boxSolved) {
+                          return (
+                            <div key={i} className="flex items-center gap-2 bg-green-100 border border-green-300 text-green-800 px-4 py-2 rounded shadow-sm mb-3">
                               <CheckCircle className="h-5 w-5 text-green-500" />
-                              <span className="font-semibold">{flagChallengeStatus.message}</span>
+                              <span className="font-semibold">
+                                {flagInputs.length > 1 ? `Flag ${i + 1} of ${flagInputs.length} solved` : flagStatuses[i].message}
+                              </span>
                             </div>
-                          )}
-                          {flagChallengeStatus.status === 'error' && (
-                            <div className="flex items-center gap-2 bg-red-100 border border-red-300 text-red-800 px-4 py-2 rounded shadow-sm animate-fade-in">
-                              <XCircle className="h-5 w-5 text-red-500" />
-                              <span className="font-semibold">{flagChallengeStatus.message}</span>
-                            </div>
-                          )}
-                          {flagChallengeStatus.status === 'loading' && (
-                            <div className="flex items-center gap-2 bg-gray-100 border border-gray-300 text-gray-800 px-4 py-2 rounded shadow-sm animate-fade-in">
-                              <span className="font-semibold">Checking flag...</span>
-                            </div>
-                          )}
-                        </div>
-                      )}
+                          );
+                        }
+                        const loading = flagStatuses[i]?.status === 'loading';
+                        return (
+                          <div key={i} className="mb-3">
+                            <form
+                              onSubmit={async (e) => {
+                                e.preventDefault();
+                                const flagValue = flagInputs[i]?.trim();
+                                if (!flagValue || (isLocked && !isAdmin)) return;
+                                setFlagStatuses(s => s.map((st, idx) => (idx === i ? { status: 'loading' } : st)));
+                                try {
+                                  const res = await fetch('/api/submit-flag', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ challengeId: selectedChallenge.id, flag: flagValue, name: user.name }),
+                                  });
+                                  const data = await res.json();
+                                  let next: { status: 'idle' | 'loading' | 'success' | 'error' | 'already'; message?: string };
+                                  if (res.status === 423) {
+                                    next = { status: 'error', message: 'This challenge is currently locked by the admin. You cannot submit flags.' };
+                                  } else if (data.success && data.correct) {
+                                    next = { status: data.alreadySolved ? 'already' : 'success', message: data.alreadySolved ? 'Already solved!' : 'Correct flag! +5 points' };
+                                    setUser(u => ({ ...u, score: data.score }));
+                                    refreshSolvedStates();
+                                  } else {
+                                    next = { status: 'error', message: 'Incorrect flag. Try again.' };
+                                  }
+                                  setFlagStatuses(s => s.map((st, idx) => (idx === i ? next : st)));
+                                } catch {
+                                  setFlagStatuses(s => s.map((st, idx) => (idx === i ? { status: 'error', message: 'Could not submit flag. Please try again.' } : st)));
+                                }
+                              }}
+                              className="flex items-center gap-2"
+                            >
+                              <input
+                                type="text"
+                                className="border rounded px-3 py-2 w-full focus:outline-none focus:ring"
+                                placeholder={flagInputs.length > 1 ? `Flag ${i + 1} of ${flagInputs.length}` : 'Flag here'}
+                                value={value}
+                                onChange={e => setFlagInputs(s => s.map((v, idx) => (idx === i ? e.target.value : v)))}
+                                disabled={loading || (isLocked && !isAdmin)}
+                              />
+                              <Button
+                                type="submit"
+                                className="ml-2 h-full bg-green-100 text-green-700 hover:bg-green-200 border-green-200"
+                                variant="outline"
+                                disabled={loading || !value.trim() || (isLocked && !isAdmin)}
+                              >
+                                {loading ? 'Submitting...' : 'Submit Flag'}
+                              </Button>
+                            </form>
+                            {flagStatuses[i]?.status === 'error' && (
+                              <div className="flex items-center gap-2 bg-red-100 border border-red-300 text-red-800 px-4 py-2 rounded shadow-sm mt-2">
+                                <XCircle className="h-5 w-5 text-red-500" />
+                                <span className="font-semibold">{flagStatuses[i].message}</span>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
                       {/* --- Enhanced 2-column solved status view --- */}
                       <div className="my-8">
                         <Card className="shadow-md border max-w-2xl mx-auto">
@@ -2111,7 +2120,11 @@ export default function CodeReviewChallenge() {
                                 </div>
                                 <span className={`text-base font-semibold mb-1 ${flagAlreadySolved ? 'text-green-700' : 'text-red-700'}`}>Flag Submission</span>
                                 <span className={`text-xs font-medium mb-2 ${flagAlreadySolved ? 'text-green-600' : 'text-red-500'}`}>{flagAlreadySolved ? 'Solved' : 'Not Solved'}</span>
-                                <span className="text-xs text-gray-500">Submit the flag you found in the lab.</span>
+                                <span className="text-xs text-gray-500">
+                                  {(selectedChallenge.flagCount ?? 1) > 1
+                                    ? `Submit all ${selectedChallenge.flagCount} flags you found in the lab.`
+                                    : 'Submit the flag you found in the lab.'}
+                                </span>
                               </div>
                             </div>
                           </CardContent>

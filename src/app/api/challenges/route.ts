@@ -22,6 +22,11 @@ export async function GET() {
       hints: c.hints,
       labUrl: c.labUrl,
       maxSelectableLines: c.maxSelectableLines,
+      // How many DISTINCT flags this challenge needs - just a count, never
+      // the flag values themselves, so the UI can render one submission box
+      // per flag instead of forcing everything into a single input (which
+      // only works for a one-flag challenge).
+      flagCount: c.flags?.length ?? (c.flag ? 1 : 0),
     }));
     return NextResponse.json(safe);
   } catch (error) {

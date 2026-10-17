@@ -83,7 +83,7 @@ export const PLAYGROUNDS: Record<string, PlaygroundConfig> = {
     method: "GET",
     endpoint: "/api/labs/config-01",
     fields: [{ name: "id", label: "Order ID", type: "text", defaultValue: "1" }],
-    headerFields: [{ name: "x-demo-origin", label: "Pretend caller Origin (X-Demo-Origin header)", placeholder: "https://evil.example" }],
+    headerFields: [{ name: "x-demo-origin", label: "Pretend caller Origin (X-Demo-Origin header)" }],
     startingHint: "Two separate bugs here, two separate flags - look closely at both the Order ID field and the Origin header.",
   },
 };
