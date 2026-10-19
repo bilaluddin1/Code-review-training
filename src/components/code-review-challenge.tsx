@@ -1975,6 +1975,19 @@ export default function CodeReviewChallenge() {
                           </Button>
                         </div>
                       )}
+                      {/* Rendered right here, immediately beside the code, instead of far
+                          below the fold - a dev shouldn't have to scroll past the line
+                          selection and flag submission UI just to read a hint they asked for. */}
+                      {showHints && selectedChallenge.hints && !submitted && (
+                        <div className="mt-3 p-4 bg-blue-50 border-l-4 border-blue-400 rounded">
+                          <h4 className="font-medium text-blue-800 mb-2">💡 Hints:</h4>
+                          <ul className="text-sm text-blue-700 space-y-1">
+                            {selectedChallenge.hints.map((hint, index) => (
+                              <li key={index}>• {hint}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                     </div>
 
                     <div className="mt-4 flex items-center justify-between">
@@ -2132,16 +2145,10 @@ export default function CodeReviewChallenge() {
                       </div>
                     </div>
 
-                    {showHints && selectedChallenge.hints && !submitted && (
-                      <div className="mt-4 p-4 bg-blue-50 border-l-4 border-blue-400 rounded">
-                        <h4 className="font-medium text-blue-800 mb-2">💡 Hints:</h4>
-                        <ul className="text-sm text-blue-700 space-y-1">
-                          {selectedChallenge.hints.map((hint, index) => (
-                            <li key={index}>• {hint}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
+                    {/* Hints moved to render right next to the code block (see above) instead of
+                        here - this spot is ~200 lines of JSX below the code, past the line
+                        selection and flag submission UI, so "Show Hints" used to require
+                        scrolling all the way down to actually see anything. */}
                   </CardContent>
                 </Card>
               </ResizableCard>
