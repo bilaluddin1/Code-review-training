@@ -82,7 +82,7 @@ export const PLAYGROUNDS: Record<string, PlaygroundConfig> = {
     endpoint: "/api/labs/auth-01",
     fields: [{ name: "token", label: "Garbage Token", type: "textarea", placeholder: "Any plain text, no dots at all" }],
     secondaryField: { name: "token", label: "Forged Incomplete Token", type: "textarea", placeholder: "base64url(header).base64url(payload) - no signature. Build this with CyberChef or a one-line HMAC script." },
-    explainer: "A real token has 3 dot-separated parts: header.payload.signature, each base64url-encoded JSON. One tempting way does NOT work (a complete, correctly-shaped 3-part token with a wrong signature gets correctly rejected, every time). The advanced flag wants you to actually forge a header and payload - base64url-encode real JSON for each (CyberChef's 'To Base64' + URL-safe alphabet works, or a one-line script) - and submit it with the signature missing entirely.",
+    explainer: "A real token has 3 dot-separated parts: header.payload.signature, each base64url-encoded JSON. One tempting way does NOT work (a complete, correctly-shaped 3-part token with a wrong signature gets correctly rejected, every time). The advanced flag wants you to actually forge a header (needs a real \"alg\" field, e.g. {\"alg\":\"HS256\",\"typ\":\"JWT\"}) and a payload (any non-empty JSON, e.g. {\"role\":\"admin\"}) - base64url-encode each (CyberChef's 'To Base64' + URL-safe alphabet works, or a one-line script) - and submit it with the signature missing entirely.",
     startingHint: "Two separate flags here, two separate ways to break verification without ever needing the signing key.",
   },
   "config-01": {

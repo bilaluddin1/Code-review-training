@@ -51,18 +51,30 @@ export async function POST(req: NextRequest) {
     // That's still the same fail-open catch-block bug - no signing key is
     // ever needed - but it now takes understanding the token's real
     // structure to reach, not just typing "xxx.yyy.".
-    const isBase64UrlJson = (part: string | undefined): boolean => {
-      if (!part || !/^[A-Za-z0-9_-]+$/.test(part)) return false;
+    // Decodes a segment and returns the parsed object, or null if it isn't
+    // valid base64url-encoded JSON. "e30" (= "{}") is a well-known trivia
+    // shortcut - an empty object would pass a bare "is this JSON" check
+    // with zero actual forging, so each segment also has to carry real
+    // content (checked by the caller) before it counts.
+    const decodeBase64UrlJson = (part: string | undefined): Record<string, unknown> | null => {
+      if (!part || !/^[A-Za-z0-9_-]+$/.test(part)) return null;
       try {
         const padded = part.replace(/-/g, "+").replace(/_/g, "/").padEnd(part.length + ((4 - (part.length % 4)) % 4), "=");
         const decoded = JSON.parse(Buffer.from(padded, "base64").toString("utf8"));
-        return typeof decoded === "object" && decoded !== null;
+        return typeof decoded === "object" && decoded !== null ? decoded : null;
       } catch {
-        return false;
+        return null;
       }
     };
+    const header = decodeBase64UrlJson(parts[0]);
+    const payload = decodeBase64UrlJson(parts[1]);
+    // Require it to actually resemble a header and a payload - not just
+    // "{}" twice - so this takes building real JSON, not a trivia lookup.
     const isForgedIncompleteToken =
-      parts.length >= 2 && isBase64UrlJson(parts[0]) && isBase64UrlJson(parts[1]) && (parts.length < 3 || !parts[2]);
+      parts.length >= 2 &&
+      !!header && typeof header.alg === "string" &&
+      !!payload && Object.keys(payload).length > 0 &&
+      (parts.length < 3 || !parts[2]);
     if (isForgedIncompleteToken) {
       advancedFlag = "FLAG{7c2e91ab4d}";
     } else {
