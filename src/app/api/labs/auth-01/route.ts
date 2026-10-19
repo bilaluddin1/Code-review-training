@@ -81,11 +81,20 @@ export async function POST(req: NextRequest) {
       flag = "FLAG{842139d233}";
     }
   }
+  // When the submission has a dot (looks like a deliberate attempt at the
+  // advanced path) but didn't decode into a real forged header+payload,
+  // say so explicitly - otherwise it looks like a silent "consolation"
+  // flag with no explanation of why it wasn't the advanced one.
+  const note =
+    flag && trimmed.includes(".")
+      ? "This reached the bug, but isn't a real forged header+payload (the EASY flag, not the advanced one). Decode what you submitted - it needs to be base64url JSON with an \"alg\" field in the header and a non-empty payload."
+      : undefined;
   return NextResponse.json({
     accessGranted: true,
     reason,
     secret: "ADMIN-ONLY resource unlocked",
     ...(flag ? { flag } : {}),
     ...(advancedFlag ? { advancedFlag } : {}),
+    ...(note ? { note } : {}),
   });
 }
