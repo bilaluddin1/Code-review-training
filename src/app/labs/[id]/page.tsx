@@ -19,33 +19,45 @@ export default function PlaygroundPage() {
   );
   const [response, setResponse] = useState<{ status: number; body: unknown; headers: Record<string, string> } | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showHint, setShowHint] = useState(false);
+  const [secondaryValue, setSecondaryValue] = useState(config?.secondaryField?.defaultValue ?? "");
+  const [secondaryResponse, setSecondaryResponse] = useState<{ status: number; body: unknown; headers: Record<string, string> } | null>(null);
+  const [secondaryLoading, setSecondaryLoading] = useState(false);
 
   if (!config) {
     return <div className="p-8">No sandbox named &quot;{params.id}&quot;.</div>;
   }
 
-  const send = async () => {
-    setLoading(true);
+  const sendBody = async (
+    body: Record<string, string>,
+    setResp: (r: { status: number; body: unknown; headers: Record<string, string> }) => void,
+    setBusy: (b: boolean) => void
+  ) => {
+    setBusy(true);
     try {
       let url = config.endpoint;
       const init: RequestInit = { method: config.method, headers: {} };
       if (config.method === "GET") {
-        const qs = new URLSearchParams(values).toString();
+        const qs = new URLSearchParams(body).toString();
         url = `${url}?${qs}`;
         init.headers = { ...headerValues };
       } else {
         init.headers = { "Content-Type": "application/json" };
-        init.body = JSON.stringify(values);
+        init.body = JSON.stringify(body);
       }
       const res = await fetch(url, init);
-      const body = await res.json().catch(() => null);
+      const responseBody = await res.json().catch(() => null);
       const headers: Record<string, string> = {};
       res.headers.forEach((v, k) => (headers[k] = v));
-      setResponse({ status: res.status, body, headers });
+      setResp({ status: res.status, body: responseBody, headers });
     } finally {
-      setLoading(false);
+      setBusy(false);
     }
   };
+
+  const send = () => sendBody(values, setResponse, setLoading);
+  const sendSecondary = () =>
+    config.secondaryField && sendBody({ [config.secondaryField.name]: secondaryValue }, setSecondaryResponse, setSecondaryLoading);
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -60,16 +72,16 @@ export default function PlaygroundPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             {config.explainer && (
-              <div className="rounded-md bg-blue-50 border border-blue-200 p-3 text-sm text-blue-900">
-                {config.explainer}
+              <div className="space-y-2">
+                <Button type="button" variant="outline" size="sm" onClick={() => setShowHint((s) => !s)}>
+                  {showHint ? "Hide Hint" : "Show Hint"}
+                </Button>
+                {showHint && (
+                  <div className="rounded-md bg-blue-50 border border-blue-200 p-3 text-sm text-blue-900">
+                    {config.explainer}
+                  </div>
+                )}
               </div>
-            )}
-            {config.steps && config.steps.length > 0 && (
-              <ol className="list-decimal list-inside text-sm text-gray-700 space-y-1">
-                {config.steps.map((step, i) => (
-                  <li key={i}>{step}</li>
-                ))}
-              </ol>
             )}
             {config.fields.map((f) => (
               <div key={f.name} className="space-y-1">
@@ -104,13 +116,55 @@ export default function PlaygroundPage() {
             <Button onClick={send} disabled={loading}>
               {loading ? "Sending..." : "Send request"}
             </Button>
+
+            {config.secondaryField && (
+              <div className="pt-4 mt-4 border-t space-y-1">
+                <label className="text-sm font-medium">{config.secondaryField.label}</label>
+                {config.secondaryField.type === "textarea" ? (
+                  <Textarea
+                    value={secondaryValue}
+                    placeholder={config.secondaryField.placeholder}
+                    onChange={(e) => setSecondaryValue(e.target.value)}
+                  />
+                ) : (
+                  <Input
+                    type={config.secondaryField.type === "number" ? "number" : "text"}
+                    value={secondaryValue}
+                    placeholder={config.secondaryField.placeholder}
+                    onChange={(e) => setSecondaryValue(e.target.value)}
+                  />
+                )}
+                <Button onClick={sendSecondary} disabled={secondaryLoading}>
+                  {secondaryLoading ? "Sending..." : "Send request"}
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
+
+        {secondaryResponse && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Response ({config.secondaryField?.label}) - HTTP {secondaryResponse.status}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <pre className="bg-gray-900 text-green-400 text-xs p-3 rounded overflow-x-auto">
+                {JSON.stringify(secondaryResponse.body, null, 2)}
+              </pre>
+              <p className="text-xs font-medium mt-3 mb-1">Response headers</p>
+              <pre className="bg-gray-900 text-blue-300 text-xs p-3 rounded overflow-x-auto">
+                {JSON.stringify(secondaryResponse.headers, null, 2)}
+              </pre>
+            </CardContent>
+          </Card>
+        )}
 
         {response && (
           <Card>
             <CardHeader>
-              <CardTitle>Response - HTTP {response.status}</CardTitle>
+              <CardTitle>
+                Response{config.secondaryField ? ` (${config.fields[0]?.label})` : ""} - HTTP {response.status}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <pre className="bg-gray-900 text-green-400 text-xs p-3 rounded overflow-x-auto">
