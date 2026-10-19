@@ -44,12 +44,26 @@ export async function POST(req: NextRequest) {
   let advancedFlag: string | undefined;
   if (exploited) {
     const parts = trimmed.split(".");
-    // "too few parts" (e.g. "xxx.yyy", only 2) is just as incomplete as
-    // "has an empty part" (e.g. "xxx.yyy.") - destructuring a short array
-    // leaves the missing slot undefined, not an empty string, so both need
-    // checking explicitly.
-    const looksLikeIncompleteToken = parts.length >= 2 && (parts.length < 3 || parts.some((p) => !p));
-    if (looksLikeIncompleteToken) {
+    // The advanced flag requires an ACTUAL forged header+payload, not just
+    // two dots typed by hand: each of the first two segments must be real
+    // base64url-encoded JSON (the shape a tool like CyberChef or a one-line
+    // HMAC script produces), with the signature segment missing or empty.
+    // That's still the same fail-open catch-block bug - no signing key is
+    // ever needed - but it now takes understanding the token's real
+    // structure to reach, not just typing "xxx.yyy.".
+    const isBase64UrlJson = (part: string | undefined): boolean => {
+      if (!part || !/^[A-Za-z0-9_-]+$/.test(part)) return false;
+      try {
+        const padded = part.replace(/-/g, "+").replace(/_/g, "/").padEnd(part.length + ((4 - (part.length % 4)) % 4), "=");
+        const decoded = JSON.parse(Buffer.from(padded, "base64").toString("utf8"));
+        return typeof decoded === "object" && decoded !== null;
+      } catch {
+        return false;
+      }
+    };
+    const isForgedIncompleteToken =
+      parts.length >= 2 && isBase64UrlJson(parts[0]) && isBase64UrlJson(parts[1]) && (parts.length < 3 || !parts[2]);
+    if (isForgedIncompleteToken) {
       advancedFlag = "FLAG{7c2e91ab4d}";
     } else {
       flag = "FLAG{842139d233}";

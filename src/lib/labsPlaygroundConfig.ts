@@ -81,8 +81,8 @@ export const PLAYGROUNDS: Record<string, PlaygroundConfig> = {
     method: "POST",
     endpoint: "/api/labs/auth-01",
     fields: [{ name: "token", label: "Garbage Token", type: "textarea", placeholder: "Any plain text, no dots at all" }],
-    secondaryField: { name: "token", label: "Incomplete Token", type: "textarea", placeholder: "Token-shaped but missing a part, e.g. xxx.yyy or xxx.yyy." },
-    explainer: "A real token has 3 dot-separated parts: header.payload.signature. There are two separate ways to reach the bug - and one tempting way that does NOT work (a complete 3-part token with a wrong signature gets correctly rejected, every time).",
+    secondaryField: { name: "token", label: "Forged Incomplete Token", type: "textarea", placeholder: "base64url(header).base64url(payload) - no signature. Build this with CyberChef or a one-line HMAC script." },
+    explainer: "A real token has 3 dot-separated parts: header.payload.signature, each base64url-encoded JSON. One tempting way does NOT work (a complete, correctly-shaped 3-part token with a wrong signature gets correctly rejected, every time). The advanced flag wants you to actually forge a header and payload - base64url-encode real JSON for each (CyberChef's 'To Base64' + URL-safe alphabet works, or a one-line script) - and submit it with the signature missing entirely.",
     startingHint: "Two separate flags here, two separate ways to break verification without ever needing the signing key.",
   },
   "config-01": {
