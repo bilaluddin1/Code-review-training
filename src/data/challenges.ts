@@ -349,14 +349,14 @@ export const challenges: Challenge[] = [
     "difficulty": "intermediate",
     "hints": [
       "What does this function return if the token is garbage and ValidateToken throws?",
-      "A successful exploit response from the live lab includes a flag - paste it into Submit Flag. (The flag format gives nothing away - it's the same opaque pattern on every lab.)"
+      "A real token has 3 dot-separated parts: header.payload.signature. There are two separate ways to reach the bug - and one tempting way that does NOT work (a complete 3-part token with a wrong signature gets correctly rejected, every time)."
     ],
     "explanations": {
       "10": "If validation throws for any reason (malformed token, bad signature, wrong algorithm), the catch block returns false - meaning 'not expired' - instead of denying the request. A caller sending a broken token gets treated as if they had a valid one. Fix: an exception during validation must deny access (return true from IsTokenExpired, or better, make the caller fail closed on any exception)."
     },
     "labUrl": "/labs/auth-01",
     "maxSelectableLines": 1,
-    "flag": "FLAG{842139d233}",
+    "flags": ["FLAG{842139d233}", "FLAG{7c2e91ab4d}"],
     "productOrigin": "Pattern based on confirmed findings in: VL-Core, Knoccs, OmniValVMS, ValueLinkEPC (shared JWTBuilder helper, fail-open IsTokenExpired)"
   },
   {

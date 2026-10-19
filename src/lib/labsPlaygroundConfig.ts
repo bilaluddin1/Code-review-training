@@ -73,8 +73,8 @@ export const PLAYGROUNDS: Record<string, PlaygroundConfig> = {
     blurb: "Tokens are really HMAC-signed - the bug is in the verification code, not the crypto. Synthetic data only.",
     method: "POST",
     endpoint: "/api/labs/auth-01",
-    fields: [{ name: "token", label: "Token", type: "textarea", placeholder: "paste a token, or just type garbage" }],
-    startingHint: "First GET this page to fetch a real sample token, then try submitting something that isn't a valid token at all.",
+    fields: [{ name: "token", label: "Token", type: "textarea" }],
+    startingHint: "First GET this page to fetch a real sample token and see its shape. Two separate flags here, two separate ways to break verification without ever needing the signing key.",
   },
   "config-01": {
     title: "Order Lookup (Error Leak + Open CORS)",
