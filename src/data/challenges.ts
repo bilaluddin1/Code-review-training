@@ -348,8 +348,7 @@ export const challenges: Challenge[] = [
     ],
     "difficulty": "intermediate",
     "hints": [
-      "What does this function return if the token is garbage and ValidateToken throws?",
-      "A real token has 3 dot-separated parts: header.payload.signature. There are two separate ways to reach the bug - and one tempting way that does NOT work (a complete 3-part token with a wrong signature gets correctly rejected, every time)."
+      "What does this function return if the token is garbage and ValidateToken throws?"
     ],
     "explanations": {
       "10": "If validation throws for any reason (malformed token, bad signature, wrong algorithm), the catch block returns false - meaning 'not expired' - instead of denying the request. A caller sending a broken token gets treated as if they had a valid one. Fix: an exception during validation must deny access (return true from IsTokenExpired, or better, make the caller fail closed on any exception)."

@@ -18,6 +18,14 @@ export type PlaygroundConfig = {
   headerFields?: PlaygroundField[]; // sent as request headers (GET only, for the CORS demo)
   startingHint: string;
   preview?: boolean; // render response.body.html inside a sandboxed <iframe> (XSS demo)
+  // Optional, always-visible (no toggle, no scrolling to find) explanation
+  // shown below the fields - for a lab whose mechanism needs more than one
+  // sentence to set up correctly.
+  explainer?: string;
+  // Optional, always-visible numbered steps for how to actually solve the
+  // lab - for a lab where understanding WHY it works matters more than
+  // spending time reverse-engineering the exact construction.
+  steps?: string[];
 };
 
 export const PLAYGROUNDS: Record<string, PlaygroundConfig> = {
@@ -74,7 +82,12 @@ export const PLAYGROUNDS: Record<string, PlaygroundConfig> = {
     method: "POST",
     endpoint: "/api/labs/auth-01",
     fields: [{ name: "token", label: "Token", type: "textarea" }],
-    startingHint: "First GET this page to fetch a real sample token and see its shape. Two separate flags here, two separate ways to break verification without ever needing the signing key.",
+    explainer: "A real token has 3 dot-separated parts: header.payload.signature. There are two separate ways to reach the bug - and one tempting way that does NOT work (a complete 3-part token with a wrong signature gets correctly rejected, every time).",
+    steps: [
+      "Easy flag: submit any plain text with no dots in it at all.",
+      "Harder flag: submit something token-shaped but incomplete - two parts joined by a single dot with nothing after it, or three parts where the last one is empty.",
+    ],
+    startingHint: "Two separate flags here, two separate ways to break verification without ever needing the signing key.",
   },
   "config-01": {
     title: "Order Lookup (Error Leak + Open CORS)",

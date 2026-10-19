@@ -59,6 +59,18 @@ export default function PlaygroundPage() {
             <p className="text-sm text-gray-500 mt-1">{config.blurb}</p>
           </CardHeader>
           <CardContent className="space-y-4">
+            {config.explainer && (
+              <div className="rounded-md bg-blue-50 border border-blue-200 p-3 text-sm text-blue-900">
+                {config.explainer}
+              </div>
+            )}
+            {config.steps && config.steps.length > 0 && (
+              <ol className="list-decimal list-inside text-sm text-gray-700 space-y-1">
+                {config.steps.map((step, i) => (
+                  <li key={i}>{step}</li>
+                ))}
+              </ol>
+            )}
             {config.fields.map((f) => (
               <div key={f.name} className="space-y-1">
                 <label className="text-sm font-medium">{f.label}</label>
