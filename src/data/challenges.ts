@@ -300,7 +300,7 @@ export const challenges: Challenge[] = [
     "id": "LAB-INJ-02",
     "title": "LAB: Engagement Instructions (Stored XSS)",
     "description": "Instructions written by another party are trusted as HTML with no sanitizer. Select the vulnerable line, then try the live exploit.",
-    "code": "ngOnInit(): void {\n  this.orderService.orderDetails$.subscribe((data) => {\n    this.engagementInstructions = this.sanitizer.bypassSecurityTrustHtml(\n      data.engagementInstructions\n    );\n  });\n}\n// template: <div [innerHTML]=\"engagementInstructions\"></div>",
+    "code": "ngOnInit(): void {\n  this.orderService.orderDetails$.subscribe((data) => {\n    this.engagementInstructions = this.sanitizer.bypassSecurityTrustHtml(\n      data.engagementInstructions\n    );\n  });\n}",
     "vulnerableLines": [
       3
     ],
