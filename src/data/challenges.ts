@@ -279,7 +279,7 @@ export const challenges: Challenge[] = [
     "id": "LAB-INJ-01",
     "title": "LAB: Order Search (SQL Injection)",
     "description": "Order Search looks up orders by type for the signed-in tenant. Review how the query gets built, select the vulnerable line, then try the live exploit.",
-    "code": "public IEnumerable<Order> SearchOrders(string type, int clientId)\n{\n    string tenantCode = GetTenantCode(clientId);\n    string sql = \"SELECT * FROM Orders WHERE Type = '\" + type + \"'\";\n    sql += \" AND ClientId = '\" + tenantCode + \"'\";\n\n    return _db.CustomQuery<Order>(sql);\n}\n\nprivate string GetTenantCode(int clientId)\n{\n    // clientId comes from the authenticated session, not from the request body\n    var client = _db.Clients.Single(c => c.Id == clientId);\n    return client.TenantCode;\n}",
+    "code": "public IEnumerable<Order> SearchOrders(string type, int clientId)\n{\n    string tenantCode = GetTenantCode(clientId);\n    string sql = \"SELECT * FROM Orders WHERE Type = '\" + type + \"'\";\n    sql += \" AND ClientId = '\" + tenantCode + \"'\";\n\n    return _db.CustomQuery<Order>(sql);\n}\n\nprivate string GetTenantCode(int clientId)\n{\n    var client = _db.Clients.Single(c => c.Id == clientId);\n    return client.TenantCode;\n}",
     "vulnerableLines": [
       4
     ],
