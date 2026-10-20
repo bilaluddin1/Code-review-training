@@ -279,7 +279,7 @@ export const challenges: Challenge[] = [
     "id": "LAB-INJ-01",
     "title": "LAB: Order Search (SQL Injection)",
     "description": "Order Search looks up orders by type for the signed-in tenant. Review how the query gets built, select the vulnerable line, then try the live exploit.",
-    "code": "public IEnumerable<Order> SearchOrders(string type, int clientId)\n{\n    string tenantCode = GetTenantCode(clientId); // looked up server-side, never from user input\n    string sql = \"SELECT * FROM Orders WHERE Type = '\" + type + \"'\";\n    sql += \" AND ClientId = '\" + tenantCode + \"'\";\n\n    return _db.CustomQuery<Order>(sql);\n}",
+    "code": "public IEnumerable<Order> SearchOrders(string type, int clientId)\n{\n    string tenantCode = GetTenantCode(clientId);\n    string sql = \"SELECT * FROM Orders WHERE Type = '\" + type + \"'\";\n    sql += \" AND ClientId = '\" + tenantCode + \"'\";\n\n    return _db.CustomQuery<Order>(sql);\n}\n\nprivate string GetTenantCode(int clientId)\n{\n    // clientId comes from the authenticated session, not from the request body\n    var client = _db.Clients.Single(c => c.Id == clientId);\n    return client.TenantCode;\n}",
     "vulnerableLines": [
       4
     ],
@@ -289,7 +289,7 @@ export const challenges: Challenge[] = [
       "A successful exploit response from the live lab includes a flag - paste it into Submit Flag. (The flag format gives nothing away - it's the same opaque pattern on every lab.)"
     ],
     "explanations": {
-      "4": "Both line 4 and line 5 build the query the same way - string concatenation - but that's not what makes line 4 the bug. 'type' comes straight from the caller; 'tenantCode' is looked up server-side and never touches user input. A payload like Appraisal' OR '1'='1' -- comments out the rest of the clause, including the ClientId filter, returning every tenant's orders. Fix: use a parameterized query (SqlParameter / Dapper named params) for 'type' - concatenation isn't automatically safe or unsafe, trusted-vs-untrusted data is what matters."
+      "4": "Both line 4 and line 5 build the query the same way - string concatenation - but that's not what makes line 4 the bug. 'type' comes straight from the caller argument; 'tenantCode' comes from GetTenantCode(clientId), which looks the tenant up in the database using a clientId that comes from the authenticated session, not from anything the caller typed. A payload like Appraisal' OR '1'='1' -- comments out the rest of the clause, including the ClientId filter, returning every tenant's orders. Fix: use a parameterized query (SqlParameter / Dapper named params) for 'type' - concatenation isn't automatically safe or unsafe, trusted-vs-untrusted data is what matters."
     },
     "labUrl": "/labs/inj-01",
     "maxSelectableLines": 1,
