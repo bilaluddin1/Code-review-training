@@ -278,7 +278,7 @@ export const challenges: Challenge[] = [
   {
     "id": "LAB-INJ-01",
     "title": "LAB: Order Search (SQL Injection)",
-    "description": "The search term is concatenated straight into a WHERE clause, and the tenant filter is appended after it. Select the vulnerable line, then try the live exploit.",
+    "description": "Order Search looks up orders by type for the signed-in tenant. Review how the query gets built, select the vulnerable line, then try the live exploit.",
     "code": "public IEnumerable<Order> SearchOrders(string type, int clientId)\n{\n    string tenantCode = GetTenantCode(clientId); // looked up server-side, never from user input\n    string sql = \"SELECT * FROM Orders WHERE Type = '\" + type + \"'\";\n    sql += \" AND ClientId = '\" + tenantCode + \"'\";\n\n    return _db.CustomQuery<Order>(sql);\n}",
     "vulnerableLines": [
       4
