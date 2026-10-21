@@ -56,6 +56,7 @@ export async function GET(req: NextRequest) {
     columns: columns.map((c) => ({ questionId: c.questionId, label: c.label, followUpLabel: c.followUpLabel })),
     averages,
     responses: responses.map((r) => ({
+      id: r.id,
       userName: r.userName,
       teamName: r.teamName,
       comments: r.comments,

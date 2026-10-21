@@ -52,6 +52,7 @@ export async function GET(req: NextRequest) {
       teamName: rs[0].teamName ?? "",
       archivedAt: rs[0].archivedAt!.toISOString(),
       responses: rs.map((r) => ({
+        id: r.id,
         userName: r.userName,
         teamName: r.teamName,
         comments: r.comments,

@@ -407,16 +407,18 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
   const [view, setView] = useState<"unlocks" | "analytics">("unlocks");
   const [analytics, setAnalytics] = useState<{
     sessions: { sessionId: string; teamName: string; archivedAt: string; results: { userName: string; avatar: string; score: number }[] }[];
-    live: { userName: string; avatar: string; score: number }[];
+    live: { id: string; userName: string; avatar: string; score: number }[];
   } | null>(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
+  const [deletingLeaderboardId, setDeletingLeaderboardId] = useState<string | null>(null);
+  const [deletingFeedbackId, setDeletingFeedbackId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<{
     count: number;
     columns: { questionId: string; label: string; followUpLabel: string }[];
     averages: { questionId: string; label: string; average: number | null; count: number }[];
-    responses: { userName: string; teamName: string | null; comments: string | null; createdAt: string; answers: { questionId: string; label: string; rating: number; followUpLabel: string; followUpText: string }[] }[];
+    responses: { id: string; userName: string; teamName: string | null; comments: string | null; createdAt: string; answers: { questionId: string; label: string; rating: number; followUpLabel: string; followUpText: string }[] }[];
   } | null>(null);
-  type FeedbackResponseRow = { userName: string; teamName: string | null; comments: string | null; createdAt: string; answers: { questionId: string; label: string; rating: number; followUpLabel: string; followUpText: string }[] };
+  type FeedbackResponseRow = { id: string; userName: string; teamName: string | null; comments: string | null; createdAt: string; answers: { questionId: string; label: string; rating: number; followUpLabel: string; followUpText: string }[] };
   const [feedbackArchive, setFeedbackArchive] = useState<{
     count: number;
     columns: { questionId: string; label: string; followUpLabel: string }[];
@@ -566,6 +568,22 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
       setTeamInput(t.currentTeam ?? "");
     }
     setAnalyticsLoading(false);
+  };
+
+  const deleteLeaderboardEntry = async (id: string, userName: string) => {
+    if (!window.confirm(`Permanently delete "${userName}" from the live leaderboard? This cannot be undone.`)) return;
+    setDeletingLeaderboardId(id);
+    const res = await fetch(`/api/admin/leaderboard/${id}`, { method: 'DELETE' });
+    setDeletingLeaderboardId(null);
+    if (res.ok) fetchAnalytics();
+  };
+
+  const deleteFeedbackEntry = async (id: string, userName: string) => {
+    if (!window.confirm(`Permanently delete ${userName}'s feedback? This cannot be undone.`)) return;
+    setDeletingFeedbackId(id);
+    const res = await fetch(`/api/admin/feedback/${id}`, { method: 'DELETE' });
+    setDeletingFeedbackId(null);
+    if (res.ok) fetchAnalytics();
   };
 
   const toggleFeedbackEnabled = async () => {
@@ -893,17 +911,39 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
             <div className="text-gray-500 py-8 text-center">Could not load analytics.</div>
           ) : (
             <>
-              <div className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div>
-                  <h3 className="font-semibold">Current leaderboard (live, not yet archived)</h3>
-                  <p className="text-sm text-gray-600">{analytics.live.length} player(s). You can export this any time - it doesn&apos;t require a reset.</p>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-semibold">Current leaderboard (live, not yet archived)</h3>
+                    <p className="text-sm text-gray-600">{analytics.live.length} player(s). You can export this any time - it doesn&apos;t require a reset.</p>
+                  </div>
+                  <Button
+                    disabled={analytics.live.length === 0}
+                    onClick={() => downloadCsv('live-leaderboard.csv', ['Name', 'Score'], analytics.live.map((u) => [u.userName, u.score]))}
+                  >
+                    Export CSV
+                  </Button>
                 </div>
-                <Button
-                  disabled={analytics.live.length === 0}
-                  onClick={() => downloadCsv('live-leaderboard.csv', ['Name', 'Score'], analytics.live.map((u) => [u.userName, u.score]))}
-                >
-                  Export CSV
-                </Button>
+                {analytics.live.length > 0 && (
+                  <div className="mt-3 pt-3 border-t border-blue-200 space-y-1">
+                    {analytics.live.map((u) => (
+                      <div key={u.id} className="flex items-center justify-between bg-white border rounded px-3 py-1.5 text-sm">
+                        <span>{u.avatar} {u.userName}</span>
+                        <div className="flex items-center gap-3">
+                          <span className="font-mono">{u.score}</span>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            disabled={deletingLeaderboardId === u.id}
+                            onClick={() => deleteLeaderboardEntry(u.id, u.userName)}
+                          >
+                            {deletingLeaderboardId === u.id ? '...' : 'Delete'}
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className="flex items-center justify-between bg-gray-50 border rounded-lg p-4">
@@ -1094,11 +1134,21 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
 
                 {feedback && feedback.responses.length > 0 && (
                   <div className="space-y-2 max-h-96 overflow-y-auto">
-                    {feedback.responses.map((r, i) => (
-                      <div key={i} className="bg-white border rounded p-2 text-sm">
-                        <div className="flex justify-between font-medium">
+                    {feedback.responses.map((r) => (
+                      <div key={r.id} className="bg-white border rounded p-2 text-sm">
+                        <div className="flex justify-between items-center font-medium">
                           <span>{r.userName}{r.teamName ? ` · ${r.teamName}` : ''}</span>
-                          <span className="text-gray-500">{new Date(r.createdAt).toLocaleString()}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-gray-500 font-normal">{new Date(r.createdAt).toLocaleString()}</span>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              disabled={deletingFeedbackId === r.id}
+                              onClick={() => deleteFeedbackEntry(r.id, r.userName)}
+                            >
+                              {deletingFeedbackId === r.id ? '...' : 'Delete'}
+                            </Button>
+                          </div>
                         </div>
                         <div className="mt-1 space-y-1">
                           {r.answers.map((a) => (

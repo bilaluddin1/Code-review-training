@@ -35,6 +35,6 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json({
     sessions: Array.from(bySession.values()),
-    live: live.map((u) => ({ userName: u.name, avatar: u.avatar, score: u.score })),
+    live: live.map((u) => ({ id: u.id, userName: u.name, avatar: u.avatar, score: u.score })),
   });
 }
