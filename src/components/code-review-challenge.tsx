@@ -908,7 +908,7 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
 
               <div className="flex items-center justify-between bg-gray-50 border rounded-lg p-4">
                 <div>
-                  <h3 className="font-semibold">All archived team sessions, combined</h3>
+                  <h3 className="font-semibold">All archived leaderboard sessions, combined</h3>
                   <p className="text-sm text-gray-600">{analytics.sessions.length} session(s) archived so far. One row per player per session.</p>
                 </div>
                 <Button
