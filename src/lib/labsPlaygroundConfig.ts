@@ -16,7 +16,7 @@ export type PlaygroundConfig = {
   endpoint: string; // relative API path
   fields: PlaygroundField[]; // GET -> query params, POST -> JSON body
   headerFields?: PlaygroundField[]; // sent as request headers (GET only, for the CORS demo)
-  startingHint: string;
+  startingHint?: string;
   preview?: boolean; // render response.body.html inside a sandboxed <iframe> (XSS demo)
   // Optional explanation shown only after clicking "Show Hint" - for a lab
   // whose mechanism needs more than one sentence to set up correctly.
@@ -44,7 +44,6 @@ export const PLAYGROUNDS: Record<string, PlaygroundConfig> = {
     method: "GET",
     endpoint: "/api/labs/bac-01",
     fields: [{ name: "id", label: "Note ID", type: "number", defaultValue: "101" }],
-    startingHint: "Try changing the Note ID.",
   },
   "inj-01": {
     title: "Order Search (SQL Injection)",
@@ -62,7 +61,7 @@ export const PLAYGROUNDS: Record<string, PlaygroundConfig> = {
     method: "POST",
     endpoint: "/api/labs/inj-02",
     fields: [{ name: "html", label: "Instructions (HTML allowed)", type: "textarea", defaultValue: "Please inspect before 5pm." }],
-    startingHint: "Try submitting an HTML tag that runs script when the page renders it - write the result into the page itself (not an alert popup, browsers block those in a sandboxed preview like this one).",
+    startingHint: "Try submitting an HTML tag that runs script when the page renders it - write a value into the page itself to prove it here (this sandboxed preview blocks alert() popups on purpose). For a real alert() popup, use \"Pop out in a new tab\" instead - that's a real page, not sandboxed, so alert(document.cookie) actually pops.",
     preview: true,
   },
   "crypto-01": {

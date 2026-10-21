@@ -65,12 +65,21 @@ model SessionArchive {
 // fixed columns here - so questions can be added/removed/reworded via the
 // admin UI with no further schema changes, ever.
 model FeedbackResponse {
-  id        String           @id @default(uuid())
-  userName  String
-  teamName  String?
-  comments  String?
-  createdAt DateTime         @default(now())
-  answers   FeedbackAnswer[]
+  id                String           @id @default(uuid())
+  userName          String
+  teamName          String?
+  comments          String?
+  createdAt         DateTime         @default(now())
+  answers           FeedbackAnswer[]
+  // Set together with the leaderboard's SessionArchive.sessionId, by the
+  // same "Archive + Reset" action, so a response stops showing in the live
+  // Dev Feedback panel once its session is archived, the same way
+  // LeaderboardUser rows stop appearing once SessionArchive exists for
+  // them. Null = still live/current.
+  archivedSessionId String?
+  archivedAt        DateTime?
+
+  @@index([archivedSessionId])
 }
 
 // One answer to one question on one response: a 1-5 rating PLUS its own

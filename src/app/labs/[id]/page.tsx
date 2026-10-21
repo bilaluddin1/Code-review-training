@@ -109,7 +109,7 @@ export default function PlaygroundPage() {
                 />
               </div>
             ))}
-            <p className="text-xs text-gray-500 italic">{config.startingHint}</p>
+            {config.startingHint && <p className="text-xs text-gray-500 italic">{config.startingHint}</p>}
             <Button onClick={send} disabled={loading}>
               {loading ? "Sending..." : "Send request"}
             </Button>

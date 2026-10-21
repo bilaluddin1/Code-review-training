@@ -6,20 +6,22 @@ import { prisma } from "@/lib/prisma";
 // response - see /api/leaderboard for the bug this caused.
 export const dynamic = 'force-dynamic';
 
-// GET /api/admin/feedback - every response with its answers (rating +
-// follow-up text), most recent first, plus per-question averages. Entirely
-// driven by what's actually in FeedbackAnswer (via each answer's own
-// label/followUp snapshots) - never depends on the live FeedbackQuestion
-// list, so renaming or deactivating a question never changes historical
-// reports. Columns are ordered using the live question order when
-// available (a question can't be deleted while it has answers - see the
-// DELETE guard), so the CSV reads naturally.
+// GET /api/admin/feedback - every LIVE response (not yet archived by
+// /api/admin/archive-session) with its answers (rating + follow-up text),
+// most recent first, plus per-question averages. Entirely driven by what's
+// actually in FeedbackAnswer (via each answer's own label/followUp
+// snapshots) - never depends on the live FeedbackQuestion list, so renaming
+// or deactivating a question never changes historical reports. Columns are
+// ordered using the live question order when available (a question can't
+// be deleted while it has answers - see the DELETE guard), so the CSV
+// reads naturally. Archived responses show up via /api/admin/feedback-archive instead.
 export async function GET(req: NextRequest) {
   if (!(await isAdminSession(req))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const [responses, liveQuestions] = await Promise.all([
     prisma.feedbackResponse.findMany({
+      where: { archivedSessionId: null },
       orderBy: { createdAt: "desc" },
       include: { answers: true },
     }),

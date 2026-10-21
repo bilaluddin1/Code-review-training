@@ -416,6 +416,12 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
     averages: { questionId: string; label: string; average: number | null; count: number }[];
     responses: { userName: string; teamName: string | null; comments: string | null; createdAt: string; answers: { questionId: string; label: string; rating: number; followUpLabel: string; followUpText: string }[] }[];
   } | null>(null);
+  type FeedbackResponseRow = { userName: string; teamName: string | null; comments: string | null; createdAt: string; answers: { questionId: string; label: string; rating: number; followUpLabel: string; followUpText: string }[] };
+  const [feedbackArchive, setFeedbackArchive] = useState<{
+    count: number;
+    columns: { questionId: string; label: string; followUpLabel: string }[];
+    sessions: { sessionId: string; teamName: string; archivedAt: string; responses: FeedbackResponseRow[] }[];
+  } | null>(null);
   const [feedbackToggle, setFeedbackToggle] = useState(false);
   const [feedbackToggleLoading, setFeedbackToggleLoading] = useState(false);
   const [currentTeam, setCurrentTeam] = useState<string | null>(null);
@@ -544,13 +550,15 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
 
   const fetchAnalytics = async () => {
     setAnalyticsLoading(true);
-    const [analyticsRes, feedbackRes, toggleRes] = await Promise.all([
+    const [analyticsRes, feedbackRes, feedbackArchiveRes, toggleRes] = await Promise.all([
       fetch('/api/admin/analytics'),
       fetch('/api/admin/feedback'),
+      fetch('/api/admin/feedback-archive'),
       fetch('/api/feedback-enabled'),
     ]);
     if (analyticsRes.ok) setAnalytics(await analyticsRes.json());
     if (feedbackRes.ok) setFeedback(await feedbackRes.json());
+    if (feedbackArchiveRes.ok) setFeedbackArchive(await feedbackArchiveRes.json());
     if (toggleRes.ok) {
       const t = await toggleRes.json();
       setFeedbackToggle(t.enabled);
@@ -679,7 +687,7 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
     const liveTeam = liveTeamRes.ok ? ((await liveTeamRes.json()).currentTeam ?? '') : '';
     const teamName = window.prompt('Team name for this session (archived before reset):', liveTeam);
     if (teamName === null) return; // cancelled
-    if (!window.confirm(`Archive the current leaderboard as "${teamName.trim() || '(unnamed)'}" and then reset everything? This cannot be undone.`)) return;
+    if (!window.confirm(`Archive the current leaderboard and feedback as "${teamName.trim() || '(unnamed)'}" and then reset everything? This cannot be undone.`)) return;
     setResetting(true);
     setResetSuccess(false);
     if (teamName.trim()) {
@@ -918,6 +926,43 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
                 </Button>
               </div>
 
+              <div className="flex items-center justify-between bg-gray-50 border rounded-lg p-4">
+                <div>
+                  <h3 className="font-semibold">All archived feedback sessions, combined</h3>
+                  <p className="text-sm text-gray-600">{feedbackArchive?.sessions.length ?? 0} session(s) archived so far. One row per response per session.</p>
+                </div>
+                <Button
+                  variant="outline"
+                  disabled={!feedbackArchive || feedbackArchive.sessions.length === 0}
+                  onClick={() => {
+                    if (!feedbackArchive) return;
+                    const rows: (string | number)[][] = [];
+                    feedbackArchive.sessions.forEach((s) =>
+                      s.responses.forEach((r) =>
+                        rows.push([
+                          s.teamName,
+                          new Date(s.archivedAt).toLocaleString(),
+                          r.userName,
+                          ...feedbackArchive.columns.flatMap((c) => {
+                            const a = r.answers.find((a) => a.questionId === c.questionId);
+                            return [a?.rating ?? '', a?.followUpText ?? ''];
+                          }),
+                          r.comments ?? '',
+                          new Date(r.createdAt).toLocaleString(),
+                        ])
+                      )
+                    );
+                    downloadCsv(
+                      'all-feedback-sessions-combined.csv',
+                      ['Team', 'Archived At', 'Name', ...feedbackArchive.columns.flatMap((c) => [c.label, `${c.label} - why`]), 'Comments', 'Submitted At'],
+                      rows
+                    );
+                  }}
+                >
+                  Export All Teams CSV
+                </Button>
+              </div>
+
               <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-3 pb-3 border-b border-green-200">
                   <span className="text-sm font-medium shrink-0">Session Team:</span>
@@ -936,7 +981,8 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
                 </div>
                 <div className="flex items-center justify-between mb-3 gap-3">
                   <div>
-                    <h3 className="font-semibold">Dev Feedback ({feedback?.count ?? 0} response{feedback?.count === 1 ? '' : 's'})</h3>
+                    <h3 className="font-semibold">Dev Feedback - live, not yet archived ({feedback?.count ?? 0} response{feedback?.count === 1 ? '' : 's'})</h3>
+                    <p className="text-xs text-gray-500">Archived automatically the next time you click Reset Everything, same as the leaderboard.</p>
                     {feedback && feedback.count > 0 && (
                       <p className="text-sm text-gray-600">
                         {feedback.averages.slice(0, 3).map((a) => `${a.label}: ${a.average}`).join(' · ')}
@@ -1099,6 +1145,64 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
                         ))}
                       </tbody>
                     </table>
+                  </div>
+                ))
+              )}
+
+              <h3 className="font-semibold mt-6">Past feedback sessions</h3>
+              {!feedbackArchive || feedbackArchive.sessions.length === 0 ? (
+                <p className="text-gray-500 text-sm">No feedback archived yet - archiving happens automatically the next time you click Reset Everything.</p>
+              ) : (
+                feedbackArchive.sessions.map((s) => (
+                  <div key={s.sessionId} className="border rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <span className="font-semibold">{s.teamName}</span>
+                        <span className="text-xs text-gray-500 ml-2">{new Date(s.archivedAt).toLocaleString()}</span>
+                        <span className="text-xs text-gray-500 ml-2">({s.responses.length} response(s))</span>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() =>
+                          downloadCsv(
+                            `feedback-${s.teamName.replace(/[^a-z0-9]+/gi, '-')}-${s.sessionId.slice(0, 8)}.csv`,
+                            ['Name', 'Team', ...feedbackArchive.columns.flatMap((c) => [c.label, `${c.label} - why`]), 'Comments', 'Submitted At'],
+                            s.responses.map((r) => [
+                              r.userName,
+                              r.teamName ?? '',
+                              ...feedbackArchive.columns.flatMap((c) => {
+                                const a = r.answers.find((a) => a.questionId === c.questionId);
+                                return [a?.rating ?? '', a?.followUpText ?? ''];
+                              }),
+                              r.comments ?? '',
+                              new Date(r.createdAt).toLocaleString(),
+                            ])
+                          )
+                        }
+                      >
+                        Export CSV
+                      </Button>
+                    </div>
+                    <div className="space-y-2 max-h-96 overflow-y-auto">
+                      {s.responses.map((r, i) => (
+                        <div key={i} className="bg-white border rounded p-2 text-sm">
+                          <div className="flex justify-between font-medium">
+                            <span>{r.userName}</span>
+                            <span className="text-gray-500">{new Date(r.createdAt).toLocaleString()}</span>
+                          </div>
+                          <div className="mt-1 space-y-1">
+                            {r.answers.map((a) => (
+                              <div key={a.questionId} className="text-xs">
+                                <span className="font-medium text-gray-700">{a.label}: {a.rating}</span>
+                                {a.followUpText && <span className="text-gray-600"> - &quot;{a.followUpText}&quot;</span>}
+                              </div>
+                            ))}
+                          </div>
+                          {r.comments && <div className="text-gray-700 mt-1 italic">&quot;{r.comments}&quot;</div>}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 ))
               )}
