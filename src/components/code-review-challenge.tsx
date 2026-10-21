@@ -412,6 +412,8 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const [deletingLeaderboardId, setDeletingLeaderboardId] = useState<string | null>(null);
   const [deletingFeedbackId, setDeletingFeedbackId] = useState<string | null>(null);
+  const [deletingSessionId, setDeletingSessionId] = useState<string | null>(null);
+  const [deletingFeedbackSessionId, setDeletingFeedbackSessionId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<{
     count: number;
     columns: { questionId: string; label: string; followUpLabel: string }[];
@@ -583,6 +585,22 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
     setDeletingFeedbackId(id);
     const res = await fetch(`/api/admin/feedback/${id}`, { method: 'DELETE' });
     setDeletingFeedbackId(null);
+    if (res.ok) fetchAnalytics();
+  };
+
+  const deleteLeaderboardSession = async (sessionId: string, teamName: string) => {
+    if (!window.confirm(`Permanently delete the archived "${teamName}" leaderboard session? This cannot be undone.`)) return;
+    setDeletingSessionId(sessionId);
+    const res = await fetch(`/api/admin/session-archive/${sessionId}`, { method: 'DELETE' });
+    setDeletingSessionId(null);
+    if (res.ok) fetchAnalytics();
+  };
+
+  const deleteFeedbackSession = async (sessionId: string, teamName: string) => {
+    if (!window.confirm(`Permanently delete the archived "${teamName}" feedback session? This cannot be undone.`)) return;
+    setDeletingFeedbackSessionId(sessionId);
+    const res = await fetch(`/api/admin/feedback-archive/${sessionId}`, { method: 'DELETE' });
+    setDeletingFeedbackSessionId(null);
     if (res.ok) fetchAnalytics();
   };
 
@@ -1177,13 +1195,23 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
                         <span className="text-xs text-gray-500 ml-2">{new Date(s.archivedAt).toLocaleString()}</span>
                         <span className="text-xs text-gray-500 ml-2">({s.results.length} player(s))</span>
                       </div>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => downloadCsv(`${s.teamName.replace(/[^a-z0-9]+/gi, '-')}-${s.sessionId.slice(0, 8)}.csv`, ['Team', 'Name', 'Score'], s.results.map((r) => [s.teamName, r.userName, r.score]))}
-                      >
-                        Export CSV
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => downloadCsv(`${s.teamName.replace(/[^a-z0-9]+/gi, '-')}-${s.sessionId.slice(0, 8)}.csv`, ['Team', 'Name', 'Score'], s.results.map((r) => [s.teamName, r.userName, r.score]))}
+                        >
+                          Export CSV
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          disabled={deletingSessionId === s.sessionId}
+                          onClick={() => deleteLeaderboardSession(s.sessionId, s.teamName)}
+                        >
+                          {deletingSessionId === s.sessionId ? '...' : 'Delete Session'}
+                        </Button>
+                      </div>
                     </div>
                     <table className="w-full text-sm">
                       <tbody>
@@ -1211,32 +1239,42 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
                         <span className="text-xs text-gray-500 ml-2">{new Date(s.archivedAt).toLocaleString()}</span>
                         <span className="text-xs text-gray-500 ml-2">({s.responses.length} response(s))</span>
                       </div>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() =>
-                          downloadCsv(
-                            `feedback-${s.teamName.replace(/[^a-z0-9]+/gi, '-')}-${s.sessionId.slice(0, 8)}.csv`,
-                            ['Name', 'Team', ...feedbackArchive.columns.flatMap((c) => [c.label, `${c.label} - why`]), 'Comments', 'Submitted At'],
-                            s.responses.map((r) => [
-                              r.userName,
-                              r.teamName ?? '',
-                              ...feedbackArchive.columns.flatMap((c) => {
-                                const a = r.answers.find((a) => a.questionId === c.questionId);
-                                return [a?.rating ?? '', a?.followUpText ?? ''];
-                              }),
-                              r.comments ?? '',
-                              new Date(r.createdAt).toLocaleString(),
-                            ])
-                          )
-                        }
-                      >
-                        Export CSV
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() =>
+                            downloadCsv(
+                              `feedback-${s.teamName.replace(/[^a-z0-9]+/gi, '-')}-${s.sessionId.slice(0, 8)}.csv`,
+                              ['Name', 'Team', ...feedbackArchive.columns.flatMap((c) => [c.label, `${c.label} - why`]), 'Comments', 'Submitted At'],
+                              s.responses.map((r) => [
+                                r.userName,
+                                r.teamName ?? '',
+                                ...feedbackArchive.columns.flatMap((c) => {
+                                  const a = r.answers.find((a) => a.questionId === c.questionId);
+                                  return [a?.rating ?? '', a?.followUpText ?? ''];
+                                }),
+                                r.comments ?? '',
+                                new Date(r.createdAt).toLocaleString(),
+                              ])
+                            )
+                          }
+                        >
+                          Export CSV
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          disabled={deletingFeedbackSessionId === s.sessionId}
+                          onClick={() => deleteFeedbackSession(s.sessionId, s.teamName)}
+                        >
+                          {deletingFeedbackSessionId === s.sessionId ? '...' : 'Delete Session'}
+                        </Button>
+                      </div>
                     </div>
                     <div className="space-y-2 max-h-96 overflow-y-auto">
-                      {s.responses.map((r, i) => (
-                        <div key={i} className="bg-white border rounded p-2 text-sm">
+                      {s.responses.map((r) => (
+                        <div key={r.id} className="bg-white border rounded p-2 text-sm">
                           <div className="flex justify-between font-medium">
                             <span>{r.userName}</span>
                             <span className="text-gray-500">{new Date(r.createdAt).toLocaleString()}</span>
