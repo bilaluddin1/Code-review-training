@@ -1115,7 +1115,7 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
                 )}
               </div>
 
-              <h3 className="font-semibold mt-6">Past sessions</h3>
+              <h3 className="font-semibold mt-6">Past leaderboard</h3>
               {analytics.sessions.length === 0 ? (
                 <p className="text-gray-500 text-sm">No sessions archived yet - archiving happens automatically the next time you click Reset Everything.</p>
               ) : (
