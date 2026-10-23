@@ -2091,9 +2091,6 @@ export default function CodeReviewChallenge() {
   const revealedAnswer = revealed[selectedChallenge.id];
   const revealedVuln = revealedAnswer?.vulnerableLines ?? [];
   const revealedExpl = revealedAnswer?.explanations ?? {};
-  const correctAnswers = selectedLines.filter((line) => revealedVuln.includes(line)).length
-  const totalVulnerabilities = revealedVuln.length
-  const incorrectSelections = selectedLines.filter((line) => !revealedVuln.includes(line)).length
 
   // In the challenge view, add a check for locked
   const isLocked = locks[selectedChallenge.id] !== false;
@@ -2144,14 +2141,18 @@ export default function CodeReviewChallenge() {
                         lineProps={(lineNumber: number) => {
                           const status = getLineStatus(lineNumber);
                           const isSelected = selectedLines.includes(lineNumber);
-                          let className = "flex items-center cursor-pointer transition-colors ";
+                          // Once submitted, toggleLine() stops responding to clicks (you have
+                          // to hit "Try Again" first) - the line used to keep looking clickable
+                          // (same pointer cursor, same hover) even though clicks did nothing,
+                          // which read as "I clicked the right line and it just won't submit."
+                          let className = "flex items-center transition-colors " + (submitted ? "cursor-not-allowed " : "cursor-pointer ");
                           if (isSelected && !submitted) className += "bg-blue-900/50 hover:bg-blue-900/70 ";
                           if (submitted && status === "correct") className += "bg-green-900/50 ";
                           if (submitted && status === "incorrect") className += "bg-red-900/50 ";
                           return {
                             className,
                             onClick: () => toggleLine(lineNumber),
-                            style: { cursor: 'pointer' },
+                            style: { cursor: submitted ? 'not-allowed' : 'pointer' },
                           };
                         }}
                         lineNumberStyle={{ minWidth: 32, color: '#888', textAlign: 'right', userSelect: 'none', marginRight: 16 }}
@@ -2178,6 +2179,23 @@ export default function CodeReviewChallenge() {
                               <li key={index}>• {hint}</li>
                             ))}
                           </ul>
+                        </div>
+                      )}
+                      {/* Vulnerability explanation, rendered right here beside the code instead
+                          of in its own Card far below the fold (past line selection and flag
+                          submission) - same reasoning as the Show Hints placement above. */}
+                      {showResults && lastSubmissionCorrect && (
+                        <div className="mt-3 space-y-2">
+                          <h4 className="font-medium text-red-800 mb-1 flex items-center gap-2">
+                            <CheckCircle className="h-4 w-4 text-green-500" />
+                            Vulnerability Explanation
+                          </h4>
+                          {revealedVuln.map((lineNumber) => (
+                            <div key={lineNumber} className="p-3 bg-red-50 border-l-4 border-red-400 rounded">
+                              <p className="font-medium text-red-800">Line {lineNumber}: Vulnerability Found</p>
+                              <p className="text-sm text-red-700">{revealedExpl[lineNumber]}</p>
+                            </div>
+                          ))}
                         </div>
                       )}
                     </div>
@@ -2215,9 +2233,12 @@ export default function CodeReviewChallenge() {
                             </Button>
                           </div>
                         ) : (
-                          <Button onClick={handleReset} variant="outline">
-                            Try Again
-                          </Button>
+                          <div className="flex items-center gap-3">
+                            <Button onClick={handleReset} variant="outline">
+                              Try Again
+                            </Button>
+                            <span className="text-sm text-gray-500">Click this to pick a different line - the code block is locked until you do.</span>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -2250,7 +2271,10 @@ export default function CodeReviewChallenge() {
                                   const res = await fetch('/api/submit-flag', {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ challengeId: selectedChallenge.id, flag: flagValue, name: user.name }),
+                                    // flagIndex ties this submission to its own box's slot, so a
+                                    // multi-flag challenge can't be "completed" by pasting the
+                                    // same found flag into every box - see submit-flag/route.ts.
+                                    body: JSON.stringify({ challengeId: selectedChallenge.id, flag: flagValue, name: user.name, flagIndex: i }),
                                   });
                                   const data = await res.json();
                                   let next: { status: 'idle' | 'loading' | 'success' | 'error' | 'already'; message?: string };
@@ -2260,6 +2284,8 @@ export default function CodeReviewChallenge() {
                                     next = { status: data.alreadySolved ? 'already' : 'success', message: data.alreadySolved ? 'Already solved!' : 'Correct flag! +5 points' };
                                     setUser(u => ({ ...u, score: data.score }));
                                     refreshSolvedStates();
+                                  } else if (data.duplicateFlag) {
+                                    next = { status: 'error', message: data.error ?? 'This flag was already used for another box - find a different one.' };
                                   } else {
                                     next = { status: 'error', message: 'Incorrect flag. Try again.' };
                                   }
@@ -2344,40 +2370,6 @@ export default function CodeReviewChallenge() {
                   </CardContent>
                 </Card>
               </ResizableCard>
-
-              {showResults && lastSubmissionCorrect && (
-                <Card className="mt-5">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <CheckCircle className="h-5 w-5 text-green-500" />
-                      Vulnerability Explanations
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="text-center p-4 bg-green-50 rounded-lg">
-                        <div className="text-2xl font-bold text-green-600">{correctAnswers}</div>
-                        <div className="text-sm text-green-700">Correct</div>
-                      </div>
-                      <div className="text-center p-4 bg-red-50 rounded-lg">
-                        <div className="text-2xl font-bold text-red-600">{incorrectSelections}</div>
-                        <div className="text-sm text-red-700">Incorrect</div>
-                      </div>
-                    </div> */}
-
-                    <div className="space-y-3">
-                      <div className="space-y-2">
-                        {revealedVuln.map((lineNumber) => (
-                          <div key={lineNumber} className="p-3 bg-red-50 border-l-4 border-red-400 rounded">
-                            <p className="font-medium text-red-800">Line {lineNumber}: Vulnerability Found</p>
-                            <p className="text-sm text-red-700">{revealedExpl[lineNumber]}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
             </div>
             {/* Leaderboard on the right */}
             <div className="w-full mt-24 md:w-[400px] flex-shrink-0 md:self-start">

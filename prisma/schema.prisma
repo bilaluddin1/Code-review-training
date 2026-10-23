@@ -41,6 +41,12 @@ model FlagSubmission {
   flag        String
   correct     Boolean
   createdAt   DateTime @default(now())
+  // Which flag-input box this came from, for a challenge with more than one
+  // independent flag. Lets submit-flag tell "re-submitting my own already-
+  // correct box" (harmless) apart from "pasting a flag another box already
+  // used into this one" (should not count as this box being solved too).
+  // Null for single-flag challenges / pre-existing rows.
+  flagIndex   Int?
 }
 
 // A frozen snapshot of the leaderboard, taken right before "Reset Everything"

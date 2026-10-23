@@ -3,8 +3,9 @@ import { loadChallenges } from '@/lib/loadChallenges';
 import { prisma } from "@/lib/prisma";
 export async function POST(req: NextRequest) {
   try {
-    const { challengeId, flag, name } = await req.json();
-    console.log('Flag submission attempt:', { challengeId, flag: flag ? '***' : 'undefined', name });
+    const { challengeId, flag, name, flagIndex: rawFlagIndex } = await req.json();
+    const flagIndex = typeof rawFlagIndex === 'number' ? rawFlagIndex : 0;
+    console.log('Flag submission attempt:', { challengeId, flag: flag ? '***' : 'undefined', name, flagIndex });
 
     if (!challengeId || !flag || !name) {
       return NextResponse.json({ success: false, error: 'Missing fields' }, { status: 400 });
@@ -56,7 +57,22 @@ export async function POST(req: NextRequest) {
       });
       if (existing) {
         const user = await prisma.leaderboardUser.findUnique({ where: { name } });
-        return NextResponse.json({ success: true, correct: true, alreadySolved: true, score: user?.score ?? 0 });
+        if (existing.flagIndex === flagIndex) {
+          // Same box, same flag as before - a harmless re-submit.
+          return NextResponse.json({ success: true, correct: true, alreadySolved: true, score: user?.score ?? 0 });
+        }
+        // A DIFFERENT box already got credit for this exact flag string. A
+        // multi-flag challenge needs one genuinely different flag per box -
+        // pasting the one you found into every box must not "solve" them
+        // all. Reject this box without touching the credit the other box
+        // already earned.
+        return NextResponse.json({
+          success: true,
+          correct: false,
+          duplicateFlag: true,
+          error: 'This flag was already credited to another box on this challenge - find the other, different flag.',
+          score: user?.score ?? 0,
+        });
       }
     }
 
@@ -69,6 +85,7 @@ export async function POST(req: NextRequest) {
           challengeId,
           flag,
           correct: true,
+          flagIndex,
         },
       });
       const user = await prisma.leaderboardUser.upsert({
