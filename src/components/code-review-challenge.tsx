@@ -405,6 +405,18 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
   const [resetting, setResetting] = useState(false);
   const [resetSuccess, setResetSuccess] = useState(false);
   const [view, setView] = useState<"unlocks" | "analytics">("unlocks");
+  // Lab content editor - lets an admin change a challenge's title/description/
+  // code/hints/explanations/flags/etc. via the UI instead of needing a source
+  // edit + redeploy for every wording tweak. Saves through the existing
+  // /api/admin/challenges PUT endpoint (which already writes to the runtime
+  // data/challenges.json loadChallenges() prefers) - only the UI was missing.
+  const [editingLabId, setEditingLabId] = useState<string | null>(null);
+  const [labDraft, setLabDraft] = useState<Challenge | null>(null);
+  const [labSaving, setLabSaving] = useState(false);
+  const [labError, setLabError] = useState<string | null>(null);
+  // Local overrides so an edit shows immediately without waiting on the
+  // parent's own challenge-list refresh cycle.
+  const [challengeOverrides, setChallengeOverrides] = useState<Record<string, Challenge>>({});
   const [analytics, setAnalytics] = useState<{
     sessions: { sessionId: string; teamName: string; archivedAt: string; results: { userName: string; avatar: string; score: number }[] }[];
     live: { id: string; userName: string; avatar: string; score: number }[];
@@ -804,6 +816,97 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [locks]);
 
+  const startEditingLab = (challenge: Challenge) => {
+    // Deep copy so edits in the form never mutate the list a Cancel should revert to.
+    setLabDraft(JSON.parse(JSON.stringify(challenge)));
+    setLabError(null);
+    setEditingLabId(challenge.id);
+  };
+
+  const cancelEditingLab = () => {
+    setEditingLabId(null);
+    setLabDraft(null);
+    setLabError(null);
+  };
+
+  const saveLab = async () => {
+    if (!labDraft) return;
+    if (!labDraft.title.trim() || !labDraft.code.trim() || labDraft.vulnerableLines.length === 0) {
+      setLabError('Title, code, and at least one vulnerable line are required.');
+      return;
+    }
+    setLabSaving(true);
+    setLabError(null);
+    try {
+      const res = await fetch('/api/admin/challenges', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(labDraft),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setLabError(data.error ?? 'Failed to save.');
+        return;
+      }
+      setChallengeOverrides(prev => ({ ...prev, [labDraft.id]: data }));
+      cancelEditingLab();
+    } catch {
+      setLabError('Could not reach the server. Please try again.');
+    } finally {
+      setLabSaving(false);
+    }
+  };
+
+  // Keeps explanations keyed to exactly the current vulnerableLines list,
+  // so a removed line's stray explanation text doesn't linger invisibly
+  // and a newly added line gets an empty box to fill in.
+  const setLabVulnerableLines = (raw: string) => {
+    if (!labDraft) return;
+    const lines = raw
+      .split(',')
+      .map(s => parseInt(s.trim(), 10))
+      .filter(n => !isNaN(n));
+    const nextExplanations: { [line: number]: string } = {};
+    for (const line of lines) {
+      nextExplanations[line] = labDraft.explanations?.[line] ?? '';
+    }
+    setLabDraft({ ...labDraft, vulnerableLines: lines, explanations: nextExplanations });
+  };
+
+  const setLabHint = (index: number, value: string) => {
+    if (!labDraft) return;
+    const hints = [...(labDraft.hints ?? [])];
+    hints[index] = value;
+    setLabDraft({ ...labDraft, hints });
+  };
+
+  const addLabHint = () => {
+    if (!labDraft) return;
+    setLabDraft({ ...labDraft, hints: [...(labDraft.hints ?? []), ''] });
+  };
+
+  const removeLabHint = (index: number) => {
+    if (!labDraft) return;
+    setLabDraft({ ...labDraft, hints: (labDraft.hints ?? []).filter((_, i) => i !== index) });
+  };
+
+  const setLabFlag = (index: number, value: string) => {
+    if (!labDraft) return;
+    const flags = [...(labDraft.flags ?? [])];
+    flags[index] = value;
+    setLabDraft({ ...labDraft, flags });
+  };
+
+  const addLabFlag = () => {
+    if (!labDraft) return;
+    setLabDraft({ ...labDraft, flags: [...(labDraft.flags ?? []), ''] });
+  };
+
+  const removeLabFlag = (index: number) => {
+    if (!labDraft) return;
+    setLabDraft({ ...labDraft, flags: (labDraft.flags ?? []).filter((_, i) => i !== index) });
+  };
+
   return (
     <div className="max-w-4xl mx-auto mt-10 bg-white rounded-lg shadow p-10">
       <h2 className="text-xl font-bold mb-4 flex items-center gap-2"><Unlock className="h-5 w-5 text-green-600" /> Admin Challenge Unlocks</h2>
@@ -836,30 +939,202 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
             <div className="text-gray-500">Loading challenges...</div>
           </div>
         ) : (
-          challenges.map((challenge) => {
+          challenges.map((c) => {
+            const challenge = challengeOverrides[c.id] ?? c;
             const isLocked = locks[challenge.id] !== false; // default locked
             const timeLeft = getTimeLeft(challenge.id);
             const timer = timers[challenge.id];
+            const isEditingThisLab = editingLabId === challenge.id;
             return (
               <Card key={challenge.id}>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    {isLocked ? <Lock className="h-4 w-4 text-gray-400" /> : <Unlock className="h-4 w-4 text-green-500" />}
-                    {challenge.title}
-                  </CardTitle>
-                  <CardDescription>{challenge.description}</CardDescription>
-                  {challenge.productOrigin && (
-                    <CardDescription className="text-xs italic text-blue-700 mt-1">
-                      {challenge.productOrigin}
-                    </CardDescription>
-                  )}
-                  {challenge.flag && (
-                    <CardDescription className="text-xs font-mono text-gray-500 mt-1">
-                      Flag: {challenge.flag}
-                    </CardDescription>
-                  )}
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        {isLocked ? <Lock className="h-4 w-4 text-gray-400" /> : <Unlock className="h-4 w-4 text-green-500" />}
+                        {challenge.title}
+                      </CardTitle>
+                      <CardDescription>{challenge.description}</CardDescription>
+                      {challenge.productOrigin && (
+                        <CardDescription className="text-xs italic text-blue-700 mt-1">
+                          {challenge.productOrigin}
+                        </CardDescription>
+                      )}
+                      {challenge.flag && (
+                        <CardDescription className="text-xs font-mono text-gray-500 mt-1">
+                          Flag: {challenge.flag}
+                        </CardDescription>
+                      )}
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => (isEditingThisLab ? cancelEditingLab() : startEditingLab(challenge))}
+                    >
+                      {isEditingThisLab ? 'Close Editor' : 'Edit Lab'}
+                    </Button>
+                  </div>
                 </CardHeader>
                 <CardContent>
+                  {isEditingThisLab && labDraft && (
+                    <div className="mb-4 p-4 bg-gray-50 border rounded-lg space-y-3">
+                      <div>
+                        <label className="text-xs font-medium text-gray-600">Title</label>
+                        <input
+                          className="border rounded px-2 py-1 w-full text-sm mt-1"
+                          value={labDraft.title}
+                          onChange={e => setLabDraft({ ...labDraft, title: e.target.value })}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-gray-600">Description (shown to players)</label>
+                        <Textarea
+                          className="mt-1 text-sm"
+                          rows={2}
+                          value={labDraft.description}
+                          onChange={e => setLabDraft({ ...labDraft, description: e.target.value })}
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-xs font-medium text-gray-600">Difficulty</label>
+                          <select
+                            className="border rounded px-2 py-1 w-full text-sm mt-1"
+                            value={labDraft.difficulty}
+                            onChange={e => setLabDraft({ ...labDraft, difficulty: e.target.value as Challenge['difficulty'] })}
+                          >
+                            <option value="beginner">beginner</option>
+                            <option value="intermediate">intermediate</option>
+                            <option value="advanced">advanced</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium text-gray-600">Max selectable lines</label>
+                          <input
+                            type="number"
+                            min={1}
+                            className="border rounded px-2 py-1 w-full text-sm mt-1"
+                            value={labDraft.maxSelectableLines ?? 1}
+                            onChange={e => setLabDraft({ ...labDraft, maxSelectableLines: parseInt(e.target.value, 10) || 1 })}
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-gray-600">Code shown to players</label>
+                        <Textarea
+                          className="mt-1 text-sm font-mono"
+                          rows={10}
+                          value={labDraft.code}
+                          onChange={e => setLabDraft({ ...labDraft, code: e.target.value })}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-gray-600">Vulnerable line(s) - comma-separated, e.g. "4" or "2, 15"</label>
+                        <input
+                          className="border rounded px-2 py-1 w-full text-sm mt-1"
+                          value={labDraft.vulnerableLines.join(', ')}
+                          onChange={e => setLabVulnerableLines(e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-xs font-medium text-gray-600">Explanation per vulnerable line (shown after a correct guess)</label>
+                        {labDraft.vulnerableLines.length === 0 ? (
+                          <p className="text-xs text-gray-400">Add a vulnerable line above to write its explanation.</p>
+                        ) : (
+                          labDraft.vulnerableLines.map(line => (
+                            <div key={line}>
+                              <label className="text-xs text-gray-500">Line {line}</label>
+                              <Textarea
+                                className="mt-1 text-sm"
+                                rows={2}
+                                value={labDraft.explanations?.[line] ?? ''}
+                                onChange={e => setLabDraft({ ...labDraft, explanations: { ...labDraft.explanations, [line]: e.target.value } })}
+                              />
+                            </div>
+                          ))
+                        )}
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <label className="text-xs font-medium text-gray-600">Hints (hidden until the player clicks Show Hints)</label>
+                          <Button size="sm" variant="outline" onClick={addLabHint}>+ Add Hint</Button>
+                        </div>
+                        {(labDraft.hints ?? []).map((hint, i) => (
+                          <div key={i} className="flex items-center gap-2">
+                            <input
+                              className="border rounded px-2 py-1 w-full text-sm"
+                              value={hint}
+                              onChange={e => setLabHint(i, e.target.value)}
+                            />
+                            <Button size="sm" variant="destructive" onClick={() => removeLabHint(i)}>Remove</Button>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <label className="text-xs font-medium text-gray-600">
+                            Flag{(labDraft.flags?.length ?? 0) > 1 || (labDraft.flags?.length ?? 0) === 0 ? 's' : ''} (one box per independent flag this lab has)
+                          </label>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              // Normalize to the flags[] array as the one source of truth in the
+                              // form, mapping the legacy single `flag` field into it if needed.
+                              if (!labDraft.flags || labDraft.flags.length === 0) {
+                                setLabDraft({ ...labDraft, flags: [labDraft.flag ?? ''], flag: undefined });
+                              } else {
+                                addLabFlag();
+                              }
+                            }}
+                          >
+                            + Add Flag
+                          </Button>
+                        </div>
+                        {(labDraft.flags && labDraft.flags.length > 0 ? labDraft.flags : [labDraft.flag ?? '']).map((f, i) => (
+                          <div key={i} className="flex items-center gap-2">
+                            <input
+                              className="border rounded px-2 py-1 w-full text-sm font-mono"
+                              value={f}
+                              onChange={e => {
+                                if (labDraft.flags && labDraft.flags.length > 0) {
+                                  setLabFlag(i, e.target.value);
+                                } else {
+                                  setLabDraft({ ...labDraft, flag: e.target.value });
+                                }
+                              }}
+                            />
+                            {labDraft.flags && labDraft.flags.length > 1 && (
+                              <Button size="sm" variant="destructive" onClick={() => removeLabFlag(i)}>Remove</Button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-xs font-medium text-gray-600">Lab URL (live-exploit page)</label>
+                          <input
+                            className="border rounded px-2 py-1 w-full text-sm mt-1"
+                            value={labDraft.labUrl ?? ''}
+                            onChange={e => setLabDraft({ ...labDraft, labUrl: e.target.value })}
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium text-gray-600">Product origin (admin-only, never shown to players)</label>
+                          <input
+                            className="border rounded px-2 py-1 w-full text-sm mt-1"
+                            value={labDraft.productOrigin ?? ''}
+                            onChange={e => setLabDraft({ ...labDraft, productOrigin: e.target.value })}
+                          />
+                        </div>
+                      </div>
+                      {labError && <p className="text-sm text-red-600">{labError}</p>}
+                      <div className="flex items-center gap-2 pt-2 border-t">
+                        <Button onClick={saveLab} disabled={labSaving}>{labSaving ? 'Saving...' : 'Save Lab'}</Button>
+                        <Button variant="outline" onClick={cancelEditingLab} disabled={labSaving}>Cancel</Button>
+                      </div>
+                    </div>
+                  )}
                   <div className="flex flex-col gap-2">
                     <div className="flex flex-wrap items-center gap-2 justify-between">
                       <div className="flex items-center gap-2">
