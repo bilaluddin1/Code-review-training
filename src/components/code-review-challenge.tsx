@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Textarea } from "@/components/ui/textarea"
 import { CheckCircle, XCircle, AlertTriangle, ArrowLeft, Lightbulb, Lock, Unlock, X } from "lucide-react"
 import type { Challenge } from "@/types/challenge"
+import type { PlaygroundConfig, PlaygroundField } from "@/lib/loadPlaygrounds"
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import { io, Socket } from 'socket.io-client'
@@ -417,6 +418,25 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
   // Local overrides so an edit shows immediately without waiting on the
   // parent's own challenge-list refresh cycle.
   const [challengeOverrides, setChallengeOverrides] = useState<Record<string, Challenge>>({});
+
+  // Live-exploit lab PAGE editor - a separate thing from the challenge
+  // editor above: this edits labsPlaygroundConfig.ts's title/blurb/field
+  // labels/hint/explainer text (what a dev actually sees at /labs/<key>),
+  // not the code-review challenge's code/flags. Saves through
+  // /api/admin/playgrounds, keyed by the lab's URL slug (e.g. "crypto-01"),
+  // not the challenge id.
+  const [playgrounds, setPlaygrounds] = useState<Record<string, PlaygroundConfig>>({});
+  const [editingPlaygroundKey, setEditingPlaygroundKey] = useState<string | null>(null);
+  const [playgroundDraft, setPlaygroundDraft] = useState<PlaygroundConfig | null>(null);
+  const [playgroundSaving, setPlaygroundSaving] = useState(false);
+  const [playgroundError, setPlaygroundError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch('/api/admin/playgrounds')
+      .then(r => r.json())
+      .then(data => setPlaygrounds(data && typeof data === 'object' ? data : {}))
+      .catch(() => {});
+  }, []);
   const [analytics, setAnalytics] = useState<{
     sessions: { sessionId: string; teamName: string; archivedAt: string; results: { userName: string; avatar: string; score: number }[] }[];
     live: { id: string; userName: string; avatar: string; score: number }[];
@@ -907,6 +927,57 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
     setLabDraft({ ...labDraft, flags: (labDraft.flags ?? []).filter((_, i) => i !== index) });
   };
 
+  const startEditingPlayground = (key: string, config: PlaygroundConfig) => {
+    setPlaygroundDraft(JSON.parse(JSON.stringify(config)));
+    setPlaygroundError(null);
+    setEditingPlaygroundKey(key);
+  };
+
+  const cancelEditingPlayground = () => {
+    setEditingPlaygroundKey(null);
+    setPlaygroundDraft(null);
+    setPlaygroundError(null);
+  };
+
+  const savePlayground = async () => {
+    if (!playgroundDraft || !editingPlaygroundKey) return;
+    if (!playgroundDraft.title.trim() || !playgroundDraft.blurb.trim()) {
+      setPlaygroundError('Title and blurb are required.');
+      return;
+    }
+    setPlaygroundSaving(true);
+    setPlaygroundError(null);
+    try {
+      const res = await fetch('/api/admin/playgrounds', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: editingPlaygroundKey, config: playgroundDraft }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setPlaygroundError(data.error ?? 'Failed to save.');
+        return;
+      }
+      setPlaygrounds(prev => ({ ...prev, [editingPlaygroundKey]: data }));
+      cancelEditingPlayground();
+    } catch {
+      setPlaygroundError('Could not reach the server. Please try again.');
+    } finally {
+      setPlaygroundSaving(false);
+    }
+  };
+
+  // Only label/placeholder/defaultValue/type are editable on a field - its
+  // `name` is what the field is actually submitted as to the lab's real
+  // API route (e.g. "id", "cookie", "token"), so changing it would silently
+  // break the exploit wiring without ever producing an error.
+  const updateLabField = (list: 'fields' | 'headerFields', index: number, patch: Partial<PlaygroundField>) => {
+    if (!playgroundDraft) return;
+    const next = [...(playgroundDraft[list] ?? [])];
+    next[index] = { ...next[index], ...patch };
+    setPlaygroundDraft({ ...playgroundDraft, [list]: next });
+  };
+
   return (
     <div className="max-w-4xl mx-auto mt-10 bg-white rounded-lg shadow p-10">
       <h2 className="text-xl font-bold mb-4 flex items-center gap-2"><Unlock className="h-5 w-5 text-green-600" /> Admin Challenge Unlocks</h2>
@@ -966,16 +1037,153 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
                         </CardDescription>
                       )}
                     </div>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => (isEditingThisLab ? cancelEditingLab() : startEditingLab(challenge))}
-                    >
-                      {isEditingThisLab ? 'Close Editor' : 'Edit Lab'}
-                    </Button>
+                    <div className="flex flex-col gap-2 shrink-0">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => (isEditingThisLab ? cancelEditingLab() : startEditingLab(challenge))}
+                      >
+                        {isEditingThisLab ? 'Close Editor' : 'Edit Challenge'}
+                      </Button>
+                      {(() => {
+                        const entry = Object.entries(playgrounds).find(([, cfg]) => cfg.linkedChallengeId === challenge.id);
+                        if (!entry) return null;
+                        const [pgKey, pgConfig] = entry;
+                        const isEditingThisPlayground = editingPlaygroundKey === pgKey;
+                        return (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => (isEditingThisPlayground ? cancelEditingPlayground() : startEditingPlayground(pgKey, pgConfig))}
+                          >
+                            {isEditingThisPlayground ? 'Close Editor' : 'Edit Live-Exploit Page'}
+                          </Button>
+                        );
+                      })()}
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent>
+                  {editingPlaygroundKey && playgroundDraft && Object.entries(playgrounds).find(([k, cfg]) => k === editingPlaygroundKey && cfg.linkedChallengeId === challenge.id) && (
+                    <div className="mb-4 p-4 bg-blue-50 border rounded-lg space-y-3">
+                      <p className="text-xs text-gray-500">Editing the page at <code>/labs/{editingPlaygroundKey}</code> - the live-exploit UI a dev actually uses, not the code-review challenge above.</p>
+                      <div>
+                        <label className="text-xs font-medium text-gray-600">Page title</label>
+                        <input
+                          className="border rounded px-2 py-1 w-full text-sm mt-1"
+                          value={playgroundDraft.title}
+                          onChange={e => setPlaygroundDraft({ ...playgroundDraft, title: e.target.value })}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-gray-600">Blurb (shown under the title)</label>
+                        <Textarea
+                          className="mt-1 text-sm"
+                          rows={2}
+                          value={playgroundDraft.blurb}
+                          onChange={e => setPlaygroundDraft({ ...playgroundDraft, blurb: e.target.value })}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-gray-600">Starting hint (shown in italics near Send request)</label>
+                        <Textarea
+                          className="mt-1 text-sm"
+                          rows={2}
+                          value={playgroundDraft.startingHint ?? ''}
+                          onChange={e => setPlaygroundDraft({ ...playgroundDraft, startingHint: e.target.value })}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-gray-600">Hint behind "Show Hint" button (leave blank for no hint button)</label>
+                        <Textarea
+                          className="mt-1 text-sm"
+                          rows={2}
+                          value={playgroundDraft.explainer ?? ''}
+                          onChange={e => setPlaygroundDraft({ ...playgroundDraft, explainer: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-xs font-medium text-gray-600">Input field(s) - label, placeholder and default value only (the field's wiring to the API is fixed)</label>
+                        {(playgroundDraft.fields ?? []).map((f, i) => (
+                          <div key={i} className="grid grid-cols-3 gap-2 p-2 bg-white border rounded">
+                            <div>
+                              <label className="text-[10px] text-gray-400">name: {f.name} (fixed)</label>
+                              <input
+                                className="border rounded px-2 py-1 w-full text-sm"
+                                placeholder="Label"
+                                value={f.label}
+                                onChange={e => updateLabField('fields', i, { label: e.target.value })}
+                              />
+                            </div>
+                            <input
+                              className="border rounded px-2 py-1 w-full text-sm self-end"
+                              placeholder="Placeholder text"
+                              value={f.placeholder ?? ''}
+                              onChange={e => updateLabField('fields', i, { placeholder: e.target.value })}
+                            />
+                            <input
+                              className="border rounded px-2 py-1 w-full text-sm self-end"
+                              placeholder="Default value"
+                              value={f.defaultValue ?? ''}
+                              onChange={e => updateLabField('fields', i, { defaultValue: e.target.value })}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                      {(playgroundDraft.headerFields ?? []).length > 0 && (
+                        <div className="space-y-2">
+                          <label className="text-xs font-medium text-gray-600">Header field(s) - label and placeholder only</label>
+                          {(playgroundDraft.headerFields ?? []).map((f, i) => (
+                            <div key={i} className="grid grid-cols-2 gap-2 p-2 bg-white border rounded">
+                              <div>
+                                <label className="text-[10px] text-gray-400">name: {f.name} (fixed)</label>
+                                <input
+                                  className="border rounded px-2 py-1 w-full text-sm"
+                                  placeholder="Label"
+                                  value={f.label}
+                                  onChange={e => updateLabField('headerFields', i, { label: e.target.value })}
+                                />
+                              </div>
+                              <input
+                                className="border rounded px-2 py-1 w-full text-sm self-end"
+                                placeholder="Placeholder text"
+                                value={f.placeholder ?? ''}
+                                onChange={e => updateLabField('headerFields', i, { placeholder: e.target.value })}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {playgroundDraft.secondaryField && (
+                        <div className="space-y-1">
+                          <label className="text-xs font-medium text-gray-600">Second input box - label and placeholder only</label>
+                          <div className="grid grid-cols-2 gap-2 p-2 bg-white border rounded">
+                            <div>
+                              <label className="text-[10px] text-gray-400">name: {playgroundDraft.secondaryField.name} (fixed)</label>
+                              <input
+                                className="border rounded px-2 py-1 w-full text-sm"
+                                placeholder="Label"
+                                value={playgroundDraft.secondaryField.label}
+                                onChange={e => setPlaygroundDraft({ ...playgroundDraft, secondaryField: { ...playgroundDraft.secondaryField!, label: e.target.value } })}
+                              />
+                            </div>
+                            <input
+                              className="border rounded px-2 py-1 w-full text-sm self-end"
+                              placeholder="Placeholder text"
+                              value={playgroundDraft.secondaryField.placeholder ?? ''}
+                              onChange={e => setPlaygroundDraft({ ...playgroundDraft, secondaryField: { ...playgroundDraft.secondaryField!, placeholder: e.target.value } })}
+                            />
+                          </div>
+                        </div>
+                      )}
+                      <p className="text-[11px] text-gray-400">Method, endpoint and field names are fixed here - they're wired to this lab's real API route, and editing them in the UI would break the exploit without warning. Ask for a source change if those genuinely need to change.</p>
+                      {playgroundError && <p className="text-sm text-red-600">{playgroundError}</p>}
+                      <div className="flex items-center gap-2 pt-2 border-t">
+                        <Button onClick={savePlayground} disabled={playgroundSaving}>{playgroundSaving ? 'Saving...' : 'Save Page'}</Button>
+                        <Button variant="outline" onClick={cancelEditingPlayground} disabled={playgroundSaving}>Cancel</Button>
+                      </div>
+                    </div>
+                  )}
                   {isEditingThisLab && labDraft && (
                     <div className="mb-4 p-4 bg-gray-50 border rounded-lg space-y-3">
                       <div>

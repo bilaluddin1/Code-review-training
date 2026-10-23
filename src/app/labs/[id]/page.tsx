@@ -1,29 +1,49 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { PLAYGROUNDS } from "@/lib/labsPlaygroundConfig";
+import type { PlaygroundConfig } from "@/lib/labsPlaygroundConfig";
 
 export default function PlaygroundPage() {
   const params = useParams<{ id: string }>();
-  const config = PLAYGROUNDS[params.id];
-  const [values, setValues] = useState<Record<string, string>>(
-    Object.fromEntries((config?.fields ?? []).map((f) => [f.name, f.defaultValue ?? ""]))
-  );
-  const [headerValues, setHeaderValues] = useState<Record<string, string>>(
-    Object.fromEntries((config?.headerFields ?? []).map((f) => [f.name, ""]))
-  );
+  // Fetched rather than statically imported, so an admin's edit via the
+  // lab-page editor (saved to data/playgrounds.json) shows up without a
+  // rebuild - see /api/playground-config and /api/admin/playgrounds.
+  const [config, setConfig] = useState<PlaygroundConfig | null | undefined>(undefined);
+  const [values, setValues] = useState<Record<string, string>>({});
+  const [headerValues, setHeaderValues] = useState<Record<string, string>>({});
   const [response, setResponse] = useState<{ status: number; body: unknown; headers: Record<string, string> } | null>(null);
   const [loading, setLoading] = useState(false);
   const [showHint, setShowHint] = useState(false);
-  const [secondaryValue, setSecondaryValue] = useState(config?.secondaryField?.defaultValue ?? "");
+  const [secondaryValue, setSecondaryValue] = useState("");
   const [secondaryResponse, setSecondaryResponse] = useState<{ status: number; body: unknown; headers: Record<string, string> } | null>(null);
   const [secondaryLoading, setSecondaryLoading] = useState(false);
 
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/playground-config")
+      .then((r) => r.json())
+      .then((all: Record<string, PlaygroundConfig>) => {
+        if (cancelled) return;
+        const found = all[params.id] ?? null;
+        setConfig(found);
+        if (found) {
+          setValues(Object.fromEntries((found.fields ?? []).map((f) => [f.name, f.defaultValue ?? ""])));
+          setHeaderValues(Object.fromEntries((found.headerFields ?? []).map((f) => [f.name, ""])));
+          setSecondaryValue(found.secondaryField?.defaultValue ?? "");
+        }
+      })
+      .catch(() => { if (!cancelled) setConfig(null); });
+    return () => { cancelled = true; };
+  }, [params.id]);
+
+  if (config === undefined) {
+    return <div className="p-8 text-gray-500">Loading...</div>;
+  }
   if (!config) {
     return <div className="p-8">No sandbox named &quot;{params.id}&quot;.</div>;
   }

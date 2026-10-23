@@ -35,6 +35,7 @@ tsconfig.tsbuildinfo
 
 # Runtime challenge data (user modifications)
 data/challenges.json
+data/playgrounds.json
 
 # IDE
 .vscode/
