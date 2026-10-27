@@ -643,7 +643,16 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ enabled: !feedbackToggle }),
     });
-    if (res.ok) setFeedbackToggle((await res.json()).enabled);
+    if (res.ok) {
+      setFeedbackToggle((await res.json()).enabled);
+    } else {
+      // Previously failed silently (e.g. expired admin session) and the button
+      // just snapped back to its old value with no indication anything went
+      // wrong - looked like the toggle "undid itself" on the next refresh.
+      alert(res.status === 401
+        ? "Your admin session expired - log back in and try again. The toggle was NOT changed."
+        : "Could not update the feedback toggle - it was NOT changed. Try again.");
+    }
     setFeedbackToggleLoading(false);
   };
 
