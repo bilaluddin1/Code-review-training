@@ -58,9 +58,10 @@ const ANSWERS: LabAnswer[] = [
     labUrl: "/labs/auth-01",
     steps: [
       "GET the page first to fetch a real sample token (not needed for the exploit itself).",
-      "Token field: garbage (any malformed, non-token string triggers the fail-open path).",
+      "Token field: garbage (any malformed, non-token string triggers the fail-open path) -> easy flag.",
+      "Forged Incomplete Token field: base64url-encode a real header ({\"alg\":\"HS256\",\"typ\":\"JWT\"}) and payload ({\"role\":\"admin\"}) separately, join as header.payload. with the signature segment missing -> advanced flag.",
     ],
-    flags: ["FLAG{842139d233}"],
+    flags: ["FLAG{842139d233}  (easy - garbage token)", "FLAG{7c2e91ab4d}  (advanced - forged incomplete token)"],
   },
   {
     id: "LAB-CONFIG-01",
