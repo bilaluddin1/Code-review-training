@@ -27,10 +27,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Challenge is locked' }, { status: 423 });
   }
 
-  // Enforce maxSelectableLines
-  if (typeof challenge.maxSelectableLines === 'number' && selectedLines.length > challenge.maxSelectableLines) {
-    return NextResponse.json({ error: `You can select at most ${challenge.maxSelectableLines} lines for this challenge.` }, { status: 400 });
-  }
+  // No cap on how many lines a dev can select - maxSelectableLines is no
+  // longer enforced (devs can mark as many candidate lines as they want);
+  // per-line feedback is still withheld on an incorrect submission so this
+  // can't be used to find the answer by selecting everything.
 
   // Validate the answer: all and only vulnerable lines must be selected
   const vulnerableLines = challenge.vulnerableLines;

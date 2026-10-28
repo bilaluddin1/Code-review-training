@@ -2381,8 +2381,11 @@ export default function CodeReviewChallenge() {
       const allCorrect = !!data.correct;
       setLastSubmissionCorrect(allCorrect);
       setAlreadySolved(allCorrect);
-      // Per-line feedback from the server drives the line highlighting.
-      setLastFeedback(Array.isArray(data.feedback) ? data.feedback : []);
+      // Per-line feedback drives the line highlighting - only shown once the
+      // whole submission is correct. Showing it on a wrong attempt would let
+      // a dev select every line and read off which ones turn green, instead
+      // of reasoning about which lines are actually vulnerable.
+      setLastFeedback(allCorrect && Array.isArray(data.feedback) ? data.feedback : []);
       // The server reveals the answer key only once the lab is resolved.
       if (Array.isArray(data.vulnerableLines)) {
         setRevealed(prev => ({
@@ -2428,11 +2431,9 @@ export default function CodeReviewChallenge() {
 
   const toggleLine = (lineNumber: number) => {
     if (submitted) return;
-    const maxSelectable = selectedChallenge?.maxSelectableLines ?? 1;
-    if (!selectedLines.includes(lineNumber) && selectedLines.length >= maxSelectable) {
-      // Optionally, show a warning or ignore further selection
-      return;
-    }
+    // No cap on how many lines a dev can select - per-line correctness is
+    // withheld until the whole submission is right (see handleSubmit), so
+    // selecting extra lines can't be used to find the answer by elimination.
     setSelectedLines((prev) =>
       prev.includes(lineNumber) ? prev.filter((l) => l !== lineNumber) : [...prev, lineNumber]
     );
