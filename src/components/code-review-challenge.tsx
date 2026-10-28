@@ -2038,6 +2038,10 @@ export default function CodeReviewChallenge() {
 
   // Challenge lock state (persisted via API)
   const [locks, setLocks] = useState<Record<string, boolean>>({});
+  // Long-lived (connected since mount) so admin:lockChanged is never lost to
+  // a connect/disconnect race - a socket created and torn down in the same
+  // tick can close before its own emit actually reaches the server.
+  const locksSocketRef = useRef<Socket | null>(null);
 
   // Challenges state - dynamically fetched
   const [challenges, setChallenges] = useState<Challenge[]>([]);
@@ -2152,12 +2156,15 @@ export default function CodeReviewChallenge() {
       .then(data => setLocks(data));
 
     // Live lock updates - so an admin unlocking a challenge shows up for
-    // everyone already on the page, not just on their next refresh.
+    // everyone already on the page, not just on their next refresh. Kept
+    // open for the component's lifetime (see locksSocketRef) and reused to
+    // emit admin:lockChanged too, instead of a throwaway connection.
     const locksSocket = io(getSocketUrl(), {
       transports: ['websocket', 'polling'],
       path: '/socket.io/',
       reconnection: true,
     });
+    locksSocketRef.current = locksSocket;
     const handleLocksUpdate = ({ id, locked }: { id: string; locked: boolean }) => {
       setLocks(prev => ({ ...prev, [id]: locked }));
     };
@@ -2209,6 +2216,7 @@ export default function CodeReviewChallenge() {
     return () => {
       locksSocket.off('locks:update', handleLocksUpdate);
       locksSocket.disconnect();
+      locksSocketRef.current = null;
     };
   }, []); // Empty dependency array - only run once on mount
 
@@ -2262,18 +2270,19 @@ export default function CodeReviewChallenge() {
       body: JSON.stringify({ id, locked: newLocked })
     });
     // Push the change to every connected client (players included) so it
-    // shows up live instead of only after their next page refresh.
-    const socket = io(getSocketUrl(), {
-      transports: ['websocket', 'polling'],
-      path: '/socket.io/',
-      reconnection: true
-    });
-    socket.emit('admin:lockChanged', { id, locked: newLocked });
-    // Reset timer if locking the challenge
-    if (newLocked && isAdmin) {
-      socket.emit('admin:resetTimer', { challengeId: id });
+    // shows up live instead of only after their next page refresh. Reuses
+    // the long-lived socket from mount - a fresh connect-emit-disconnect
+    // here can tear down before the emit ever reaches the server.
+    const socket = locksSocketRef.current;
+    if (socket) {
+      socket.emit('admin:lockChanged', { id, locked: newLocked });
+      // Reset timer if locking the challenge
+      if (newLocked && isAdmin) {
+        socket.emit('admin:resetTimer', { challengeId: id });
+      }
+    } else {
+      console.error('Lock-sync socket not connected - the change was saved but may not show live for other users until they refresh.');
     }
-    socket.disconnect();
   };
 
   const handleSelectChallenge = (challenge: Challenge) => {

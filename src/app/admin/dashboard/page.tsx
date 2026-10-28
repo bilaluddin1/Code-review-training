@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { AdminPanel } from "@/components/code-review-challenge"
 import { ChallengeEditor } from "@/components/admin/challenge-editor"
@@ -13,7 +13,7 @@ import {
   Lock,
   LogOut,
 } from "lucide-react"
-import { io } from 'socket.io-client'
+import { io, Socket } from 'socket.io-client'
 import type { Challenge } from "@/types/challenge"
 import { getSocketUrl } from '@/lib/get-socket-url'
 
@@ -24,6 +24,10 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("challenges");
   const router = useRouter();
+  // Long-lived (connected since mount) so admin:lockChanged is never lost
+  // to a connect/disconnect race - a socket created and torn down in the
+  // same tick can close before its own emit actually reaches the server.
+  const locksSocketRef = useRef<Socket | null>(null);
 
   // Debug challenges state
   useEffect(() => {
@@ -59,6 +63,7 @@ export default function AdminDashboard() {
       path: '/socket.io/',
       reconnection: true,
     });
+    locksSocketRef.current = locksSocket;
     const handleLocksUpdate = ({ id, locked }: { id: string; locked: boolean }) => {
       setLocks(prev => ({ ...prev, [id]: locked }));
     };
@@ -66,6 +71,7 @@ export default function AdminDashboard() {
     return () => {
       locksSocket.off('locks:update', handleLocksUpdate);
       locksSocket.disconnect();
+      locksSocketRef.current = null;
     };
   }, [router]);
 
@@ -116,20 +122,17 @@ export default function AdminDashboard() {
 
       // Push the change to every connected client (players included) so it
       // shows up live instead of only after their next page refresh, and
-      // reset the timer if locking the challenge.
-      try {
-        const socket = io(getSocketUrl(), {
-          transports: ['websocket', 'polling'],
-          path: '/socket.io/',
-          reconnection: true
-        });
+      // reset the timer if locking the challenge. Reuses the long-lived
+      // socket from mount - a fresh connect-emit-disconnect here can tear
+      // down before the emit ever reaches the server.
+      const socket = locksSocketRef.current;
+      if (socket) {
         socket.emit('admin:lockChanged', { id, locked: newLocked });
         if (newLocked) {
           socket.emit('admin:resetTimer', { challengeId: id });
         }
-        socket.disconnect();
-      } catch (socketError) {
-        console.error('Socket error:', socketError);
+      } else {
+        console.error('Lock-sync socket not connected - the change was saved but may not show live for other users until they refresh.');
       }
     } catch (error) {
       console.error('Error toggling lock:', error);
