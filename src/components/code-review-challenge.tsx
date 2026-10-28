@@ -2752,10 +2752,10 @@ export default function CodeReviewChallenge() {
                           </div>
                         ) : (
                           <div className="flex items-center gap-3">
-                            <Button onClick={handleReset} variant="outline">
+                            <span className="text-sm text-gray-500">Click this to pick a different line - the code block is locked until you do.</span>
+                            <Button onClick={handleReset} className="bg-blue-600 hover:bg-blue-700 text-white">
                               Try Again
                             </Button>
-                            <span className="text-sm text-gray-500">Click this to pick a different line - the code block is locked until you do.</span>
                           </div>
                         )}
                       </div>
