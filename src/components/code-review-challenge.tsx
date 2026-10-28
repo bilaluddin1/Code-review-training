@@ -2151,6 +2151,18 @@ export default function CodeReviewChallenge() {
       .then(res => res.json())
       .then(data => setLocks(data));
 
+    // Live lock updates - so an admin unlocking a challenge shows up for
+    // everyone already on the page, not just on their next refresh.
+    const locksSocket = io(getSocketUrl(), {
+      transports: ['websocket', 'polling'],
+      path: '/socket.io/',
+      reconnection: true,
+    });
+    const handleLocksUpdate = ({ id, locked }: { id: string; locked: boolean }) => {
+      setLocks(prev => ({ ...prev, [id]: locked }));
+    };
+    locksSocket.on('locks:update', handleLocksUpdate);
+
     // Whether the "Give Feedback" button is live yet, and which team this
     // session is currently set to (admin-controlled, never typed by a dev)
     fetch('/api/feedback-enabled')
@@ -2193,6 +2205,11 @@ export default function CodeReviewChallenge() {
     };
 
     fetchChallenges();
+
+    return () => {
+      locksSocket.off('locks:update', handleLocksUpdate);
+      locksSocket.disconnect();
+    };
   }, []); // Empty dependency array - only run once on mount
 
   // Save user and admin state to localStorage
@@ -2244,19 +2261,19 @@ export default function CodeReviewChallenge() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id, locked: newLocked })
     });
+    // Push the change to every connected client (players included) so it
+    // shows up live instead of only after their next page refresh.
+    const socket = io(getSocketUrl(), {
+      transports: ['websocket', 'polling'],
+      path: '/socket.io/',
+      reconnection: true
+    });
+    socket.emit('admin:lockChanged', { id, locked: newLocked });
     // Reset timer if locking the challenge
     if (newLocked && isAdmin) {
-      const socket = io(getSocketUrl(), {
-        transports: ['websocket', 'polling'],
-        path: '/socket.io/',
-        reconnection: true
-      });
       socket.emit('admin:resetTimer', { challengeId: id });
-      socket.disconnect();
     }
-    // Optionally, re-fetch locks from API for consistency
-    // const data = await fetch("/api/challenge-locks").then(res => res.json());
-    // setLocks(data);
+    socket.disconnect();
   };
 
   const handleSelectChallenge = (challenge: Challenge) => {

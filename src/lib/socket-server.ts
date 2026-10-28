@@ -124,6 +124,14 @@ io.on('connection', (socket) => {
     }
   });
 
+  // Admin locked/unlocked a challenge (via /api/challenge-locks) - relay to
+  // every connected client so the lock state updates live instead of only
+  // on next page refresh. Locks themselves are persisted via the API; this
+  // event is just the push notification that something changed.
+  socket.on('admin:lockChanged', ({ id, locked }: { id: string; locked: boolean }) => {
+    io.emit('locks:update', { id, locked });
+  });
+
   // On user connect, send current timer state for all running timers
   Object.entries(challengeTimers).forEach(([challengeId, timer]) => {
     if (timer.isRunning || timer.isPaused) {

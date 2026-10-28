@@ -52,6 +52,21 @@ export default function AdminDashboard() {
         }
         setLoading(false);
       });
+
+    // Live lock updates from any other admin session.
+    const locksSocket = io(getSocketUrl(), {
+      transports: ['websocket', 'polling'],
+      path: '/socket.io/',
+      reconnection: true,
+    });
+    const handleLocksUpdate = ({ id, locked }: { id: string; locked: boolean }) => {
+      setLocks(prev => ({ ...prev, [id]: locked }));
+    };
+    locksSocket.on('locks:update', handleLocksUpdate);
+    return () => {
+      locksSocket.off('locks:update', handleLocksUpdate);
+      locksSocket.disconnect();
+    };
   }, [router]);
 
   const fetchChallenges = async () => {
@@ -99,19 +114,22 @@ export default function AdminDashboard() {
 
       console.log('Lock updated successfully');
 
-      // Reset timer if locking the challenge
-      if (newLocked) {
-        try {
-          const socket = io(getSocketUrl(), {
-            transports: ['websocket', 'polling'],
-            path: '/socket.io/',
-            reconnection: true
-          });
+      // Push the change to every connected client (players included) so it
+      // shows up live instead of only after their next page refresh, and
+      // reset the timer if locking the challenge.
+      try {
+        const socket = io(getSocketUrl(), {
+          transports: ['websocket', 'polling'],
+          path: '/socket.io/',
+          reconnection: true
+        });
+        socket.emit('admin:lockChanged', { id, locked: newLocked });
+        if (newLocked) {
           socket.emit('admin:resetTimer', { challengeId: id });
-          socket.disconnect();
-        } catch (socketError) {
-          console.error('Socket error:', socketError);
         }
+        socket.disconnect();
+      } catch (socketError) {
+        console.error('Socket error:', socketError);
       }
     } catch (error) {
       console.error('Error toggling lock:', error);
