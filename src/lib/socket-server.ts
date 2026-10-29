@@ -132,6 +132,14 @@ io.on('connection', (socket) => {
     io.emit('locks:update', { id, locked });
   });
 
+  // Admin enabled/disabled feedback or changed the session team (via
+  // /api/admin/feedback-enabled) - relay to every connected client so the
+  // "Give Feedback" button appears/disappears live instead of only on the
+  // player's next refresh.
+  socket.on('admin:feedbackEnabledChanged', ({ enabled, currentTeam }: { enabled: boolean; currentTeam: string | null }) => {
+    io.emit('feedback-enabled:update', { enabled, currentTeam });
+  });
+
   // On user connect, send current timer state for all running timers
   Object.entries(challengeTimers).forEach(([challengeId, timer]) => {
     if (timer.isRunning || timer.isPaused) {

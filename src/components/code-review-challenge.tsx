@@ -644,7 +644,11 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
       body: JSON.stringify({ enabled: !feedbackToggle }),
     });
     if (res.ok) {
-      setFeedbackToggle((await res.json()).enabled);
+      const enabled = (await res.json()).enabled;
+      setFeedbackToggle(enabled);
+      // Push the change live, same as challenge locks - otherwise players
+      // only see the "Give Feedback" button appear after their next refresh.
+      socketRef.current?.emit('admin:feedbackEnabledChanged', { enabled, currentTeam });
     } else {
       // Previously failed silently (e.g. expired admin session) and the button
       // just snapped back to its old value with no indication anything went
@@ -663,7 +667,11 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ currentTeam: teamInput }),
     });
-    if (res.ok) setCurrentTeam((await res.json()).currentTeam ?? null);
+    if (res.ok) {
+      const savedTeam = (await res.json()).currentTeam ?? null;
+      setCurrentTeam(savedTeam);
+      socketRef.current?.emit('admin:feedbackEnabledChanged', { enabled: feedbackToggle, currentTeam: savedTeam });
+    }
     setTeamSaving(false);
   };
 
@@ -2170,6 +2178,15 @@ export default function CodeReviewChallenge() {
     };
     locksSocket.on('locks:update', handleLocksUpdate);
 
+    // Live feedback-toggle updates - so the "Give Feedback" button appears
+    // or disappears for everyone the moment an admin flips it, instead of
+    // only after a refresh (same gap the lock sync fix closed earlier).
+    const handleFeedbackEnabledUpdate = ({ enabled, currentTeam: team }: { enabled: boolean; currentTeam: string | null }) => {
+      setFeedbackEnabled(!!enabled);
+      setCurrentTeam(team ?? null);
+    };
+    locksSocket.on('feedback-enabled:update', handleFeedbackEnabledUpdate);
+
     // Whether the "Give Feedback" button is live yet, and which team this
     // session is currently set to (admin-controlled, never typed by a dev)
     fetch('/api/feedback-enabled')
@@ -2215,6 +2232,7 @@ export default function CodeReviewChallenge() {
 
     return () => {
       locksSocket.off('locks:update', handleLocksUpdate);
+      locksSocket.off('feedback-enabled:update', handleFeedbackEnabledUpdate);
       locksSocket.disconnect();
       locksSocketRef.current = null;
     };

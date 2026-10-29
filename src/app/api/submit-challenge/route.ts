@@ -21,9 +21,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Challenge not found' }, { status: 404 });
   }
 
-  // Check if challenge is locked
+  // Check if challenge is locked. A challenge with no row yet defaults to
+  // LOCKED here, matching the UI's own default (locks[id] !== false) - a
+  // challenge an admin has never touched looked locked to players but was
+  // actually submittable directly via this API, bypassing the lock entirely.
   const lock = await prisma.challengeLock.findUnique({ where: { id: challengeId } });
-  if (lock && lock.locked) {
+  if (!lock || lock.locked) {
     return NextResponse.json({ error: 'Challenge is locked' }, { status: 423 });
   }
 

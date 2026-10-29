@@ -37,9 +37,11 @@ export async function POST(req: NextRequest) {
       }, { status: 500 });
     }
 
-    // Check if challenge is locked
+    // Check if challenge is locked. A challenge with no row yet defaults to
+    // LOCKED here, matching the UI's own default (locks[id] !== false) - see
+    // the same fix in submit-challenge/route.ts.
     const lock = await prisma.challengeLock.findUnique({ where: { id: challengeId } });
-    if (lock && lock.locked) {
+    if (!lock || lock.locked) {
       return NextResponse.json({ success: false, error: 'Challenge is locked' }, { status: 423 });
     }
 
