@@ -22,7 +22,23 @@ model LeaderboardUser {
   name      String @unique
   avatar    String
   score     Int
+  // Set at login time (from the dropdown populated by SessionTeam), not
+  // typed free-text - so with more than 2 teams, feedback can be tagged
+  // from each person's own login instead of one admin-wide "current team"
+  // switch. Nullable only for rows created before this existed.
+  teamName  String?
   updatedAt DateTime @default(now()) @updatedAt
+}
+
+// The admin-managed list of team names offered in the login dropdown, so
+// everyone picks a team instead of typing (and misspelling) their own.
+// Populate this before a session; the public /api/session-teams endpoint
+// just reads it back for the login screen.
+model SessionTeam {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
 }
 
 model ChallengeSubmission {
@@ -66,7 +82,10 @@ model SessionArchive {
 
 // Submitted by devs themselves via the "Give Feedback" button, any time -
 // not gated on finishing every lab. teamName is derived server-side from
-// FeedbackToggle.currentTeam at submit time, not typed by the dev.
+// the submitter's own LeaderboardUser.teamName (set at login), not typed
+// by the dev at feedback time. (Formerly derived from the single admin-wide
+// FeedbackToggle.currentTeam - replaced because that only supports one
+// team being "live" at a time.)
 // Ratings live in FeedbackAnswer (one row per question answered), NOT as
 // fixed columns here - so questions can be added/removed/reworded via the
 // admin UI with no further schema changes, ever.
@@ -129,10 +148,9 @@ model FeedbackQuestion {
 // Single-row session settings:
 // 1) "Give Feedback" stays greyed out for everyone until an admin turns it
 //    on (e.g. near the end of a session).
-// 2) currentTeam is the ONE place a team name gets typed, by the admin -
-//    not re-typed by every dev. Every feedback submission is tagged with
-//    this value server-side, and "Reset Everything" pre-fills its archive
-//    prompt from it, so the same name is used everywhere without retyping.
+// 2) currentTeam is kept only as the default label the "Reset Everything"
+//    archive prompt pre-fills from - it no longer tags feedback submissions
+//    (see FeedbackResponse comment above). Deprecated for that purpose.
 model FeedbackToggle {
   id          Int     @id @default(1)
   enabled     Boolean @default(false)

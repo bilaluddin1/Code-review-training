@@ -17,13 +17,6 @@ type RatingStyle = "words" | "numbers";
 type FeedbackQuestion = { id: string; label: string; followUpLabel: string; ratingStyle: RatingStyle };
 type AdminFeedbackQuestion = { id: string; label: string; followUpLabel: string; order: number; active: boolean; ratingStyle: RatingStyle };
 
-// Simple avatar generator: pick a random emoji
-const AVATARS = ["🦊", "🐻", "🐼", "🐸", "🐵", "🐶", "🐱", "🦁", "🐯", "🐨", "🐰", "🦄", "🐙", "🐧", "🐢", "🐦", "🐝", "🐬", "🦋", "🐞"];
-function getRandomAvatar() {
-  return AVATARS[Math.floor(Math.random() * AVATARS.length)];
-}
-
-
 function UserBar({ name, avatar, score, isAdmin, onAdminLogout, onGiveFeedback, feedbackEnabled }: { name: string; avatar: string; score: number; isAdmin: boolean; onAdminLogout: () => void; onGiveFeedback?: () => void; feedbackEnabled?: boolean }) {
   return (
     <div className="fixed top-4 right-4 z-50 flex items-center gap-3 bg-white/80 shadow rounded-full px-4 py-2 border border-gray-200">
@@ -48,12 +41,28 @@ function UserBar({ name, avatar, score, isAdmin, onAdminLogout, onGiveFeedback, 
   );
 }
 
-function NameModal({ open, onSubmit }: { open: boolean; onSubmit: (name: string) => void }) {
+function NameModal({ open, onSubmit }: { open: boolean; onSubmit: (name: string, teamName: string) => void }) {
   const [input, setInput] = useState("");
   const [checking, setChecking] = useState(false);
   const [available, setAvailable] = useState<boolean | null>(null);
   const [error, setError] = useState("");
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Team is picked from an admin-populated list, not typed - so it can't be
+  // misspelled the way the old single admin-wide "current team" relied on.
+  const [teams, setTeams] = useState<string[]>([]);
+  const [team, setTeam] = useState("");
+  useEffect(() => {
+    if (!open) return;
+    fetch("/api/session-teams")
+      .then((res) => res.json())
+      .then((data) => {
+        const list: string[] = Array.isArray(data.teams) ? data.teams : [];
+        setTeams(list);
+        setTeam((t) => t || list[0] || "");
+      })
+      .catch(() => setTeams([]));
+  }, [open]);
 
   useEffect(() => {
     setAvailable(null);
@@ -85,11 +94,7 @@ function NameModal({ open, onSubmit }: { open: boolean; onSubmit: (name: string)
       const data = await res.json();
       setAvailable(data.available);
       if (!data.available) {
-        if (data.reserved) {
-          setError(`"${name}" is a reserved name — please choose a different username`);
-        } else {
-          setError("Username is already taken");
-        }
+        setError(data.error || "Username is already taken");
       }
     } catch {
       setError("Could not check username availability");
@@ -99,8 +104,9 @@ function NameModal({ open, onSubmit }: { open: boolean; onSubmit: (name: string)
     }
   };
 
+  const canContinue = !!input.trim() && available === true && !!team;
   const handleContinue = () => {
-    if (input.trim() && available) onSubmit(input.trim());
+    if (canContinue) onSubmit(input.trim(), team);
   };
 
   if (!open) return null;
@@ -111,18 +117,34 @@ function NameModal({ open, onSubmit }: { open: boolean; onSubmit: (name: string)
         <p className="text-gray-600 text-sm mb-2">Enter your name to get started:</p>
         <input
           className="border rounded px-3 py-2 w-full focus:outline-none focus:ring"
-          placeholder="Your name"
+          placeholder="Your name, or Name1/Name2 if working in a pair"
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={async e => {
-            if (e.key === 'Enter' && input.trim() && available) {
-              onSubmit(input.trim());
+            if (e.key === 'Enter' && canContinue) {
+              onSubmit(input.trim(), team);
             }
           }}
         />
         {checking && <div className="text-xs text-gray-500">Checking availability...</div>}
         {error && <div className="text-xs text-red-600">{error}</div>}
-        <Button className="w-full mt-2" onClick={handleContinue} disabled={checking || available !== true}>
+        <div className="w-full">
+          <p className="text-gray-600 text-sm mb-1">Your team:</p>
+          {teams.length > 0 ? (
+            <select
+              className="border rounded px-3 py-2 w-full focus:outline-none focus:ring"
+              value={team}
+              onChange={e => setTeam(e.target.value)}
+            >
+              {teams.map((t) => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </select>
+          ) : (
+            <div className="text-xs text-gray-500">No teams set up yet for this session - ask your trainer.</div>
+          )}
+        </div>
+        <Button className="w-full mt-2" onClick={handleContinue} disabled={checking || !canContinue}>
           Continue
         </Button>
       </div>
@@ -216,7 +238,7 @@ function FeedbackModal({ open, onSubmit, onClose, currentTeam, questions }: { op
     const ok = await onSubmit(values);
     setSubmitting(false);
     if (ok) setSubmitted(true);
-    else setError("Could not submit feedback - ask your trainer to confirm the session team is set, then try again.");
+    else setError("Could not submit feedback - ask your trainer to confirm feedback is open for this session, then try again.");
   };
 
   const setRating = (id: string, rating: number) =>
@@ -430,6 +452,45 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
   const [playgroundDraft, setPlaygroundDraft] = useState<PlaygroundConfig | null>(null);
   const [playgroundSaving, setPlaygroundSaving] = useState(false);
   const [playgroundError, setPlaygroundError] = useState<string | null>(null);
+
+  // The team list offered in the login dropdown - set up here before a
+  // session so devs pick a team instead of typing (and misspelling) one.
+  const [sessionTeams, setSessionTeams] = useState<string[]>([]);
+  const [newTeamName, setNewTeamName] = useState("");
+  const [teamsSaving, setTeamsSaving] = useState(false);
+  const fetchSessionTeams = () => {
+    fetch('/api/session-teams')
+      .then(r => r.json())
+      .then(data => setSessionTeams(Array.isArray(data.teams) ? data.teams : []))
+      .catch(() => {});
+  };
+  useEffect(() => { fetchSessionTeams(); }, []);
+  const addSessionTeam = async () => {
+    if (!newTeamName.trim()) return;
+    setTeamsSaving(true);
+    const res = await fetch('/api/admin/session-teams', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: newTeamName.trim() }),
+    });
+    setTeamsSaving(false);
+    if (res.ok) {
+      setNewTeamName("");
+      fetchSessionTeams();
+    } else {
+      const data = await res.json().catch(() => ({}));
+      alert(data.error || "Could not add team");
+    }
+  };
+  const removeSessionTeam = async (name: string) => {
+    if (!window.confirm(`Remove "${name}" from the login dropdown? Anyone already logged in under it keeps their team.`)) return;
+    const res = await fetch('/api/admin/session-teams', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name }),
+    });
+    if (res.ok) fetchSessionTeams();
+  };
 
   useEffect(() => {
     fetch('/api/admin/playgrounds')
@@ -1521,9 +1582,45 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
                 </Button>
               </div>
 
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                <h3 className="font-semibold mb-1">Teams for login (more than 2 supported)</h3>
+                <p className="text-xs text-gray-600 mb-3">Add every team's name here before the session starts - this is the list devs pick from at login, so feedback and the leaderboard are tagged with their real team automatically.</p>
+                <div className="flex items-center gap-2 mb-3">
+                  <input
+                    className="border rounded px-2 py-1 text-sm flex-1 min-w-0"
+                    placeholder="e.g. VLCore"
+                    value={newTeamName}
+                    onChange={(e) => setNewTeamName(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') addSessionTeam(); }}
+                  />
+                  <Button size="sm" disabled={teamsSaving || !newTeamName.trim()} onClick={addSessionTeam}>
+                    {teamsSaving ? '...' : 'Add'}
+                  </Button>
+                </div>
+                {sessionTeams.length === 0 ? (
+                  <p className="text-xs text-gray-500">No teams added yet - the login screen will show nothing to pick until at least one is added.</p>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {sessionTeams.map((t) => (
+                      <span key={t} className="inline-flex items-center gap-1 bg-white border rounded-full pl-3 pr-1 py-1 text-xs">
+                        {t}
+                        <button
+                          type="button"
+                          aria-label={`Remove ${t}`}
+                          className="text-gray-400 hover:text-red-600 rounded-full w-4 h-4 flex items-center justify-center"
+                          onClick={() => removeSessionTeam(t)}
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-3 pb-3 border-b border-green-200">
-                  <span className="text-sm font-medium shrink-0">Session Team:</span>
+                  <span className="text-sm font-medium shrink-0">Archive label (used by Reset Everything only):</span>
                   <input
                     className="border rounded px-2 py-1 text-sm flex-1 min-w-0"
                     placeholder="e.g. VLCore"
@@ -1534,7 +1631,7 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
                     {teamSaving ? '...' : 'Save'}
                   </Button>
                   <span className="text-xs text-gray-500 shrink-0">
-                    {currentTeam ? `Feedback is tagged "${currentTeam}"` : 'Not set - feedback submissions will fail until set'}
+                    Fallback label for leaderboard rows with no team set at login
                   </span>
                 </div>
                 <div className="flex items-center justify-between mb-3 gap-3">
@@ -2018,7 +2115,7 @@ function getDynamicLabUrl(labPath: string) {
 
 export default function CodeReviewChallenge() {
   // User state
-  const [user, setUser] = useState({ name: "", avatar: "", score: 0 });
+  const [user, setUser] = useState<{ name: string; avatar: string; score: number; teamName: string | null }>({ name: "", avatar: "", score: 0, teamName: null });
   const [showNameModal, setShowNameModal] = useState(false);
 
   // Admin state
@@ -2029,7 +2126,6 @@ export default function CodeReviewChallenge() {
   // Feedback state - available any time, not gated on finishing every lab
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [feedbackEnabled, setFeedbackEnabled] = useState(false);
-  const [currentTeam, setCurrentTeam] = useState<string | null>(null);
   const [feedbackQuestions, setFeedbackQuestions] = useState<FeedbackQuestion[]>([]);
   const handleFeedbackSubmit = async (v: FeedbackValues): Promise<boolean> => {
     const res = await fetch("/api/feedback", {
@@ -2148,6 +2244,7 @@ export default function CodeReviewChallenge() {
               name: parsed.name,
               avatar: parsed.avatar,
               score: found ? found.score : 0,
+              teamName: found?.teamName ?? parsed.teamName ?? null,
             });
           });
       } catch (error) {
@@ -2181,19 +2278,16 @@ export default function CodeReviewChallenge() {
     // Live feedback-toggle updates - so the "Give Feedback" button appears
     // or disappears for everyone the moment an admin flips it, instead of
     // only after a refresh (same gap the lock sync fix closed earlier).
-    const handleFeedbackEnabledUpdate = ({ enabled, currentTeam: team }: { enabled: boolean; currentTeam: string | null }) => {
+    const handleFeedbackEnabledUpdate = ({ enabled }: { enabled: boolean }) => {
       setFeedbackEnabled(!!enabled);
-      setCurrentTeam(team ?? null);
     };
     locksSocket.on('feedback-enabled:update', handleFeedbackEnabledUpdate);
 
-    // Whether the "Give Feedback" button is live yet, and which team this
-    // session is currently set to (admin-controlled, never typed by a dev)
+    // Whether the "Give Feedback" button is live yet
     fetch('/api/feedback-enabled')
       .then(res => res.json())
       .then(data => {
         setFeedbackEnabled(!!data.enabled);
-        setCurrentTeam(data.currentTeam ?? null);
       });
 
     // The feedback form's wording/order - reflects any admin customization
@@ -2246,9 +2340,26 @@ export default function CodeReviewChallenge() {
     localStorage.setItem("crc_admin", isAdmin ? "true" : "false");
   }, [isAdmin]);
 
-  const handleNameSubmit = (name: string) => {
-    setUser({ name, avatar: getRandomAvatar(), score: 0 });
-    setShowNameModal(false);
+  const handleNameSubmit = async (name: string, teamName: string) => {
+    // Persisted immediately via /api/login (not lazily on first solved
+    // challenge) so teamName is on record even if this person only ever
+    // gives feedback and never solves a lab.
+    try {
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, teamName }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || "Could not log in - try again.");
+        return;
+      }
+      setUser({ name: data.name, avatar: data.avatar, score: data.score, teamName: data.teamName });
+      setShowNameModal(false);
+    } catch {
+      alert("Could not log in - check your connection and try again.");
+    }
   };
 
   // Admin login/logout logic
@@ -2529,7 +2640,7 @@ export default function CodeReviewChallenge() {
     return (
       <>
         <UserBar name={user.name} avatar={user.avatar} score={user.score} isAdmin={isAdmin} onAdminLogout={handleAdminLogout} onGiveFeedback={() => setShowFeedbackModal(true)} feedbackEnabled={feedbackEnabled} />
-        <FeedbackModal open={showFeedbackModal} onSubmit={handleFeedbackSubmit} onClose={() => setShowFeedbackModal(false)} currentTeam={currentTeam} questions={feedbackQuestions} />
+        <FeedbackModal open={showFeedbackModal} onSubmit={handleFeedbackSubmit} onClose={() => setShowFeedbackModal(false)} currentTeam={user.teamName} questions={feedbackQuestions} />
         <div className="min-h-screen bg-gray-50 p-4">
           <div className="max-w-4xl mx-auto space-y-6">
             <div className="text-center mb-8">
@@ -2635,7 +2746,7 @@ export default function CodeReviewChallenge() {
   return (
     <>
       <UserBar name={user.name} avatar={user.avatar} score={user.score} isAdmin={isAdmin} onAdminLogout={handleAdminLogout} onGiveFeedback={() => setShowFeedbackModal(true)} feedbackEnabled={feedbackEnabled} />
-      <FeedbackModal open={showFeedbackModal} onSubmit={handleFeedbackSubmit} onClose={() => setShowFeedbackModal(false)} currentTeam={currentTeam} questions={feedbackQuestions} />
+      <FeedbackModal open={showFeedbackModal} onSubmit={handleFeedbackSubmit} onClose={() => setShowFeedbackModal(false)} currentTeam={user.teamName} questions={feedbackQuestions} />
       <div className="min-h-screen bg-gray-50 p-4">
         <div className="max-w-6xl mx-auto space-y-6">
           <div className="flex flex-col md:flex-row md:items-start md:gap-6">

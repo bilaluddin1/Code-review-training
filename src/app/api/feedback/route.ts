@@ -7,7 +7,9 @@ import { prisma } from "@/lib/prisma";
 // needs BOTH a 1-5 rating AND its own non-empty open-text follow-up - a
 // rating with no explanation is exactly the gap this is designed to close.
 // Team is never taken from the client - it's derived server-side from the
-// admin-set session setting.
+// submitter's own LeaderboardUser.teamName, set once at login (not from a
+// single admin-wide "current team" switch, which only supports one team
+// being live at a time).
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   if (!body) return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
@@ -21,9 +23,12 @@ export async function POST(req: NextRequest) {
   }
 
   const settings = await prisma.feedbackToggle.findUnique({ where: { id: 1 } });
-  if (!settings?.currentTeam) {
-    return NextResponse.json({ error: "Your trainer hasn't set a team name for this session yet - ask them to set it before submitting feedback." }, { status: 409 });
+  if (!settings?.enabled) {
+    return NextResponse.json({ error: "Feedback isn't open for this session yet - ask your trainer." }, { status: 409 });
   }
+
+  const submitter = await prisma.leaderboardUser.findUnique({ where: { name: userName.trim() } });
+  const teamName = submitter?.teamName ?? null;
 
   const activeQuestions = await getActiveFeedbackQuestions();
   const byId = new Map(activeQuestions.map((q) => [q.id, q]));
@@ -46,7 +51,7 @@ export async function POST(req: NextRequest) {
   await prisma.feedbackResponse.create({
     data: {
       userName: userName.trim(),
-      teamName: settings.currentTeam,
+      teamName,
       comments: typeof comments === "string" && comments.trim() ? comments.trim().slice(0, 2000) : null,
       answers: {
         create: Array.from(answered.entries())

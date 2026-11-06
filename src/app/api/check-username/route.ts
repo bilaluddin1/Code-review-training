@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from "@/lib/prisma";
-// Reserved usernames that cannot be used by regular participants
-const RESERVED_USERNAMES = ['admin', 'administrator', 'root', 'system', 'moderator'];
+import { validateLoginName } from "@/lib/validateLoginName";
 
 export async function POST(request: Request) {
   try {
@@ -10,12 +9,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid username' }, { status: 400 });
     }
 
-    // Block reserved usernames
-    if (RESERVED_USERNAMES.includes(username.toLowerCase().trim())) {
+    const check = validateLoginName(username);
+    if (!check.ok) {
       return NextResponse.json({
         available: false,
-        reserved: true,
-        error: `"${username}" is a reserved name and cannot be used.`
+        reserved: check.reason === "reserved",
+        error: check.error,
       });
     }
 
