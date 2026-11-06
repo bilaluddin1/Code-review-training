@@ -117,7 +117,8 @@ function NameModal({ open, onSubmit }: { open: boolean; onSubmit: (name: string,
         <p className="text-gray-600 text-sm mb-2">Enter your name to get started:</p>
         <input
           className="border rounded px-3 py-2 w-full focus:outline-none focus:ring"
-          placeholder="Your name, or Name1/Name2 if working in a pair"
+          placeholder="Your name"
+          title="Your name, or Name1/Name2 if working in a pair"
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={async e => {
@@ -126,6 +127,7 @@ function NameModal({ open, onSubmit }: { open: boolean; onSubmit: (name: string,
             }
           }}
         />
+        <p className="text-gray-400 text-xs -mt-2 self-start">Working in a pair? Use Name1/Name2</p>
         {checking && <div className="text-xs text-gray-500">Checking availability...</div>}
         {error && <div className="text-xs text-red-600">{error}</div>}
         <div className="w-full">
