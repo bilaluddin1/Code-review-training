@@ -32,16 +32,27 @@ export async function POST(req: NextRequest) {
 
   const activeQuestions = await getActiveFeedbackQuestions();
   const byId = new Map(activeQuestions.map((q) => [q.id, q]));
-  const answered = new Map<string, { rating: number; followUpText: string }>();
+  const answered = new Map<string, { rating: number | null; followUpText: string | null; selectedOption: string | null }>();
   for (const a of answers) {
-    if (typeof a?.questionId !== "string" || typeof a?.rating !== "number" || a.rating < 1 || a.rating > 5) {
+    if (typeof a?.questionId !== "string") {
+      return NextResponse.json({ error: "Each answer needs a questionId" }, { status: 400 });
+    }
+    const q = byId.get(a.questionId);
+    if (q?.questionType === "choice") {
+      const opts: string[] = q.options ? JSON.parse(q.options) : [];
+      if (typeof a?.selectedOption !== "string" || !opts.includes(a.selectedOption)) {
+        return NextResponse.json({ error: `Please pick an option for: "${q.label}"` }, { status: 400 });
+      }
+      answered.set(a.questionId, { rating: null, followUpText: null, selectedOption: a.selectedOption });
+      continue;
+    }
+    if (typeof a?.rating !== "number" || a.rating < 1 || a.rating > 5) {
       return NextResponse.json({ error: "Each answer needs a questionId and a rating from 1 to 5" }, { status: 400 });
     }
     if (typeof a?.followUpText !== "string" || !a.followUpText.trim()) {
-      const q = byId.get(a.questionId);
       return NextResponse.json({ error: `Please answer: "${q?.followUpLabel ?? "the follow-up question"}"` }, { status: 400 });
     }
-    answered.set(a.questionId, { rating: a.rating, followUpText: a.followUpText.trim().slice(0, 2000) });
+    answered.set(a.questionId, { rating: a.rating, followUpText: a.followUpText.trim().slice(0, 2000), selectedOption: null });
   }
   const missing = activeQuestions.filter((q) => !answered.has(q.id));
   if (missing.length > 0) {
@@ -61,9 +72,11 @@ export async function POST(req: NextRequest) {
             return {
               questionId,
               labelSnapshot: q.label,
+              questionType: q.questionType,
               rating: a.rating,
               followUpLabelSnapshot: q.followUpLabel,
               followUpText: a.followUpText,
+              selectedOption: a.selectedOption,
             };
           }),
       },

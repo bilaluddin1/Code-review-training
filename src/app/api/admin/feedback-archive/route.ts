@@ -63,6 +63,7 @@ export async function GET(req: NextRequest) {
           rating: a.rating,
           followUpLabel: a.followUpLabelSnapshot,
           followUpText: a.followUpText,
+          selectedOption: a.selectedOption,
         })),
       })),
     }))

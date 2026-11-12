@@ -9,7 +9,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
   const { id } = await params;
   const body = await req.json().catch(() => ({}));
-  const data: { label?: string; followUpLabel?: string; active?: boolean; order?: number; ratingStyle?: string } = {};
+  const data: { label?: string; followUpLabel?: string | null; active?: boolean; order?: number; ratingStyle?: string; questionType?: string; options?: string } = {};
   if (body.label !== undefined) {
     if (typeof body.label !== "string" || !body.label.trim()) {
       return NextResponse.json({ error: "label must be a non-empty string" }, { status: 400 });
@@ -39,6 +39,22 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       return NextResponse.json({ error: "ratingStyle must be 'words' or 'numbers'" }, { status: 400 });
     }
     data.ratingStyle = body.ratingStyle;
+  }
+  if (body.questionType !== undefined) {
+    if (body.questionType !== "rating" && body.questionType !== "choice") {
+      return NextResponse.json({ error: "questionType must be 'rating' or 'choice'" }, { status: 400 });
+    }
+    data.questionType = body.questionType;
+  }
+  if (body.options !== undefined) {
+    if (!Array.isArray(body.options) || body.options.some((o: unknown) => typeof o !== "string")) {
+      return NextResponse.json({ error: "options must be an array of strings" }, { status: 400 });
+    }
+    const cleaned = (body.options as string[]).map((o) => o.trim()).filter(Boolean);
+    if (cleaned.length < 2) {
+      return NextResponse.json({ error: "A choice question needs at least 2 options" }, { status: 400 });
+    }
+    data.options = JSON.stringify(cleaned);
   }
   if (Object.keys(data).length === 0) {
     return NextResponse.json({ error: "Nothing to update" }, { status: 400 });

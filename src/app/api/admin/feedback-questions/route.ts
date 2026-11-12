@@ -24,20 +24,42 @@ export async function GET(req: NextRequest) {
 // default. Both the rating question and its open-text follow-up are
 // required - a rating with no paired "why" question is exactly the gap
 // this redesign closes.
+// POST /api/admin/feedback-questions { label, questionType?, followUpLabel?, options? }
+// questionType "rating" (default): label + followUpLabel required, as before.
+// questionType "choice": label + at least 2 non-empty options required instead -
+// the dev picks one option rather than rating 1-5.
 export async function POST(req: NextRequest) {
   if (!(await isAdminSession(req))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const { label, followUpLabel } = await req.json().catch(() => ({ label: "", followUpLabel: "" }));
+  const body = await req.json().catch(() => ({}));
+  const { label, followUpLabel, questionType, options } = body as {
+    label?: string; followUpLabel?: string; questionType?: string; options?: unknown;
+  };
   if (typeof label !== "string" || !label.trim()) {
     return NextResponse.json({ error: "label is required" }, { status: 400 });
   }
+  const max = await prisma.feedbackQuestion.aggregate({ _max: { order: true } });
+  const order = (max._max.order ?? -1) + 1;
+
+  if (questionType === "choice") {
+    const cleanOptions = Array.isArray(options)
+      ? (options as unknown[]).filter((o): o is string => typeof o === "string").map((o) => o.trim()).filter(Boolean)
+      : [];
+    if (cleanOptions.length < 2) {
+      return NextResponse.json({ error: "A choice question needs at least 2 options" }, { status: 400 });
+    }
+    const question = await prisma.feedbackQuestion.create({
+      data: { label: label.trim(), followUpLabel: null, questionType: "choice", options: JSON.stringify(cleanOptions), order, active: true },
+    });
+    return NextResponse.json({ question });
+  }
+
   if (typeof followUpLabel !== "string" || !followUpLabel.trim()) {
     return NextResponse.json({ error: "followUpLabel is required - every rating needs its own open-text question" }, { status: 400 });
   }
-  const max = await prisma.feedbackQuestion.aggregate({ _max: { order: true } });
   const question = await prisma.feedbackQuestion.create({
-    data: { label: label.trim(), followUpLabel: followUpLabel.trim(), order: (max._max.order ?? -1) + 1, active: true },
+    data: { label: label.trim(), followUpLabel: followUpLabel.trim(), questionType: "rating", order, active: true },
   });
   return NextResponse.json({ question });
 }

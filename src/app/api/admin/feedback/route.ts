@@ -46,7 +46,9 @@ export async function GET(req: NextRequest) {
   const columns = Array.from(seen.values()).sort((a, b) => a.firstSeenOrder - b.firstSeenOrder);
 
   const averages = columns.map((col) => {
-    const ratings = responses.flatMap((r) => r.answers.filter((a) => a.questionId === col.questionId).map((a) => a.rating));
+    const ratings = responses
+      .flatMap((r) => r.answers.filter((a) => a.questionId === col.questionId).map((a) => a.rating))
+      .filter((r): r is number => r != null);
     const avg = ratings.length ? Math.round((ratings.reduce((s, v) => s + v, 0) / ratings.length) * 10) / 10 : null;
     return { questionId: col.questionId, label: col.label, average: avg, count: ratings.length };
   });
@@ -67,6 +69,7 @@ export async function GET(req: NextRequest) {
         rating: a.rating,
         followUpLabel: a.followUpLabelSnapshot,
         followUpText: a.followUpText,
+        selectedOption: a.selectedOption,
       })),
     })),
   });

@@ -10,5 +10,14 @@ export const dynamic = 'force-dynamic';
 // (id + wording + order) - fully admin-controlled, no hardcoded list.
 export async function GET() {
   const questions = await getActiveFeedbackQuestions();
-  return NextResponse.json({ questions: questions.map((q) => ({ id: q.id, label: q.label, followUpLabel: q.followUpLabel, ratingStyle: q.ratingStyle })) });
+  return NextResponse.json({
+    questions: questions.map((q) => ({
+      id: q.id,
+      label: q.label,
+      followUpLabel: q.followUpLabel,
+      ratingStyle: q.ratingStyle,
+      questionType: q.questionType,
+      options: q.questionType === "choice" && q.options ? (JSON.parse(q.options) as string[]) : undefined,
+    })),
+  });
 }

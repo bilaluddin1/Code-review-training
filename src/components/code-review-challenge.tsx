@@ -14,8 +14,9 @@ import { getSocketUrl } from '@/lib/get-socket-url'
 // Feedback questions are fully dynamic now (admin add/remove/reorder via
 // UI, stored server-side) - these are just the shapes the API returns.
 type RatingStyle = "words" | "numbers";
-type FeedbackQuestion = { id: string; label: string; followUpLabel: string; ratingStyle: RatingStyle };
-type AdminFeedbackQuestion = { id: string; label: string; followUpLabel: string; order: number; active: boolean; ratingStyle: RatingStyle };
+type QuestionType = "rating" | "choice";
+type FeedbackQuestion = { id: string; label: string; followUpLabel: string | null; ratingStyle: RatingStyle; questionType: QuestionType; options?: string[] };
+type AdminFeedbackQuestion = { id: string; label: string; followUpLabel: string | null; order: number; active: boolean; ratingStyle: RatingStyle; questionType: QuestionType; options?: string[] };
 
 function UserBar({ name, avatar, score, isAdmin, onAdminLogout, onGiveFeedback, feedbackEnabled }: { name: string; avatar: string; score: number; isAdmin: boolean; onAdminLogout: () => void; onGiveFeedback?: () => void; feedbackEnabled?: boolean }) {
   return (
@@ -192,7 +193,7 @@ function AdminModal({ open, onSubmit, onClose, error }: { open: boolean, onSubmi
 // instead of each person typing (and misspelling) their own team name.
 // answers is keyed by question id (dynamic, admin-managed) rather than a
 // fixed set of keys.
-type FeedbackValues = { answers: Record<string, { rating: number; followUpText: string }>; comments: string };
+type FeedbackValues = { answers: Record<string, { rating: number; followUpText: string; selectedOption: string }>; comments: string };
 const EMPTY_FEEDBACK_VALUES: FeedbackValues = { answers: {}, comments: "" };
 
 // 1-5 under the hood (storage, averages, CSV), but devs pick a word, not a digit.
@@ -227,12 +228,13 @@ function FeedbackModal({ open, onSubmit, onClose, currentTeam, questions }: { op
 
   const allAnswered = questions.length > 0 && questions.every((q) => {
     const a = values.answers[q.id];
-    return a && a.rating > 0 && a.followUpText.trim().length > 0;
+    if (q.questionType === "choice") return !!a?.selectedOption;
+    return !!a && a.rating > 0 && a.followUpText.trim().length > 0;
   });
 
   const submit = async () => {
     if (!allAnswered) {
-      setError("Please rate every question and answer its follow-up.");
+      setError("Please answer every question.");
       return;
     }
     setSubmitting(true);
@@ -244,9 +246,11 @@ function FeedbackModal({ open, onSubmit, onClose, currentTeam, questions }: { op
   };
 
   const setRating = (id: string, rating: number) =>
-    setValues((s) => ({ ...s, answers: { ...s.answers, [id]: { rating, followUpText: s.answers[id]?.followUpText ?? "" } } }));
+    setValues((s) => ({ ...s, answers: { ...s.answers, [id]: { rating, followUpText: s.answers[id]?.followUpText ?? "", selectedOption: s.answers[id]?.selectedOption ?? "" } } }));
   const setFollowUp = (id: string, followUpText: string) =>
-    setValues((s) => ({ ...s, answers: { ...s.answers, [id]: { rating: s.answers[id]?.rating ?? 0, followUpText } } }));
+    setValues((s) => ({ ...s, answers: { ...s.answers, [id]: { rating: s.answers[id]?.rating ?? 0, followUpText, selectedOption: s.answers[id]?.selectedOption ?? "" } } }));
+  const setSelectedOption = (id: string, selectedOption: string) =>
+    setValues((s) => ({ ...s, answers: { ...s.answers, [id]: { rating: s.answers[id]?.rating ?? 0, followUpText: s.answers[id]?.followUpText ?? "", selectedOption } } }));
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
@@ -269,13 +273,33 @@ function FeedbackModal({ open, onSubmit, onClose, currentTeam, questions }: { op
             )}
             {questions.map((q) => (
               <div key={q.id} className="border-b pb-3 last:border-b-0">
-                <RatingRow label={q.label} value={values.answers[q.id]?.rating ?? 0} onChange={(v) => setRating(q.id, v)} ratingStyle={q.ratingStyle} />
-                <Textarea
-                  className="mt-2"
-                  placeholder={q.followUpLabel}
-                  value={values.answers[q.id]?.followUpText ?? ""}
-                  onChange={(e) => setFollowUp(q.id, e.target.value)}
-                />
+                {q.questionType === "choice" ? (
+                  <div className="w-full">
+                    <div className="text-sm font-medium mb-1">{q.label}</div>
+                    <div className="flex gap-2 flex-wrap">
+                      {(q.options ?? []).map((opt) => (
+                        <button
+                          key={opt}
+                          type="button"
+                          onClick={() => setSelectedOption(q.id, opt)}
+                          className={`px-3 h-9 rounded-full border text-sm font-semibold transition-colors ${values.answers[q.id]?.selectedOption === opt ? "bg-blue-600 text-white border-blue-600" : "bg-white text-gray-600 border-gray-300 hover:border-blue-400"}`}
+                        >
+                          {opt}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <RatingRow label={q.label} value={values.answers[q.id]?.rating ?? 0} onChange={(v) => setRating(q.id, v)} ratingStyle={q.ratingStyle} />
+                    <Textarea
+                      className="mt-2"
+                      placeholder={q.followUpLabel ?? ""}
+                      value={values.answers[q.id]?.followUpText ?? ""}
+                      onChange={(e) => setFollowUp(q.id, e.target.value)}
+                    />
+                  </>
+                )}
               </div>
             ))}
             <div>
@@ -513,9 +537,9 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
     count: number;
     columns: { questionId: string; label: string; followUpLabel: string }[];
     averages: { questionId: string; label: string; average: number | null; count: number }[];
-    responses: { id: string; userName: string; teamName: string | null; comments: string | null; createdAt: string; answers: { questionId: string; label: string; rating: number; followUpLabel: string; followUpText: string }[] }[];
+    responses: { id: string; userName: string; teamName: string | null; comments: string | null; createdAt: string; answers: { questionId: string; label: string; rating: number | null; followUpLabel: string; followUpText: string | null; selectedOption: string | null }[] }[];
   } | null>(null);
-  type FeedbackResponseRow = { id: string; userName: string; teamName: string | null; comments: string | null; createdAt: string; answers: { questionId: string; label: string; rating: number; followUpLabel: string; followUpText: string }[] };
+  type FeedbackResponseRow = { id: string; userName: string; teamName: string | null; comments: string | null; createdAt: string; answers: { questionId: string; label: string; rating: number | null; followUpLabel: string; followUpText: string | null; selectedOption: string | null }[] };
   const [feedbackArchive, setFeedbackArchive] = useState<{
     count: number;
     columns: { questionId: string; label: string; followUpLabel: string }[];
@@ -530,6 +554,8 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
   const [adminQuestions, setAdminQuestions] = useState<AdminFeedbackQuestion[]>([]);
   const [newQuestionLabel, setNewQuestionLabel] = useState("");
   const [newQuestionFollowUp, setNewQuestionFollowUp] = useState("");
+  const [newQuestionType, setNewQuestionType] = useState<QuestionType>("rating");
+  const [newQuestionOptions, setNewQuestionOptions] = useState("");
   const [questionsSaving, setQuestionsSaving] = useState(false);
   const [timerDurations, setTimerDurations] = useState<Record<string, number>>({});
   const [timers, setTimers] = useState<Record<string, { startTime: number; duration: number; isRunning: boolean; isPaused: boolean; remaining?: number }>>({});
@@ -751,24 +777,32 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
   }, [editingQuestions]);
 
   const addQuestion = async () => {
-    if (!newQuestionLabel.trim() || !newQuestionFollowUp.trim()) return;
     setQuestionsSaving(true);
+    const body = newQuestionType === "choice"
+      ? { label: newQuestionLabel.trim(), questionType: "choice", options: newQuestionOptions.split(",").map((o) => o.trim()).filter(Boolean) }
+      : { label: newQuestionLabel.trim(), followUpLabel: newQuestionFollowUp.trim(), questionType: "rating" };
     const res = await fetch('/api/admin/feedback-questions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ label: newQuestionLabel.trim(), followUpLabel: newQuestionFollowUp.trim() }),
+      body: JSON.stringify(body),
     });
     if (res.ok) {
       setNewQuestionLabel("");
       setNewQuestionFollowUp("");
+      setNewQuestionOptions("");
       await fetchAdminQuestions();
     } else {
       alert('Could not add question - ' + ((await res.json().catch(() => ({})))?.error ?? 'unknown error'));
     }
     setQuestionsSaving(false);
   };
+  const canAddQuestion = newQuestionLabel.trim().length > 0 && (
+    newQuestionType === "choice"
+      ? newQuestionOptions.split(",").map((o) => o.trim()).filter(Boolean).length >= 2
+      : newQuestionFollowUp.trim().length > 0
+  );
 
-  const updateQuestion = async (id: string, data: { label?: string; followUpLabel?: string; active?: boolean; order?: number; ratingStyle?: RatingStyle }) => {
+  const updateQuestion = async (id: string, data: { label?: string; followUpLabel?: string; active?: boolean; order?: number; ratingStyle?: RatingStyle; options?: string[] }) => {
     const res = await fetch(`/api/admin/feedback-questions/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -1566,7 +1600,7 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
                           r.userName,
                           ...feedbackArchive.columns.flatMap((c) => {
                             const a = r.answers.find((a) => a.questionId === c.questionId);
-                            return [a?.rating ?? '', a?.followUpText ?? ''];
+                            return [a?.selectedOption ?? a?.rating ?? '', a?.followUpText ?? ''];
                           }),
                           r.comments ?? '',
                           new Date(r.createdAt).toLocaleString(),
@@ -1642,7 +1676,7 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
                     <p className="text-xs text-gray-500">Archived automatically the next time you click Reset Everything, same as the leaderboard.</p>
                     {feedback && feedback.count > 0 && (
                       <p className="text-sm text-gray-600">
-                        {feedback.averages.slice(0, 3).map((a) => `${a.label}: ${a.average}`).join(' · ')}
+                        {feedback.averages.slice(0, 3).map((a) => `${a.label}: ${a.average ?? 'n/a'}`).join(' · ')}
                         <span className="text-xs text-gray-400"> (full breakdown of all {feedback.columns.length} questions in the CSV)</span>
                       </p>
                     )}
@@ -1671,7 +1705,7 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
                           r.teamName ?? '',
                           ...feedback.columns.flatMap((c) => {
                             const a = r.answers.find((a) => a.questionId === c.questionId);
-                            return [a?.rating ?? '', a?.followUpText ?? ''];
+                            return [a?.selectedOption ?? a?.rating ?? '', a?.followUpText ?? ''];
                           }),
                           r.comments ?? '',
                           new Date(r.createdAt).toLocaleString(),
@@ -1703,25 +1737,39 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
                           <input
                             className="border rounded px-2 py-1 text-sm"
                             defaultValue={q.label}
-                            placeholder="Rating question"
+                            placeholder={q.questionType === "choice" ? "Choice question" : "Rating question"}
                             onBlur={(e) => e.target.value.trim() && e.target.value !== q.label && updateQuestion(q.id, { label: e.target.value.trim() })}
                           />
-                          <input
-                            className="border rounded px-2 py-1 text-xs text-gray-600"
-                            defaultValue={q.followUpLabel}
-                            placeholder="Open-text follow-up"
-                            onBlur={(e) => e.target.value.trim() && e.target.value !== q.followUpLabel && updateQuestion(q.id, { followUpLabel: e.target.value.trim() })}
-                          />
+                          {q.questionType === "choice" ? (
+                            <input
+                              className="border rounded px-2 py-1 text-xs text-gray-600"
+                              defaultValue={(q.options ?? []).join(", ")}
+                              placeholder="Options, comma-separated"
+                              onBlur={(e) => {
+                                const opts = e.target.value.split(",").map((o) => o.trim()).filter(Boolean);
+                                if (opts.length >= 2) updateQuestion(q.id, { options: opts });
+                              }}
+                            />
+                          ) : (
+                            <input
+                              className="border rounded px-2 py-1 text-xs text-gray-600"
+                              defaultValue={q.followUpLabel ?? ""}
+                              placeholder="Open-text follow-up"
+                              onBlur={(e) => e.target.value.trim() && e.target.value !== q.followUpLabel && updateQuestion(q.id, { followUpLabel: e.target.value.trim() })}
+                            />
+                          )}
                         </div>
-                        <select
-                          className="border rounded px-2 py-1 text-xs"
-                          value={q.ratingStyle}
-                          onChange={(e) => updateQuestion(q.id, { ratingStyle: e.target.value as RatingStyle })}
-                          title="How the 1-5 rating buttons are labeled for this question"
-                        >
-                          <option value="words">Poor..Excellent</option>
-                          <option value="numbers">1..5</option>
-                        </select>
+                        {q.questionType === "rating" && (
+                          <select
+                            className="border rounded px-2 py-1 text-xs"
+                            value={q.ratingStyle}
+                            onChange={(e) => updateQuestion(q.id, { ratingStyle: e.target.value as RatingStyle })}
+                            title="How the 1-5 rating buttons are labeled for this question"
+                          >
+                            <option value="words">Poor..Excellent</option>
+                            <option value="numbers">1..5</option>
+                          </select>
+                        )}
                         <Button size="sm" variant="outline" onClick={() => updateQuestion(q.id, { active: !q.active })}>
                           {q.active ? 'Deactivate' : 'Activate'}
                         </Button>
@@ -1730,21 +1778,41 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
                     ))}
                     <div className="flex items-end gap-2 pt-2">
                       <div className="flex-1 flex flex-col gap-1">
+                        <div className="flex gap-1 mb-1">
+                          <button type="button" onClick={() => setNewQuestionType("rating")}
+                            className={`text-xs px-2 py-0.5 rounded border ${newQuestionType === "rating" ? "bg-blue-600 text-white border-blue-600" : "bg-white text-gray-600 border-gray-300"}`}>
+                            Rating
+                          </button>
+                          <button type="button" onClick={() => setNewQuestionType("choice")}
+                            className={`text-xs px-2 py-0.5 rounded border ${newQuestionType === "choice" ? "bg-blue-600 text-white border-blue-600" : "bg-white text-gray-600 border-gray-300"}`}>
+                            Choice
+                          </button>
+                        </div>
                         <input
                           className="border rounded px-2 py-1 text-sm"
-                          placeholder="New rating question..."
+                          placeholder={newQuestionType === "choice" ? "New choice question..." : "New rating question..."}
                           value={newQuestionLabel}
                           onChange={(e) => setNewQuestionLabel(e.target.value)}
                         />
-                        <input
-                          className="border rounded px-2 py-1 text-xs text-gray-600"
-                          placeholder="Its open-text follow-up..."
-                          value={newQuestionFollowUp}
-                          onChange={(e) => setNewQuestionFollowUp(e.target.value)}
-                          onKeyDown={(e) => { if (e.key === 'Enter') addQuestion(); }}
-                        />
+                        {newQuestionType === "choice" ? (
+                          <input
+                            className="border rounded px-2 py-1 text-xs text-gray-600"
+                            placeholder="Options, comma-separated (e.g. SQLi, XSS, IDOR, broken auth, hardcoded secrets)"
+                            value={newQuestionOptions}
+                            onChange={(e) => setNewQuestionOptions(e.target.value)}
+                            onKeyDown={(e) => { if (e.key === 'Enter') addQuestion(); }}
+                          />
+                        ) : (
+                          <input
+                            className="border rounded px-2 py-1 text-xs text-gray-600"
+                            placeholder="Its open-text follow-up..."
+                            value={newQuestionFollowUp}
+                            onChange={(e) => setNewQuestionFollowUp(e.target.value)}
+                            onKeyDown={(e) => { if (e.key === 'Enter') addQuestion(); }}
+                          />
+                        )}
                       </div>
-                      <Button size="sm" onClick={addQuestion} disabled={questionsSaving || !newQuestionLabel.trim() || !newQuestionFollowUp.trim()}>Add Question</Button>
+                      <Button size="sm" onClick={addQuestion} disabled={questionsSaving || !canAddQuestion}>Add Question</Button>
                     </div>
                   </div>
                 )}
@@ -1770,7 +1838,7 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
                         <div className="mt-1 space-y-1">
                           {r.answers.map((a) => (
                             <div key={a.questionId} className="text-xs">
-                              <span className="font-medium text-gray-700">{a.label}: {a.rating}</span>
+                              <span className="font-medium text-gray-700">{a.label}: {a.selectedOption ?? a.rating}</span>
                               {a.followUpText && <span className="text-gray-600"> - &quot;{a.followUpText}&quot;</span>}
                             </div>
                           ))}
@@ -1851,7 +1919,7 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
                                 r.teamName ?? '',
                                 ...feedbackArchive.columns.flatMap((c) => {
                                   const a = r.answers.find((a) => a.questionId === c.questionId);
-                                  return [a?.rating ?? '', a?.followUpText ?? ''];
+                                  return [a?.selectedOption ?? a?.rating ?? '', a?.followUpText ?? ''];
                                 }),
                                 r.comments ?? '',
                                 new Date(r.createdAt).toLocaleString(),
@@ -1881,7 +1949,7 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
                           <div className="mt-1 space-y-1">
                             {r.answers.map((a) => (
                               <div key={a.questionId} className="text-xs">
-                                <span className="font-medium text-gray-700">{a.label}: {a.rating}</span>
+                                <span className="font-medium text-gray-700">{a.label}: {a.selectedOption ?? a.rating}</span>
                                 {a.followUpText && <span className="text-gray-600"> - &quot;{a.followUpText}&quot;</span>}
                               </div>
                             ))}
@@ -2136,7 +2204,12 @@ export default function CodeReviewChallenge() {
       body: JSON.stringify({
         userName: user.name,
         comments: v.comments,
-        answers: Object.entries(v.answers).map(([questionId, a]) => ({ questionId, rating: a.rating, followUpText: a.followUpText })),
+        answers: Object.entries(v.answers).map(([questionId, a]) => {
+          const q = feedbackQuestions.find((q) => q.id === questionId);
+          return q?.questionType === "choice"
+            ? { questionId, selectedOption: a.selectedOption }
+            : { questionId, rating: a.rating, followUpText: a.followUpText };
+        }),
       }),
     });
     return res.ok;

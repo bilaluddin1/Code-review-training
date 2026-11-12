@@ -121,9 +121,14 @@ model FeedbackAnswer {
   responseId             String
   questionId             String
   labelSnapshot          String
-  rating                 Int // 1-5
-  followUpLabelSnapshot  String
-  followUpText           String // required - see schema comment above
+  // "rating" (1-5 + follow-up, the original/default shape) or "choice"
+  // (pick one of the question's fixed options) - snapshotted per answer so
+  // a question's type can change later without corrupting old rows.
+  questionType           String           @default("rating")
+  rating                 Int? // 1-5, rating questions only
+  followUpLabelSnapshot  String?
+  followUpText           String? // required for rating questions - enforced in /api/feedback
+  selectedOption         String? // choice questions only
 
   @@index([responseId])
   @@index([questionId])
@@ -132,16 +137,21 @@ model FeedbackAnswer {
 // The live, admin-editable list of feedback questions. Order and active
 // state control what the form asks right now; existing FeedbackAnswer rows
 // are untouched by edits here (they keep their own label/followUp snapshots).
-// Each question pairs a rating with its own open-text follow-up.
+// Two shapes: "rating" pairs a 1-5 rating with its own open-text follow-up;
+// "choice" asks the dev to pick one of a fixed set of options (e.g. "which
+// vulnerability do you understand best?" -> SQLi/XSS/IDOR/...).
 model FeedbackQuestion {
   id            String   @id @default(uuid())
   label         String
-  followUpLabel String
+  followUpLabel String? // rating questions only
   order         Int
   active        Boolean  @default(true)
   // "words" (Poor..Excellent) or "numbers" (plain 1-5) - e.g. an NPS-style
   // "would you recommend this" question reads better as a number.
   ratingStyle   String   @default("words")
+  // "rating" or "choice" - see FeedbackAnswer comment above.
+  questionType  String   @default("rating")
+  options       String? // JSON array of option strings, "choice" questions only
   createdAt     DateTime @default(now())
 }
 
