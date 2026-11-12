@@ -88,18 +88,6 @@ export default function PlaygroundPage() {
             <p className="text-sm text-gray-500 mt-1">{config.blurb}</p>
           </CardHeader>
           <CardContent className="space-y-4">
-            {config.explainer && (
-              <div className="space-y-2">
-                <Button type="button" variant="outline" size="sm" onClick={() => setShowHint((s) => !s)}>
-                  {showHint ? "Hide Hint" : "Show Hint"}
-                </Button>
-                {showHint && (
-                  <div className="rounded-md bg-blue-50 border border-blue-200 p-3 text-sm text-blue-900">
-                    {config.explainer}
-                  </div>
-                )}
-              </div>
-            )}
             {config.fields.map((f) => (
               <div key={f.name} className="space-y-1">
                 <label className="text-sm font-medium">{f.label}</label>
@@ -136,7 +124,19 @@ export default function PlaygroundPage() {
 
             {config.secondaryField && (
               <div className="pt-4 mt-4 border-t space-y-1">
-                <label className="text-sm font-medium">{config.secondaryField.label}</label>
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium">{config.secondaryField.label}</label>
+                  {config.explainer && (
+                    <Button type="button" variant="outline" size="sm" onClick={() => setShowHint((s) => !s)}>
+                      {showHint ? "Hide Hint" : "Show Hint"}
+                    </Button>
+                  )}
+                </div>
+                {showHint && config.explainer && (
+                  <div className="rounded-md bg-blue-50 border border-blue-200 p-3 text-sm text-blue-900">
+                    {config.explainer}
+                  </div>
+                )}
                 {config.secondaryField.type === "textarea" ? (
                   <Textarea
                     value={secondaryValue}
