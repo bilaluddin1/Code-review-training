@@ -709,6 +709,19 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
     if (res.ok) fetchAnalytics();
   };
 
+  const [renamingSessionId, setRenamingSessionId] = useState<string | null>(null);
+  const renameLeaderboardSession = async (sessionId: string, newTeamName: string) => {
+    setRenamingSessionId(sessionId);
+    const res = await fetch(`/api/admin/session-archive/${sessionId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ teamName: newTeamName }),
+    });
+    setRenamingSessionId(null);
+    if (res.ok) await fetchAnalytics();
+    else alert('Could not rename - ' + ((await res.json().catch(() => ({})))?.error ?? 'unknown error'));
+  };
+
   const deleteLeaderboardSession = async (sessionId: string, teamName: string) => {
     if (!window.confirm(`Permanently delete the archived "${teamName}" leaderboard session? This cannot be undone.`)) return;
     setDeletingSessionId(sessionId);
@@ -1857,8 +1870,15 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
                 analytics.sessions.map((s) => (
                   <div key={s.sessionId} className="border rounded-lg p-4">
                     <div className="flex items-center justify-between mb-2">
-                      <div>
-                        <span className="font-semibold">{s.teamName}</span>
+                      <div className="flex items-center">
+                        <input
+                          key={s.teamName}
+                          className="font-semibold border rounded px-1 py-0.5 w-40 disabled:opacity-50"
+                          defaultValue={s.teamName}
+                          disabled={renamingSessionId === s.sessionId}
+                          title="Click to rename this archived session's label"
+                          onBlur={(e) => e.target.value.trim() && e.target.value.trim() !== s.teamName && renameLeaderboardSession(s.sessionId, e.target.value.trim())}
+                        />
                         <span className="text-xs text-gray-500 ml-2">{new Date(s.archivedAt).toLocaleString()}</span>
                         <span className="text-xs text-gray-500 ml-2">({s.results.length} player(s))</span>
                       </div>
