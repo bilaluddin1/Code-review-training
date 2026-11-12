@@ -779,7 +779,7 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
   const addQuestion = async () => {
     setQuestionsSaving(true);
     const body = newQuestionType === "choice"
-      ? { label: newQuestionLabel.trim(), questionType: "choice", options: newQuestionOptions.split(",").map((o) => o.trim()).filter(Boolean) }
+      ? { label: newQuestionLabel.trim(), questionType: "choice", options: newQuestionOptions.split(/[,/]/).map((o) => o.trim()).filter(Boolean) }
       : { label: newQuestionLabel.trim(), followUpLabel: newQuestionFollowUp.trim(), questionType: "rating" };
     const res = await fetch('/api/admin/feedback-questions', {
       method: 'POST',
@@ -798,7 +798,7 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
   };
   const canAddQuestion = newQuestionLabel.trim().length > 0 && (
     newQuestionType === "choice"
-      ? newQuestionOptions.split(",").map((o) => o.trim()).filter(Boolean).length >= 2
+      ? newQuestionOptions.split(/[,/]/).map((o) => o.trim()).filter(Boolean).length >= 2
       : newQuestionFollowUp.trim().length > 0
   );
 
@@ -1744,9 +1744,9 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
                             <input
                               className="border rounded px-2 py-1 text-xs text-gray-600"
                               defaultValue={(q.options ?? []).join(", ")}
-                              placeholder="Options, comma-separated"
+                              placeholder="Options, comma or slash separated"
                               onBlur={(e) => {
-                                const opts = e.target.value.split(",").map((o) => o.trim()).filter(Boolean);
+                                const opts = e.target.value.split(/[,/]/).map((o) => o.trim()).filter(Boolean);
                                 if (opts.length >= 2) updateQuestion(q.id, { options: opts });
                               }}
                             />
@@ -1797,7 +1797,7 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
                         {newQuestionType === "choice" ? (
                           <input
                             className="border rounded px-2 py-1 text-xs text-gray-600"
-                            placeholder="Options, comma-separated (e.g. SQLi, XSS, IDOR, broken auth, hardcoded secrets)"
+                            placeholder="Options, comma or slash separated (e.g. SQLi, XSS, IDOR, broken auth, hardcoded secrets)"
                             value={newQuestionOptions}
                             onChange={(e) => setNewQuestionOptions(e.target.value)}
                             onKeyDown={(e) => { if (e.key === 'Enter') addQuestion(); }}
