@@ -16,7 +16,14 @@ export async function GET(req: NextRequest) {
   }
   await getActiveFeedbackQuestions(); // ensures the table is seeded at least once
   const questions = await prisma.feedbackQuestion.findMany({ orderBy: { order: "asc" } });
-  return NextResponse.json({ questions });
+  // `options` is stored as a JSON string (see schema) - the editor UI needs
+  // the parsed array, same as the public endpoint already gives it.
+  return NextResponse.json({
+    questions: questions.map((q) => ({
+      ...q,
+      options: q.questionType === "choice" && q.options ? (JSON.parse(q.options) as string[]) : undefined,
+    })),
+  });
 }
 
 // POST /api/admin/feedback-questions { label, followUpLabel } - add a brand
