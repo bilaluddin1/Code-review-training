@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
   ]);
 
   const liveOrder = new Map(liveQuestions.map((q, i) => [q.id, i]));
-  const seen = new Map<string, { questionId: string; label: string; followUpLabel: string; firstSeenOrder: number }>();
+  const seen = new Map<string, { questionId: string; label: string; followUpLabel: string; questionType: string; firstSeenOrder: number }>();
   let fallbackOrder = liveQuestions.length;
   for (const r of responses) {
     for (const a of r.answers) {
@@ -32,6 +32,7 @@ export async function GET(req: NextRequest) {
           questionId: a.questionId,
           label: a.labelSnapshot,
           followUpLabel: a.followUpLabelSnapshot,
+          questionType: a.questionType,
           firstSeenOrder: liveOrder.get(a.questionId) ?? fallbackOrder++,
         });
       }
@@ -71,7 +72,7 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json({
     count: responses.length,
-    columns: columns.map((c) => ({ questionId: c.questionId, label: c.label, followUpLabel: c.followUpLabel })),
+    columns: columns.map((c) => ({ questionId: c.questionId, label: c.label, followUpLabel: c.followUpLabel, questionType: c.questionType })),
     sessions,
   });
 }

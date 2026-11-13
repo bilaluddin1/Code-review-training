@@ -535,14 +535,14 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
   const [deletingFeedbackSessionId, setDeletingFeedbackSessionId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<{
     count: number;
-    columns: { questionId: string; label: string; followUpLabel: string }[];
+    columns: { questionId: string; label: string; followUpLabel: string; questionType: QuestionType }[];
     averages: { questionId: string; label: string; average: number | null; count: number }[];
     responses: { id: string; userName: string; teamName: string | null; comments: string | null; createdAt: string; answers: { questionId: string; label: string; rating: number | null; followUpLabel: string; followUpText: string | null; selectedOption: string | null }[] }[];
   } | null>(null);
   type FeedbackResponseRow = { id: string; userName: string; teamName: string | null; comments: string | null; createdAt: string; answers: { questionId: string; label: string; rating: number | null; followUpLabel: string; followUpText: string | null; selectedOption: string | null }[] };
   const [feedbackArchive, setFeedbackArchive] = useState<{
     count: number;
-    columns: { questionId: string; label: string; followUpLabel: string }[];
+    columns: { questionId: string; label: string; followUpLabel: string; questionType: QuestionType }[];
     sessions: { sessionId: string; teamName: string; archivedAt: string; responses: FeedbackResponseRow[] }[];
   } | null>(null);
   const [feedbackToggle, setFeedbackToggle] = useState(false);
@@ -1613,7 +1613,7 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
                           r.userName,
                           ...feedbackArchive.columns.flatMap((c) => {
                             const a = r.answers.find((a) => a.questionId === c.questionId);
-                            return [a?.selectedOption ?? a?.rating ?? '', a?.followUpText ?? ''];
+                            return c.questionType === "choice" ? [a?.selectedOption ?? ''] : [a?.rating ?? '', a?.followUpText ?? ''];
                           }),
                           r.comments ?? '',
                           new Date(r.createdAt).toLocaleString(),
@@ -1622,7 +1622,7 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
                     );
                     downloadCsv(
                       'all-feedback-sessions-combined.csv',
-                      ['Team', 'Archived At', 'Name', ...feedbackArchive.columns.flatMap((c) => [c.label, `${c.label} - why`]), 'Comments', 'Submitted At'],
+                      ['Team', 'Archived At', 'Name', ...feedbackArchive.columns.flatMap((c) => c.questionType === "choice" ? [c.label] : [c.label, `${c.label} - why`]), 'Comments', 'Submitted At'],
                       rows
                     );
                   }}
@@ -1712,13 +1712,13 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
                       feedback &&
                       downloadCsv(
                         'feedback.csv',
-                        ['Name', 'Team', ...feedback.columns.flatMap((c) => [c.label, `${c.label} - why`]), 'Comments', 'Submitted At'],
+                        ['Name', 'Team', ...feedback.columns.flatMap((c) => c.questionType === "choice" ? [c.label] : [c.label, `${c.label} - why`]), 'Comments', 'Submitted At'],
                         feedback.responses.map((r) => [
                           r.userName,
                           r.teamName ?? '',
                           ...feedback.columns.flatMap((c) => {
                             const a = r.answers.find((a) => a.questionId === c.questionId);
-                            return [a?.selectedOption ?? a?.rating ?? '', a?.followUpText ?? ''];
+                            return c.questionType === "choice" ? [a?.selectedOption ?? ''] : [a?.rating ?? '', a?.followUpText ?? ''];
                           }),
                           r.comments ?? '',
                           new Date(r.createdAt).toLocaleString(),
@@ -1933,7 +1933,7 @@ export function AdminPanel({ locks, onToggleLock, challenges = [] }: {
                           onClick={() =>
                             downloadCsv(
                               `feedback-${s.teamName.replace(/[^a-z0-9]+/gi, '-')}-${s.sessionId.slice(0, 8)}.csv`,
-                              ['Name', 'Team', ...feedbackArchive.columns.flatMap((c) => [c.label, `${c.label} - why`]), 'Comments', 'Submitted At'],
+                              ['Name', 'Team', ...feedbackArchive.columns.flatMap((c) => c.questionType === "choice" ? [c.label] : [c.label, `${c.label} - why`]), 'Comments', 'Submitted At'],
                               s.responses.map((r) => [
                                 r.userName,
                                 r.teamName ?? '',
