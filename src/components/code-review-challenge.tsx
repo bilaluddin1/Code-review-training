@@ -3029,6 +3029,8 @@ export default function CodeReviewChallenge() {
                                     refreshSolvedStates();
                                   } else if (data.duplicateFlag) {
                                     next = { status: 'error', message: data.error ?? 'This flag was already used for another box - find a different one.' };
+                                  } else if (data.wrongBox) {
+                                    next = { status: 'error', message: data.error ?? 'That flag belongs to a different box on this challenge.' };
                                   } else {
                                     next = { status: 'error', message: 'Incorrect flag. Try again.' };
                                   }

@@ -47,11 +47,31 @@ export async function POST(req: NextRequest) {
 
     const submittedFlag = flag.trim();
 
-    // Check the flag FIRST so "already solved" is scoped to this exact
-    // flag string - a multi-flag lab's two flags are solved (and tracked)
-    // independently, so finding one doesn't block submitting the other.
-    const correct = expectedFlags.some((f) => f.trim() === submittedFlag);
-    console.log('Flag check:', { submitted: submittedFlag, correct });
+    // Each box only accepts ITS OWN flag (expectedFlags[flagIndex]) - not
+    // just "any of the challenge's flags". Without this, flag A typed into
+    // box B's input was silently accepted as correct for box B, as long as
+    // nothing else had already claimed that exact string - so pasting the
+    // one flag you found into every box "solved" all of them.
+    const expectedForThisBox = expectedFlags[flagIndex];
+    const correct = typeof expectedForThisBox === 'string' && expectedForThisBox.trim() === submittedFlag;
+    // A real flag from this challenge, just typed into the wrong box - worth
+    // telling the player that explicitly (it confirms they found something
+    // real) rather than a generic "incorrect", without saying which box it
+    // actually belongs to.
+    const wrongBox = !correct && expectedFlags.some((f) => f.trim() === submittedFlag);
+    console.log('Flag check:', { submitted: submittedFlag, correct, wrongBox });
+
+    if (wrongBox) {
+      const user = await prisma.leaderboardUser.findUnique({ where: { name } });
+      await prisma.flagSubmission.create({ data: { userName: name, challengeId, flag, correct: false, flagIndex } });
+      return NextResponse.json({
+        success: true,
+        correct: false,
+        wrongBox: true,
+        error: 'That flag is real, but it belongs to a different box on this challenge - put it in the matching one.',
+        score: user?.score ?? 0,
+      });
+    }
 
     if (correct) {
       const existing = await prisma.flagSubmission.findFirst({

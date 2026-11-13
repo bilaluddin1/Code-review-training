@@ -34,8 +34,8 @@ export const PLAYGROUNDS: Record<string, PlaygroundConfig> = {
     blurb: "This isn't a real vulnerability - it's just practice using the same live-exploit flow every other lab uses.",
     method: "GET",
     endpoint: "/api/labs/demo",
-    fields: [],
-    startingHint: "Click Send request below.",
+    fields: [{ name: "visitor", label: "Visitor name", type: "text", defaultValue: "guest" }],
+    startingHint: "Click Send request to see the default response, then change the value and send it again.",
   },
   "bac-01": {
     title: "Secure Notes (IDOR)",
